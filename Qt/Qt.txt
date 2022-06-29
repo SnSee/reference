@@ -1,0 +1,70 @@
+以PyQt5或c++为例
+
+PyQt5模块路径
+	PyQt5.QtCore.Qt
+	PyQt5.QtGui
+	PyQt5.QWidgets.QWidget
+
+重写事件：
+	直接重写相关事件的函数/方法即可
+事件过滤器：
+	在需要事件过滤器的类中通过installEventFilter(对象)安装，对象需要有eventFilter(QObject, QEvent)函数
+
+控件
+	QWidget
+		设备背景色:
+			方式一：
+				setAutoFillBackground(True)
+				setBackgroundRole(QPalette.Base)
+			方式二：
+        		p = palette()
+        		p.setColor(self.backgroundRole(), QtGui.QColor(200, 200, 200))
+        		setPalette(p)
+        设置鼠标穿透：setAttribute(Qt.WA_TransparentForMouseEvents, True)
+        	但是使用该方法后QWidget自身不再处理鼠标事件
+	QPushButton
+		点击回调 button.clicked.connect(func)
+		按键背景和窗口背景一致: setFlat(True)
+	QTextEdit
+		设置提示信息: setPlaceholderText
+	QTextEdit, QLineEdit, QTextBrowser关闭右键菜单
+		setContextMenuPolicy(Qt::ContextMenuPolicy::NoContextMenu)
+	QTableWidget
+		设置行数: setRowCount(int)
+		设置列数: setColumnCount(int)
+		指定位置新增行: insertRow(row)
+		设置表头: setHorizontalHeader(QHeaderView)
+		设置表头内容: setHorizontalHeaderLabels(QStringList)
+		隐藏表头: horizontalHeader().hide()
+		设置列宽: setColumnWidth(index, width)
+		设置最后一列宽度自适应: horizontalHeader().setStretchLastSection(True)
+		插入数据: setItem(row, column, QTableWidgetItem)
+		设置下拉列表: setCellWidget(row, column, QCombBox)
+		设置单元格不可编辑：it = item(row, col); it.setFlags(it.flags() & ~Qt.ItemIsEditable)
+	QComboBox下拉框
+		添加下拉选项: addItems(const QStringList &)
+		获取选项个数: count()
+		当前显示序号: currentIndex()
+		当前显示内容: currentText()
+		设置当前内容: setCurrentText(const QString &)
+		插入选项: insertItem(int index, const QString &, const QVariant &data=QVariant())
+				 insertItem(int index, const QStringList &)
+		插入分割线: insertSeparator(int index)
+		改变序号内容: setItemText(int index, const QString &)
+
+使用自带图标
+	QIcon: QApplication.style().standardIcon(QStyle.SP_TrashIcon)
+
+自定义信号槽
+	from PyQt5.QtCore import pyqtSignal
+	sig = pyqtSignal()
+	sig.connect(func)
+	sig.emit([args...])
+
+事件
+	closeEvent: 只有最顶层窗口关闭时才会触发
+
+设置默认字体
+	QApplication::setFont()
+
+

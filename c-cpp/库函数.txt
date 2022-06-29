@@ -1,0 +1,20 @@
+
+运行时加载动态库:
+	linux: <dlfcn.h>
+		# 加载动态库
+		void *dlopen(const char *filename, int flag);
+		char *dlerror(void);
+		# 加载动态库内符号，如加载函数时symbol为函数名，调用函数时需要将函数强转
+		void *dlsym(void *handle, const char *symbol);
+		# 关闭动态库
+		int dlclose(void *handle);
+	windows: <libloaderapi.h>	
+		A只支持ANSI字符串，W支持Unicode字符串
+		Ex支持更多参数，后两个参数可传NULL，部分系统中没有非Ex版本
+		HMODULE LoadLibraryA(LPCSTR fileName);
+		HMODULE LoadLibraryW(LPCSTR fileName);
+		HMODULE LoadLibraryExA(LPCSTR filename, HANDLE hFile, DWORD dwFlags);
+		HMODULE LoadLibraryExW(LPCSTR filename, HANDLE hFile, DWORD dwFlags);
+		FARPROC GetProcAddress(HMODULE hModule, LPCSTR procName);
+		编译时链接kernel32.dll
+			如: target_link_libraries(${PROJECT_NAME} kernel32}

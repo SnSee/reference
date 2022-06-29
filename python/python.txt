@@ -1,0 +1,39 @@
+
+pip
+	查看pip支持的离线安装包
+		import pip._internal
+		print(pip._internal.pep425tags.get_supported())
+
+添加包搜索路径
+	1.在site-package下新建 *.pth(*可以任意命名)，并写入包路径
+	2.通过sys.path.append(path)添加
+	3.添加到环境变量PYTHONPATH中
+
+指定python路径: #!/path/python
+设置utf-8文件格式: # -*- coding:utf-8 -*-
+
+获取当前文件绝对路径: __file__
+
+logging
+	https://blog.csdn.net/qq_15821487/article/details/118090354
+	输出日志
+		logging.debug(), logging.info(), logging.warning(), logging.error(), logging.critical()
+	设置日志等级
+		logging.getLogger().setLevel(logging.DEBUG)
+	一次性设置
+		logging.basicConfig(level=logging.DEBUG, format="%(levelname)s %(message)s", datefmt="%H:%M:%S", filename="/tmp/test.log", filemode="w")
+	自定义Handler
+		https://blog.csdn.net/qq_45534118/article/details/116804639
+
+windll
+	# 查看是否具有管理员权限
+		from ctypes import windll
+		windll.shell32.IsUserAnAdmin()
+	# 加载动态库
+		windll.LoadLibrary(dll_path)
+	# 申请以管理员方式运行脚本
+		windll.shell32.ShellExecuteW(None, "runas", sys.executable, <script_path>, None, 1)
+	# 申请以管理员方式运行当前脚本
+		windll.shell32.ShellExecuteW(None, "runas", sys.executable, __file__, None, 1)
+		!!!注意!!! 代码中一定要在判断不具有管理员权限之后再申请，否则会无限运行当前脚本
+		管理员权限是通过ShellExecutedW启动的程序具有的，而不是申请之前的原脚本具有的

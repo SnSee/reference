@@ -1,0 +1,98 @@
+set number
+set autoindent
+set smartindent
+set cindent
+set scrolloff=5
+set backspace=2
+
+let loaded_matchparen = 1  "设置不高亮显示配对的括号
+
+set showcmd
+
+" have Vim jump to the last position when reopening a file
+if has("autocmd")
+	au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
+endif
+
+"colorscheme sublimemonokai
+hi comment ctermfg=2	"设置注释颜色为绿色
+syntax on
+set tabstop=4
+set expandtab
+set shiftwidth=4
+set softtabstop=4
+"set cursorline		 	"高亮显示当前行背景色
+
+" 设置自动补全括号
+inoremap { {<Enter>}<Esc>O
+inoremap { {}<Esc>i
+inoremap ( ()<Esc>i
+inoremap [ []<Esc>i
+
+inoremap } <c-r>=ClosePair('}')<CR>
+inoremap ) <c-r>=ClosePair(')')<CR>
+inoremap ] <c-r>=ClosePair(']')<CR>
+" inoremap <c-r>=ClosePair
+
+" 设置输入右括号时移动到右括号右侧
+function! ClosePair(char)
+    if getline('.')[col('.') - 1] == a:char
+        return "\<Right>"
+    else
+        return a:char
+    endif
+endfunction
+
+" 设置换行时如果在大括号内进行缩进
+imap <CR> <c-r>=ChangeLine('}')<CR>
+function! ChangeLine(char)
+    if getline('.')[col('.') - 1] == a:char
+        return "\<CR>\<Esc>\O"
+    else 
+        return "\<CR>"
+    endif
+endfunction
+
+
+set wildmenu
+set completeopt-=preview
+
+" 设置状态栏
+set laststatus=2
+set statusline=\ %<%F[%1*%M%*%n%R%H]%=\ %y\ %0(%{&fileformat}\ %{&fileencoding}\ %c:%l/%L%)\ [%p%%]
+
+" 设置 ctrl + / 自动注释当前行，目前只支持 #,",// 三种注释符号
+nnoremap <C-_> ^:call Auto_comment() <CR>j
+inoremap <C-_> <ESC> <C-_>
+function Auto_comment()
+	" 取消注释当前行
+	let b:line_num=line(".")
+	let b:cur_line=getline(b:line_num)
+	let b:fir_chr=strpart(b:cur_line, getcurpos()[2] - 1, 1)	"获取第一个非空字符
+	if match('#', b:fir_chr) > -1 && match(&filetype, "h") != 0 && match(&filetype, "c") != 0
+		" 正则匹配时不支持 (#|/) 这种写法
+		call setline(b:line_num, substitute(b:cur_line, '[#"/]/* *', "", ""))
+		return
+    elseif match('"/', b:fir_chr) > -1
+		call setline(b:line_num, substitute(b:cur_line, '[#"/]/* *', "", ""))
+		return
+	endif
+	" 注释当前行
+	if match(&filetype, "h") == 0 || match(&filetype, "c") == 0
+		let b:comment_mark="//"
+	elseif match(&filetype, "vim") == 0
+		let b:comment_mark='"'
+	else
+		let b:comment_mark="#"
+	endif
+	let b:new_line=substitute(b:cur_line, b:fir_chr, printf("%s %s", b:comment_mark, b:fir_chr), "")
+	call setline(b:line_num, b:new_line)
+endfunction
+
+augroup Format-Options
+    autocmd!
+    autocmd BufEnter * setlocal formatoptions-=c formatoptions-=r formatoptions-=o
+
+    " This can be done as well instead of the previous line, for setting formatoptions as you choose:
+    autocmd BufEnter * setlocal formatoptions=crqn2l1j
+augroup END

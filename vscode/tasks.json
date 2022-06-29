@@ -1,0 +1,22 @@
+{
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "cmake",
+            "command": "cmake -DCMAKE_BUILD_TYPE=Debug ${workspaceFolder}",
+            "options": {
+                "cwd": "${workspaceFolder}/build"
+            }
+        },
+        {
+            "label": "make",
+            "options": {
+                "cwd": "${workspaceFolder}/build"
+            },
+            "type": "shell",
+            "command": "make ${fileBasenameNoExtension} -j8",
+            "dependsOn": ["cmake"]
+        }
+    ],
+    "version": "2.0.0"
+}

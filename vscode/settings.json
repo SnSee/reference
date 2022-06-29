@@ -1,0 +1,13 @@
+{
+	// "设置头文件搜索路径依赖cmake工具": "",
+	"C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+
+	// "允许markdown使用代码片段"
+	"[markdown]": {
+        "editor.quickSuggestions": {
+            "other": "on",
+            "comments": "on",
+            "strings": "on"
+        }
+    }
+}
