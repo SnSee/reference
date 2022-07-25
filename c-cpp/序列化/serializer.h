@@ -13,8 +13,6 @@
 #include <cstring>
 #include <string>
 
-namespace west {
-
 class wsStream {
 public:
     enum class DataVersion : uint32_t {
@@ -165,7 +163,5 @@ class wsOStream :public wsStream {
         return *this;
     }
 };
-
-}
 
 #endif // __SERIALIZER_H__
