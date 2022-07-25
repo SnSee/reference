@@ -1,4 +1,9 @@
 {
+    // 设置行距
+    "editor.lineHeight": 30,
+    // 设置自动换行
+    "editor.wordWrap": "on",
+
 	// "设置头文件搜索路径依赖cmake工具": "",
 	"C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
 
