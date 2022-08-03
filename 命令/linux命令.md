@@ -19,8 +19,13 @@ ctrl + 方向键: 光标按单词移动
 
 ## 3. 文件
 
-```text
-查看文件 inode: ls -i 或 stat file_name
+```bash
+# 查看文件
+inode: ls -i 或 stat file_name
+
+# 查看文件个数
+ll | wc -l
+find ./ -name "*.cpp" | wc -l
 ```
 
 ## 4. 进程
@@ -89,4 +94,17 @@ let
 ```text
 显示当前时间: date
 显示程序耗时: time ./a.out
+```
+
+## 环境变量
+
+```bash
+# 当前shell类型
+$SHELL
+
+# 可执行文件查找路径
+$PATH
+
+# 临时动态库查找路径
+$LD_LIBRARY_PATH
 ```
