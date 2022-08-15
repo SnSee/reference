@@ -1,0 +1,25 @@
+使用gcov计算代码覆盖率
+	编译时添加编译选项 -fprofile-arcs -ftest-coverage
+	执行测试用例(这一步会生成gcda文件)
+	lcov -b <gcno_path> [-b <gcno_path2>] -d <gcda_path> [-d <gcda_path2>] -c -o <name.info>
+		-b(--base-directory): gcno路径，会递归查找改路径下所有gcno文件，-b可以使用多个
+		-d(--directory): gcda路径，会递归查找，可使用多个
+		-c(--capture): 生成覆盖率数据
+		-o(--ouput-file): 指定生成文件名
+	生成网页
+		genhtml <name.info> -o <html_path>
+	使用浏览器打开 <html_path>/index.html
+	tips:
+		使用 gcov xxx.gcno 查看单个文件覆盖率
+		合并多份覆盖率数据: lcov -a <1.info> -a <2.info> -o <merged.info>
+		提取指定目录的覆盖率(pattern是路径的模式，支持正则): -e(--extreack)
+			lcov -e <all.info> "<pattern1>" "<pattern2>" -o filtered.info
+		移除指定目录: -r(--remove)
+			lcov -r <all.info> "<pattern1>" "<pattern2>" -o filtered.info
+		注意: -c, -e 和 -r 每次只能用一个
+		如果需要测试分支覆盖率(if 等条件语句)通过 --rc lcov_branch_coverage=1 开启，并且genhtml需要添加 --branch-coverage参数
+
+cmake工程计算代码覆盖率
+	CMakeLists.txt中添加编译选项
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
+	gcno 和 gcda 在构建目录下(一般是build)

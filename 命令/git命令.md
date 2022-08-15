@@ -82,3 +82,17 @@ revert
 重定向远程仓库链接
     git config --global url."https://new.git".insteadOf https://old.git
 ```
+
+## 换行符
+
+```text
+#提交时转换为LF，检出时转换为CRLF
+git config --global core.autocrlf true
+ 
+#提交时转换为LF，检出时不转换
+git config --global core.autocrlf input
+ 
+#提交检出均不转换
+git config --global core.autocrlf false
+
+```

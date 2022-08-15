@@ -22,6 +22,7 @@ set expandtab
 set shiftwidth=4
 set softtabstop=4
 "set cursorline		 	"高亮显示当前行背景色
+set hlsearch			"高亮显示搜索结果	set nolhsearch
 
 " 设置自动补全括号
 inoremap { {<Enter>}<Esc>O

@@ -1,6 +1,13 @@
 
 # vim
 
+## 外观
+
+```vim
+"显示颜色
+syntax on
+```
+
 ## 文件跳转
 
 ```text
@@ -20,6 +27,40 @@ ctrl + o 回到上一个位置，反之 ctrl + i (只适用于使用了vim跳转
 在需要跳转的地方 ctrl + ] 即可跳转，ctrl + o 返回
 如果需要使用不在当前路径的tags，在~/.vimrc 中加上 set tags+=需要的tags全路径
 ```
+
+## 折叠
+
+查看vim自带帮助文档 :h Folding
+
+```text
+设置折叠模式 :set fdm=indent
+设置打开文件时默认不折叠代码 :set foldlevelstart=99
+可用折叠模式: manual, indent, expr, syntax, diff, marker
+indent: 根据缩进折叠，每级缩进所需空格数由shiftwidth决定
+syntax: 根据语法进行折叠，如c/c++，但能识别的语法较少
+expr: 自定义折叠规则
+    变量解释
+        vim 在扫描每一行时，都会将行号存储至 v:lnum 变量
+        getline(v:lnum)便可获得该行内容
+    :set foldexpr=getline(v:lnum)[0]==\"\\t\"   "按tab折叠
+    :set foldexpr=MyFoldLevel(v:lnum)           "调用自定义的折叠函数
+    :set foldexpr=getline(v:lnum)=~'^\\s*$'&&getline(v:lnum+1)=~'\\S'?'<1':1    "按空行折叠
+在括号处创建到匹配括号的折叠: zf%(需要marker模式)
+```
+
+折叠快捷键
+
+```vim
+zM 递归 折叠 整个文件
+zR 递归 展开 整个文件
+zC 递归 折叠 当前所在最近的作用域
+zO 递归 展开 当前所在最近的作用域
+
+zc 非递归 折叠当前所在最近的作用域
+zo 非递归 折叠当前所在最近的作用域
+```
+
+[更多折叠快捷键](https://www.cnblogs.com/heartchord/p/4797996.html?ivk_sa=1024320u)
 
 ## 字符串
 
@@ -53,4 +94,18 @@ linux vim 捕获时的括号需要转义 \( \), vscode下不需要转义
 按十六进制显示
     :%!xxd
     :%!xxd -r 恢复默认
+```
+
+## 条件判断
+
+```vim
+if cond1
+elseif cond2
+else
+endif
+```
+
+```vim
+" 判断是否是gvim
+if has("gui_running")
 ```

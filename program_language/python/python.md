@@ -68,6 +68,10 @@ print(pip._internal.pep425tags.get_supported())
 pip install xxx.whl
 # 默认安装在对应的python安装目录/lib/pythonx.x/site-packages下
 # 如果没有写权限，会安装在~/.local/lib/pythonx.x/site-packages下
+
+# 安装tar.gz包
+# 解压后会有setup.py文件
+python setup.py install --prefix=...    # 会安装
 ```
 
 ## 添加包搜索路径
@@ -182,6 +186,12 @@ parser.add_argument("--gender", choices=["male", "female"])
 parser.add_argument("name")
 parser.add_argument("age", type=int)
 
+# 变长参数
+parser.add_argument('--three',nargs=3)              # 必须跟三个值
+parser.add_argument('--optional',nargs='?')         # 0或1个值
+parser.add_argument('--all',nargs='*',dest='all')   # 所有值(可以没有)
+parser.add_argument('--one-or-more',nargs='+')      # 所有值(至少需要一个)
+
 # 解析
 args = parser.parse_args()
 
@@ -281,11 +291,17 @@ ret = os.popen("ls")
 lines = ret.readlines()
 
 # 方式三
-subprocess.run()
-subprocess.call()
+sp = subprocess.run("ls", stdout=subprocess.PIPE, shell=True)
+sp.returncode   # 0表示执行成功，1表示失败
+output = sp.stdout  # 字符串
+#sp = subprocess.call()
 ```
 
 ## 子进程
+
+[官网](https://docs.python.org/3/library/subprocess.html?highlight=subprocess#module-subprocess)
+
+[run,call,Popen介绍](https://www.cnblogs.com/hanfe1/p/12885200.html)
 
 ### subprocess.Popen
 
@@ -357,4 +373,19 @@ def _quit(signum, frame):
 signal.signal(signal.SIGINT, _quit)
 while True:
     time.sleep(1)
+```
+
+## 函数绑定参数
+
+类似于c++的, bind1st
+
+```python
+from functools import partial
+
+def print_three(a, b, c):
+    print(a, b, c)
+
+# 3 被绑定给了print_three的第一个参数，即 a
+print_bound = partial(print_three, 3)
+print_bound(1, 2)
 ```
