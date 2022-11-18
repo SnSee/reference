@@ -74,6 +74,7 @@ chmod u+x xxx.run
 ```
 
 源码编译
+
 ```bash
 qmake
 make -j8

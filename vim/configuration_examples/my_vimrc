@@ -1,3 +1,7 @@
+" vim下鼠标左键不进入visual模式,gvim下进入
+if !has("gui_running")
+	set mouse-=a
+endif
 set number
 set autoindent
 set smartindent
@@ -8,6 +12,9 @@ set backspace=2
 let loaded_matchparen = 1  "设置不高亮显示配对的括号
 
 set showcmd
+
+set fdm=indent 			" 设置按缩进折叠
+set foldlevelstart=99 	" 设置打开文件时默认不折叠代码
 
 " have Vim jump to the last position when reopening a file
 if has("autocmd")

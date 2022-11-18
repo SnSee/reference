@@ -93,7 +93,9 @@ python setup.py install --prefix=...    # 会安装
 
 ## logging
 
-参考: <https://blog.csdn.net/qq_15821487/article/details/118090354>
+[参考1](https://blog.csdn.net/qq_15821487/article/details/118090354)
+
+[参考2](https://zhuanlan.zhihu.com/p/476549020)
 
 ### 用法
 
@@ -104,6 +106,14 @@ python setup.py install --prefix=...    # 会安装
     logging.getLogger().setLevel(logging.DEBUG)
 一次性设置
     logging.basicConfig(level=logging.DEBUG, format="%(levelname)s %(message)s", datefmt="%H:%M:%S", filename="/tmp/test.log", filemode="w")
+
+日记记录到文件
+logPath = "./log"
+formatter = logging.Formatter('%(asctime)s-%(levelname)s: %(message)s')
+fh = logging.FileHandler(filename=logPath, encoding='utf-8', mode='a')
+fh.setLevel(logging.INFO)
+fh.setFormatter(formatter)
+logging.getLogger().addHandler(fh)
 ```
 
 ### 自定义Handler
@@ -187,10 +197,21 @@ parser.add_argument("name")
 parser.add_argument("age", type=int)
 
 # 变长参数
-parser.add_argument('--three',nargs=3)              # 必须跟三个值
-parser.add_argument('--optional',nargs='?')         # 0或1个值
-parser.add_argument('--all',nargs='*',dest='all')   # 所有值(可以没有)
-parser.add_argument('--one-or-more',nargs='+')      # 所有值(至少需要一个)
+parser.add_argument('--three', nargs=3)              # 必须跟三个值
+parser.add_argument('--optional', nargs='?')         # 0或1个值
+parser.add_argument('--all', nargs='*', dest='all')  # 所有值(可以没有)
+parser.add_argument('--one-or-more', nargs='+')      # 所有值(至少需要一个)
+
+# 同一参数可指定多次
+parser.add_argument('--repeated', action="append")
+
+# 支持参数字符串中有空格(需要使用引号包括整个字符串)
+parser.add_argument('--with-space', type=str)
+
+# 互斥参数(暂未找到参数组互斥方法)
+group = parser.add_mutually_exclusive_group(required=True)
+group.add_argument('-r', '--rule')
+group.add_argument('-c', '--config')
 
 # 解析
 args = parser.parse_args()
@@ -388,4 +409,24 @@ def print_three(a, b, c):
 # 3 被绑定给了print_three的第一个参数，即 a
 print_bound = partial(print_three, 3)
 print_bound(1, 2)
+```
+
+## 多线程
+
+基础用法
+
+```python
+from threading import Thread
+
+def func(a, b, c):
+    print(a, b, c)
+
+def call():
+    t1 = Thread(target=func, args=(1, 2, 3))
+    t2 = Thread(target=func, args=('a', 'b', 'c'))
+    t1.start()
+    t2.start()
+    t1.join()
+    t2.join()
+    print("over")
 ```

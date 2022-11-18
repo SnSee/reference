@@ -27,6 +27,7 @@ tar xvf gcc-${version_num}.tar.gz
 cd gcc-{version_num}
 # ./contrib/download_prerequisites
 ./configure --prefix=${install_dir}
+# ./bootstrap
 make -j8 && make install
 ```
 
@@ -50,6 +51,8 @@ make -j8 && make install
 # for gcc
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${target_dir}/lib
 ```
+
+[切换gcc版本](https://blog.csdn.net/u014421520/article/details/119445020)
 
 ### 1.2. 安装bison
 

@@ -144,7 +144,7 @@ ret=`test fir sec`
 
 解析命令行参数
 
-[getops](https://blog.csdn.net/solinger/article/details/89887155)
+[getopts](https://blog.csdn.net/solinger/article/details/89887155)
 
 ```bash
 $#      # 获取命令行参数 个数(不包括脚本名)
@@ -264,6 +264,39 @@ eog xxx.png
 display xxx.png
 ```
 
+文件搜索
+
+[FSearch](https://mp.weixin.qq.com/s/UsWCI62f06pxhFRxcSxZqQ)
+
+### apt/apt-get
+
+apt 和 apt-get 对应关系
+
+```text
+apt 命令            取代的命令                命令的功能
+apt install         apt-get install         安装软件包
+apt remove          apt-get remove          移除软件包
+apt purge           apt-get purge           移除软件包及配置文件
+apt update          apt-get update          刷新存储库索引
+apt upgrade         apt-get upgrade         升级所有可升级的软件包
+apt autoremove      apt-get autoremove      动删除不需要的包
+apt full-upgrade    apt-get dist-upgrade    在升级软件包时自动处理依赖关系
+apt search          apt-cache search        搜索应用程序
+apt show            apt-cache show          显示装细节
+```
+
+```bash
+# 安装指定版本软件
+sudo apt-get install <package>=<version>
+
+# 查看可用软件版本
+sudo apt-cache madison <package>
+
+# 使用 apt-show-versions 列出软件所有版本，并查看是否已经安装
+sudo apt-get install apt-show-versions
+apt-show-versions -a <package>
+```
+
 ## 其他
 
 [去除Window行尾标记^M](https://www.cnblogs.com/rsapaper/p/15697099.html)
@@ -287,4 +320,35 @@ read    # 需要输入回车确认，信息被保存在 $REPLAY 中
 
 read -p "提示信息" message  # 输入内容会存储到 $message 中
 echo $message
+```
+
+查看及切换版本
+
+```bash
+# 以gcc为例
+# 查看版本
+ls /usr/bin/gcc*
+# 为各个版本设定优先级
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 100
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 70
+# 切换版本
+sudo update-alternatives --config gcc
+```
+
+显示颜色
+
+<https://blog.csdn.net/weixin_49439456/article/details/123746038>
+
+```bash
+# 30:黑
+# 31:红
+# 32:绿
+# 33:黄
+# 34:蓝色
+# 35:紫色
+# 36:深绿
+# 37:白色
+ 
+echo -e "\033[32m 绿色字 \033[0m"
+ 
 ```
