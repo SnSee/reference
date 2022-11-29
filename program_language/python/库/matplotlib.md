@@ -27,6 +27,7 @@ import matplotlib.pyplot as plt
 # 清空画布
 plt.close()
 # 自定义画布大小及清晰度
+# figsize: 1000 px * 1000 px
 plt.figure(figsize=(10,10), dpi=72)
 
 # 绘制折线图
@@ -41,7 +42,8 @@ plt.title("test")
 plt.legend()
 
 # 设置x/y轴刻度
-plt.xticks(list)
+# rotation: 倾斜角度，fontsize: 字号
+plt.xticks(list, rotation=45, fontsize=10)
 plt.yticks(list)
 # 设置x/y轴名称
 plt.xlabel("x")
@@ -86,6 +88,18 @@ matplotlib.figure.Figure.subplots_adjust(left=0.1)
 matplotlib.pyplot.subplots_adjust(left=0.1)
 ```
 
+## 柱状图
+
+```python
+fig, ax = plt.subplots(figsize=(18, 9))
+colors = ['r', 'g', 'b']
+# color: 柱状图会根据列表中颜色依次对柱状图着色, 每组颜色为color列表长度
+columns = ax.bar(xTicks, values, width=barWidth, color=colors)
+ax.bar_label(columns, padding=3)    # 柱状图上显示数值
+
+ax.text(x, y, text, fontSize=fs, ha="center", va="center")    # 单个位置显示text
+```
+
 ## 坐标
 
 坐标包含概念: 坐标轴(spine), 坐标刻度(ticks), 坐标名称(label)
@@ -95,6 +109,7 @@ matplotlib.pyplot.subplots_adjust(left=0.1)
 ```python
 Axes.set_xlabel(xlabel: str, fontdict=None, labelpad=None, *, loc=None, **kwargs)
 """
+fontdict: 字典，示例: {'family': 'Times New Roman', 'weight': 'normal', 'size': 23}
 labelpad: 坐标轴名称到坐标轴刻度下/右边缘垂直距离, 默认为 4.0, 可取负值, 单位是像素？
 loc: 坐标轴名称相对坐标轴的位置, 可取值 left/center/right, 默认为 center
 """
@@ -124,7 +139,8 @@ labels：每个刻度对应名称，如果不设置，直接使用刻度数值
 
 有些低版本可能只接受ticks一个参数，需要分开写:
 ax.set_xticks(ticks)
-ax.set_xticklabels(labels)
+# rotation: 倾斜角度，fontsize: 字号
+ax.set_xticklabels(labels, rotation=45, fontsize=10)
 ```
 
 ### 新增y轴并向下移动
@@ -182,4 +198,19 @@ height = (yTicks[-1] - yTicks[0]) / 20
 groupY, padding = yMin - height, height / 4
 _addGroupAnnotates(axe, annotates, groupY, padding)
 plt.show()
+```
+
+## 颜色
+
+所有颜色查看颜色对照图链接
+
+默认配色: "C0" - "C9"
+
+使用内置配色
+
+```python
+cmap = [
+    plt.cm.Paired(1),plt.cm.Paired(6),plt.cm.Paired(2),plt.cm.Paired(3),plt.cm.Paired(4),plt.cm.Paired(5),
+    plt.cm.Paired(0),plt.cm.Paired(7),plt.cm.Paired(8),plt.cm.Paired(9),plt.cm.Paired(10)
+]
 ```
