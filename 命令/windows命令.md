@@ -76,3 +76,15 @@ rd /s/q dir
 winRAR.exe a -x*\.git test.zip test
 # 如果用bash调用，\需要转义，即: -x*\\.git
 ```
+
+## 程序
+
+结束任务管理器中结束不了的任务并强行删除
+
+```dos
+找到程序所在位置
+修改程序名称，如加个 .a
+命令行执行 Taskkill/im 程序名.exe /f
+删除程序
+删除动态库
+```

@@ -67,6 +67,14 @@ QTextEdit, QLineEdit, QTextBrowser关闭右键菜单
 setContextMenuPolicy(Qt::ContextMenuPolicy::NoContextMenu)
 ```
 
+设置字符颜色, [Qt颜色对照表](https://blog.csdn.net/caridle/article/details/105693773)
+
+```cpp
+self.setAcceptRichText(true)
+// 富文本
+self.append("<font style='font-size:14px' color=red>message to show</font>")
+```
+
 ### QTableWidget
 
 设置行数
@@ -184,6 +192,63 @@ insertSeparator(int index)
 
 ```cpp
 setItemText(int index, const QString &)
+```
+
+### QTreeView
+
+获取选中的行号
+
+```python
+self.currentIndex().row()
+```
+
+选中指定行(QTreeView)
+
+```python
+# 需要知道逐级行号
+rows = [3, 2, 1]
+index = self.itemModel.index(rows[0], 0)    # 最顶层节点, index需要在ItemModel中通过createIndex创建
+for row in rows[1:]:    # 从父节点逐级查找子节点
+    index = index.child(row, 0)
+selectModel = QItemSelectionModel(self._mResultModel)
+selectModel.select(index, QItemSelectionModel.Select)
+self.setSelectionModel(selectModel)
+```
+
+在选中item时做自定义操作(QTreeView)
+
+```python
+def selectionChanged(self, itemSelection: QItemSelection, oldSelection: QItemSelection):
+    """重写选中行为"""
+    rows = []
+    index = self.currentIndex()
+    while index.isValid():  # 逐级添加节点行号
+        row = self.currentIndex().row()
+        rows.append(row)
+        index = index.parent()
+    if rows:
+        rows.reverse()
+        self.sigItemSelected.emit(rows)
+    super().selectionChanged(itemSelection, oldSelection)
+```
+
+获取当前屏幕中可见的第一个节点
+
+```python
+QTreeView.indexAt(QPoint(1, 1))     # return: QModelIndex
+```
+
+### QLineEdit
+
+设置不可编辑且背景为disable颜色(直接用QLineEdit.setEnabled(False)时字体不清楚)
+
+```python
+def _setLineEditReadOnly(edit: QLineEdit):
+    assert isinstance(edit, QLineEdit)
+    edit.setReadOnly(True)
+    palette = edit.palette()
+    palette.setBrush(QPalette.Base, palette.brush(QPalette.Disabled, QPalette.Base))
+    edit.setPalette(palette)
 ```
 
 ## 事件

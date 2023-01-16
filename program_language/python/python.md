@@ -330,6 +330,14 @@ output = sp.stdout  # 字符串
 
 [介绍](https://blog.csdn.net/super_he_pi/article/details/99713374)
 
+```python
+def subprocessRun(cmd: str, cwd: str) -> str:
+    sp = subprocess.run(cmd, shell=True, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if sp.returncode != 0:
+        raise Exception(sp.stderr.decode("utf-8"))
+    return sp.stdout.decode("utf-8").strip()
+```
+
 tips
 
 ```python
@@ -430,3 +438,7 @@ def call():
     t2.join()
     print("over")
 ```
+
+## 打包工具
+
+[pyinstaller知乎](https://zhuanlan.zhihu.com/p/470301078)

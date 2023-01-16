@@ -1,6 +1,18 @@
 
 # Git
 
+## 网页
+
+[官方文档](https://git-scm.com/docs)
+
+[搭建服务器](https://www.runoob.com/git/git-server.html)
+
+[管理大文件](https://blog.csdn.net/wsmrzx/article/details/115803215)
+
+[稀疏检出sparse-checkout](https://www.jianshu.com/p/680f2c6c84de)
+
+[显示指定文件为文本文件](https://blog.csdn.net/qijingpei/article/details/110402054)
+
 ## 编码
 
 ```text
