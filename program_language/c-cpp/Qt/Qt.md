@@ -251,6 +251,58 @@ def _setLineEditReadOnly(edit: QLineEdit):
     edit.setPalette(palette)
 ```
 
+## 数据模型
+
+### QModelIndex
+
+[QModelIndex + QTreeView示例](../../python/pyqt5/QTreeView-QAbstractItemModel.py)
+
+```text
+QModelIndex通过isValid()函数来判断有效性，
+通过默认构造函数创建的对象是无效的，
+通过QAbstractItemModel::createIndex(row, col, ptr)创建的是有效的，
+无效index在View中没有对应的节点
+```
+
+```text
+通过internalPointer()获取QAbstractItemModel::createIndex(row, col, ptr)创建该index时传入的指针ptr，
+一般该指针指向一个对象，通过强转还原后便可访问
+```
+
+### QAbstractItemModel
+
+model只提供获取数据的接口，需要另外维护一个数据结构在接口中返回数据(对于QTreeView来说可以是树，对于QTableView来说可以是二维数组等)
+
+需要重写的纯虚函数
+
+```cpp
+// 返回父节点下有多少行
+int rowCount(const QModelIndex &parent = QModelIndex()) const;
+
+// 返回列数，一般是固定值
+int columnCount(const QModelIndex &parent = QModelIndex()) const;
+
+// 根据行列号及父节点创建index
+QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
+
+// 返回index的父节点index
+QModelIndex parent(const QModelIndex &index) const;
+
+// 返回数据(供View显示)，index是位置，role是类型(如文字，颜色，背景色等)
+QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+```
+
+刷新模型
+
+```cpp
+// 开始重置
+beginResetModel();
+// 调用刷新model对应数据结构的函数
+updateData();
+// 完成重置
+endResetModel();
+```
+
 ## 事件
 
 注意事项

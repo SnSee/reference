@@ -38,9 +38,29 @@ if __name__ == '__main__':
     sys.exit(app.exec_())
 ```
 
-创建widget
+使用信号槽(pyqtSignal)
 
 ```python
+from PyQt5.QtCore import pyqtSignal, QObject
+
+# 自定义类型必须继承QObject
+class SignalTest(QObject):
+    # 定义信号，和槽函数参数数量与类型必须一致
+    sigShow = pyqtSignal(str) # 发送/接收一个字符串类型参数
+    def show(self):
+        # 发送信号
+        self.sigShow.emit("message from SignalTest")
+
+class SlotTest(QObject):
+    def slotShow(self, msg: str):
+        print("SlotTest:", msg)
+
+if __name__ == "__main__":
+    sigObj = SignalTest()
+    slotObj = SlotTest()
+    # 连接信号槽
+    sigObj.sigShow.connect(slotObj.slotShow)
+    sigObj.show()
 ```
 
 [QTreeView](https://blog.csdn.net/zyhse/article/details/105893656)

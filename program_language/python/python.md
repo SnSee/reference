@@ -116,6 +116,17 @@ fh.setFormatter(formatter)
 logging.getLogger().addHandler(fh)
 ```
 
+注意：
+
+```python
+# 有名称的logger需要设置handler后才会输出，如设置StreamHandler输出到流(默认为sys.stderr)
+_log = logging.getLogger("test")
+# 输出到标准输出
+_log.addHandler(logging.StreamHandler(sys.stdout))
+_log.setLevel(logging.DEBUG)
+_log.debug("debug test")
+```
+
 ### 自定义Handler
 
 [csdn介绍](https://blog.csdn.net/qq_45534118/article/details/116804639)
@@ -386,6 +397,12 @@ if __name__ == '__main__':
 ```
 
 ## 监听 Ctrl-C
+
+```text
+对单线程程序而言，正在运行的程序接收到SIGINT信号后会停止执行原有代码，
+并执行通过signal.signal设置的回调函数，如果在回调函数中未退出程序，
+则回调函数执行结束后会接着执行原有代码
+```
 
 ```python
 import sys
