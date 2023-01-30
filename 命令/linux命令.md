@@ -62,6 +62,48 @@ ls按时间排序:
 获取当前脚本绝对路径: $(dirname `readlink -f $0`)   # source时无效
 ```
 
+### 4.3. top
+
+[知乎](https://zhuanlan.zhihu.com/p/458010111)
+
+```text
+PID USER PR NI VIRT RES SHR S %CPU %MEM TIME+ COMMAND
+PID : 进程号
+USER: 用户名
+PR  : 内核调度优先级
+NI  : Nice值，影响PR
+RES : 使用内存，包括swap内存和物理内存
+RES : 使用物理内存
+SHR : 当前进程和其他进程共享内存大小
+%CPU: 使用CPU占比
+%MEM: 使用内存占总内存比例
+TIME: 该进程启动后使用CPU总耗时
+COMMAND: 进程名或启动进程的命令
+```
+
+```text
+在执行top后按下对应字母进行快捷操作
+c: 切换进程名和完整的启动进程命令(top -c)
+u: 输入用户名进行过滤(top -u <user>)
+m: 切换汇总区内存显示方式为数字或进度条格式
+t: 切换汇总区CPU显示方式为数字或进度条格式
+M: 按使用内存大小情况排序
+P: 按使用CPU占比排序
+N: 按进程id从大到小排序
+T: 按CPU使用时间排序
+V: 展示父子进程关系
+O: 基于表达式过滤
+   COMMAND=xxx 只显示COMMAND包含xxx的结果
+   !COMMAND=xxx 只显示COMMAND 不 包含xxx的结果
+   %CPU>3.0 只显示CPU使用占比大于3%的结果
+=: 清除过滤表达式
+```
+
+```bash
+# 查看单一进程资源使用情况
+top -p <PID>    # PID 可通过ps获取
+```
+
 ## 5. 版本
 
 ```text
@@ -77,7 +119,7 @@ ls按时间排序:
 查看动态库中有那些符号: strings test.so，如果要查找是否含有特定字符串，配合grep使用
 ```
 
-## 7. 查找文件
+## 7. 文件
 
 ### 7.1. locate
 
@@ -96,6 +138,22 @@ find ./ -name "*.txt"
 # 递归删除当前路径下所有名称及类型符合匹配条件的文件
 find ./ -type {type} -name {name} | xargs rm -rf
 find ./ -type {type} -name {name} -exec rm -rf {} \;
+```
+
+### 7.3. ncdu
+
+[下载地址](https://dev.yorhel.nl/ncdu)
+
+```text
+查看文件夹磁盘占用大小
+如果知道系统架构可以直接下载可执行文件(Static binaries)使用
+```
+
+```text
+直接执行ncdu会扫描当前目录
+ncdu xxx扫描指定目录
+扫描结果出来后按 ? 查看帮助
+jk上下选择目录，h回到上一级，l进入子目录
 ```
 
 ## 8. shell编程(bash)

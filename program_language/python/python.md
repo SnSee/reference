@@ -3,6 +3,34 @@
 
 官方文档: <https://docs.python.org/zh-cn/3/>
 
+## 类型
+
+[类型注解](https://zhuanlan.zhihu.com/p/386237071)
+
+```python
+# 普通类型(int, float, str)
+def tmp(a: int) -> int: pass
+# 列表
+def tmp(a: [int]) -> [int]: pass
+# 元组
+def tmp(a: tuple[int, int]) -> tuple[int, int]: pass
+# 字典
+def tmp(a: dict[str, int]) -> dict[str, int]: pass
+
+# typing中的类型
+# 无返回值
+def tmp() -> typing.NoReturn: pass
+# 可以是多个类型
+def tmp(a: typing.Union[int, float, None]) -> typing.Union[int, float, None]: pass
+def tmp(a: int or float) -> int or float: pass
+# 可调用类型(函数，方法)
+def tmp(a: typing.Callable) -> typing.Callable: pass
+# 设置可调用类型参数类型(dict, str)和返回值类型(int)
+def tmp(a: typing.Callable[[dict[str, int], str], int]) -> typing.Callable: pass
+# 可为空类型
+def tmp(a: typing.Optional[int]) -> typing.Optional[int]: pass
+```
+
 ## 数据结构
 
 ### list
