@@ -119,6 +119,75 @@ python setup.py install --prefix=...    # 会安装
 获取当前文件绝对路径: __file__
 ```
 
+### 重定向标准输出(重定向stdout)
+
+重定向到文件
+
+```python
+import sys
+stdout = sys.stdout
+with open('out.txt', 'w+') as file:
+  sys.stdout = file     # 重定向标准输出
+
+# 恢复标准输出
+sys.stdout = stdout
+```
+
+重定向到自定义对象
+
+```python
+# 原理: python输出时会调用sys.stdout.write("...")
+class MyStdout:
+    def __init__(self):
+        self.contents = []
+
+    def write(self, output: str):
+        self.contents.append(output)
+
+stdout = sys.stdout
+ms = MyStdout()
+sys.stdout = ms     # 重定向标准输出
+
+# 恢复标准输出
+sys.stdout = stdout
+```
+
+前两种方式只能重定向python自身的输出，如print输出，python中使用的第三方C库的输出无法重定向
+
+通过dup2重定向(类似与 C 的重定向机制)
+
+```C
+// 将oldfd应用到newfd上(向newfd的io将被重定向到oldfd)
+int dup2(int oldfd, int newfd);
+```
+
+```python
+import os
+import sys
+
+STDOUT = sys.stdout.fileno()
+savedFd = os.dup(STDOUT)        # 保存原始fd
+readFd, writeFd = os.pipe()
+
+print("before dup2")
+os.dup2(writeFd, STDOUT)        # 重定向
+print("after dup2")
+
+os.dup2(savedFd, STDOUT)        # 恢复
+os.close(writeFd)
+print("after recover")
+
+# 获取重定向捕获内容
+texts = []
+text = os.read(readFd, 4096)
+while text:
+    texts.append(text.decode('utf-8'))
+    text = os.read(readFd, 4096)
+text = ''.join(texts)
+os.close(readFd)
+print(text)
+```
+
 ## logging
 
 [参考1](https://blog.csdn.net/qq_15821487/article/details/118090354)
@@ -150,8 +219,11 @@ logging.getLogger().addHandler(fh)
 # 有名称的logger需要设置handler后才会输出，如设置StreamHandler输出到流(默认为sys.stderr)
 _log = logging.getLogger("test")
 # 输出到标准输出
-_log.addHandler(logging.StreamHandler(sys.stdout))
+handler = logging.StreamHandler(sys.stdout)
+_log.addHandler(handler)
+# 需要同时设置logger和handler的日志等级
 _log.setLevel(logging.DEBUG)
+handler.setLevel(logging.DEBUG)
 _log.debug("debug test")
 ```
 
@@ -251,6 +323,9 @@ parser.add_argument('--with-space', type=str)
 group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument('-r', '--rule')
 group.add_argument('-c', '--config')
+
+# 参数不显示在help中(对group无效)
+parser.add_argument('--hide', help=argparse.SUPPRESS)
 
 # 解析
 args = parser.parse_args()
