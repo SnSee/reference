@@ -19,3 +19,10 @@ gdb 命令
 tcl 命令
     tcl::unsupported::disassemble script script
 ```
+
+```tcl
+puts $text: 输出变量
+lsearch ?option? list pattern: 查找列表是否包含指定pattern的元素，如果包含返回第一个匹配元素的索引，否则返回-1
+```
+
+[lsearch options](https://blog.csdn.net/asty9000/article/details/89693505)

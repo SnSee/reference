@@ -27,6 +27,7 @@ def tmp(a: int or float) -> int or float: pass
 def tmp(a: typing.Callable) -> typing.Callable: pass
 # 设置可调用类型参数类型(dict, str)和返回值类型(int)
 def tmp(a: typing.Callable[[dict[str, int], str], int]) -> typing.Callable: pass
+def tmp(a: typing.Callable[[str, ...], int]) -> typing.Callable: pass   # 设置可变参数
 # 可为空类型
 def tmp(a: typing.Optional[int]) -> typing.Optional[int]: pass
 ```

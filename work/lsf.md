@@ -1,6 +1,8 @@
 
 # lsf
 
+[安装openlava](https://www.cnblogs.com/alittlemc/p/16646098.html)
+
 ## 进阶使用方法
 
 <https://zhuanlan.zhihu.com/p/426515062>
