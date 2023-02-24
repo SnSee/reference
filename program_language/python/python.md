@@ -5,6 +5,7 @@
 
 ## 类型
 
+[官方文档](https://docs.python.org/zh-cn/3/library/typing.html)
 [类型注解](https://zhuanlan.zhihu.com/p/386237071)
 
 ```python
@@ -38,10 +39,53 @@ def tmp(a: typing.Optional[int]) -> typing.Optional[int]: pass
 
 ```python
 # 排序
-list.sort(cmp=None, key=None, reverse=False)
+list.sort(cmp=None, key=None, reverse=False)    # python3没有cmp
 # 使用lambda表达式
 l = [[4, 4], [3, 3], [2, 2], [1, 1]]
 list.sort(key=lambda x: x[0])
+# python3指定排序函数
+from functools import cmp_to_key
+list.sort(key=cmp_to_key(lambda a, b: a - b))
+```
+
+[sort使用itemgetter,attrgetter](https://docs.python.org/3/howto/sorting.html#sortinghowto)
+
+```python
+from operator import attrgetter, itemgetter
+
+
+class Attr:
+    def __init__(self, a, b, c):
+        self.a = a
+        self.b = b
+        self.c = c
+
+    def __repr__(self):
+        return f"({self.a}, {self.b}, {self.c})"
+
+    def __str__(self):
+        return self.__repr__()
+
+
+la = []
+li = []
+for i in range(1, 3):
+    for j in range(1, 3):
+        for k in range(1, 3):
+            la.append(Attr(i, j, k))
+            la.append(Attr(j, k, i))
+            la.append(Attr(k, i, j))
+            li.append((i, j, k))
+            li.append((j, k, i))
+            li.append((k, i, j))
+la.sort(key=attrgetter("a"))
+li.sort(key=itemgetter(0))
+assert str(la) == str(li)
+print(la)
+la.sort(key=attrgetter("a", "b"))
+li.sort(key=itemgetter(0, 1))
+assert str(la) == str(li)
+print(la)
 ```
 
 ## 格式化字符串
@@ -450,6 +494,7 @@ def subprocessRun(cmd: str, cwd: str) -> str:
     sp = subprocess.run(cmd, shell=True, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if sp.returncode != 0:
         raise Exception(sp.stderr.decode("utf-8"))
+    # 如果subprocess.run中制定了encoding='utf-8'，则stdout是str
     return sp.stdout.decode("utf-8").strip()
 ```
 
