@@ -266,6 +266,12 @@ $LD_LIBRARY_PATH
 
 ### 11.1. grep
 
+grep递归搜索指定扩展名文件
+
+```bash
+grep -r "example" /path/to/directory/ --include="*.txt"
+```
+
 ### 11.2. sed
 
 #### 11.2.1. 参数

@@ -430,6 +430,23 @@ def decorated_func():
     pass
 ```
 
+在装饰器中获取被装饰函数所在文件路径
+
+```python
+import inspect
+
+def my_decorator(func):
+    def wrapper():
+        file_path = inspect.getfile(func)
+        func()
+    return wrapper
+
+@my_decorator
+def test_my_test():
+    assert True
+
+```
+
 #### 装饰器有额外参数
 
 ```python

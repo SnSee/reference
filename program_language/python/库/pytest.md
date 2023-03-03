@@ -64,6 +64,12 @@ pytest -m label
 pytest -m "label1 or label2"
 ```
 
+设置环境变量
+
+```text
+通过conftest.py进行设置
+```
+
 ## 配置文件
 
 pytest.ini
@@ -76,9 +82,16 @@ pytest.ini
 makers = 
     label1
     label2
+
+# logging日志格式
+log_format = %(levelname)s:%(message)s
+# 默认日志等级
+log_level = INFO
 ```
 
 ## 插件
+
+[自定义插件(conftest.py)](https://zhuanlan.zhihu.com/p/157468224)
 
 生成html结果(pytest-html)
 
@@ -113,4 +126,54 @@ def test_rerun():
 ```bash
 # 0表示全部通过, 1表示有失败case
 pytest; echo $?
+```
+
+使用fixture + conftest.py传递命令行参数
+
+```python
+# conftest.py
+# pytest会自动调用该函数
+def pytest_addoption(parser):
+    # 注册命令函参数
+    parser.addoption("--index", action="store", type=int, default=None, help="set index")
+
+# 注册fixture函数
+@pytest.fixture
+def get_index(request):
+    return request.config.getoption("--index")
+```
+
+```python
+# test_index.py
+def test_index(get_index):
+    print("index is:", get_index)
+```
+
+```bash
+# bash
+pytest --index 2
+```
+
+调用conftest.py中定义的普通函数
+
+```python
+# test.py
+# pytest会自动查找conftest路径，无需额外设置
+from conftest import my_func
+def test():
+    my_func()
+```
+
+日志
+
+```bash
+# 直接使用logging就可以
+# 设置显示的日志等级: DEBUG, INFO, WARNING, ERROR, CRITICAL
+pytest --log-cli-level=DEBUG
+
+# 在pytest.ini中设置日志格式
+[pytest]
+log_format = %(levelname)s:%(message)s
+# 默认日志等级
+log_level = INFO
 ```

@@ -1,6 +1,10 @@
 
 # websites
 
+## top
+
+[chatGPT](chat.openai.com)
+
 ## 编程
 
 [cplusplus](https://legacy.cplusplus.com/)
@@ -26,3 +30,9 @@
 [verilog语法](https://vlab.ustc.edu.cn/guide/doc_verilog.html)
 
 [International Symposium on Physical Design(ISPD)](https://ispd.cc/ispd2023/index.php)
+
+## 其他
+
+购买国外虚拟电话号码:
+
+[Tiger-SMS](https://tiger-sms.com/)
