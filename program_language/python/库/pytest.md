@@ -106,6 +106,11 @@ pytest -n 进程数
 # -n 指定为 auto 时表示使用cpu数目
 ```
 
+```ini
+# pytest.ini
+addopts = -n 2      # 设置默认进程数
+```
+
 重跑失败用例(pytest-rerunfailures)
 
 ```python
@@ -117,6 +122,14 @@ pytest --reruns 10 --only-rerun AssertionError --only-rerun ValueError
 @pytest.mark.flaky(reruns=1, reruns_delay=5)
 def test_rerun():
     pass
+```
+
+捕获日志(pytest-capturelog)
+
+```python
+def test_my_function(caplog):
+    my_function()
+    assert "Expected log message" in caplog.text
 ```
 
 ## tips
@@ -171,9 +184,25 @@ def test():
 # 设置显示的日志等级: DEBUG, INFO, WARNING, ERROR, CRITICAL
 pytest --log-cli-level=DEBUG
 
+# 不显示捕获的日志
+pytest --show-capture=no
+    # print()语句打印的输出
+    # 标准输出（sys.stdout）捕获的输出
+    # 标准错误输出（sys.stderr）捕获的输出
+    # caplog fixture捕获的日志
+```
+
+```ini
 # 在pytest.ini中设置日志格式
 [pytest]
-log_format = %(levelname)s:%(message)s
-# 默认日志等级
+log_format = %(levelname)s: %(message)s
+# 日志等级
 log_level = INFO
+
+# 开启实时日志(输出到控制台的日志)
+log_cli = True
+# 实时日志等级
+log_cli_level = INFO
+# 实时日志格式
+log_cli_format = %(levelname)s: %(message)s
 ```

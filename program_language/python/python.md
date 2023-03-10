@@ -137,10 +137,20 @@ print(pip._internal.pep425tags.get_supported())
 ```
 
 ```bash
+# 安装线上包
+pip install <package-name>
+# 选项
+-i                                  # 指定pip源: -i http://mirrors.aliyun.com/pypi/simple
+
 # 安装whl包
 pip install xxx.whl
 # 默认安装在对应的python安装目录/lib/pythonx.x/site-packages下
 # 如果没有写权限，会安装在~/.local/lib/pythonx.x/site-packages下
+# 选项: 
+--no-index                          # 禁止从线上下载依赖库
+--prefix=/path/to/install           # 指定安装路径，指定路径下目录结构为lib/python3.x/site-packages
+--find-links=/path/to/wheel_files   # 如果本地有依赖的whl包，可以指定包路径
+--no-deps                           # 不检查依赖
 
 # 安装tar.gz包
 # 解压后会有setup.py文件
@@ -511,7 +521,7 @@ def subprocessRun(cmd: str, cwd: str) -> str:
     sp = subprocess.run(cmd, shell=True, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if sp.returncode != 0:
         raise Exception(sp.stderr.decode("utf-8"))
-    # 如果subprocess.run中制定了encoding='utf-8'，则stdout是str
+    # 如果subprocess.run中指定了encoding='utf-8'，则stdout是str
     return sp.stdout.decode("utf-8").strip()
 ```
 
@@ -535,6 +545,14 @@ error = sp.stderr.read()
 ## 常用函数
 
 [当前时间(time/datetime)](https://blog.csdn.net/qq_34321590/article/details/119601285)
+
+```python
+# 获取当前时间
+datetime.datetime.now()
+
+# 格式化时间戳
+time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
+```
 
 ## 定时器
 
@@ -625,3 +643,22 @@ def call():
 ## 打包工具
 
 [pyinstaller知乎](https://zhuanlan.zhihu.com/p/470301078)
+
+[下载upx](https://github.com/upx/upx/releases)
+
+```bash
+# 打包(多个module只需要指定入口文件即可ke)
+pyinstaller test.py
+
+# 打包为单个可执行文件
+pyinstaller -F test.py
+
+# 隐藏命令行窗口(windows下打开gui程序时会出现命令行窗口)
+pyinstaller -w xxx.py
+
+# 创建虚拟环境打包(有助于减小文件体积)(测试发现没用？)
+python -m venv D:/pyvenv
+
+# 使用upx减小文件体积
+pyinstaller --upx-dir /where/to/install/upx xx.py
+```
