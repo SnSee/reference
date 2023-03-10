@@ -25,6 +25,10 @@
 
 [Windows下的GNU命令](https://gnuwin32.sourceforge.net/)
 
+## 浏览器
+
+[插件小屋](https://www.chajianxw.com/)
+
 ## ic
 
 [verilog语法](https://vlab.ustc.edu.cn/guide/doc_verilog.html)

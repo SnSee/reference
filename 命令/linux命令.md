@@ -308,7 +308,7 @@ sed -n "2,5p" test.txt
 通过定义在 '{ }' 中的内容定义行为
 print: 打印
 分隔符: 默认是空格
-$1 分割后第一个部分, $2 分割后第二个部分
+$1 分割后第一个部分(行首空格会自动忽略), $2 分割后第二个部分
 ```
 
 #### 11.3.3. 示例
@@ -415,4 +415,16 @@ sudo update-alternatives --config gcc
  
 echo -e "\033[32m 绿色字 \033[0m"
  
+```
+
+格式化输出
+
+```bash
+printf "%s world" hello
+```
+
+对文件行进行排序并去重
+
+```bash
+sort test.txt | uniq
 ```
