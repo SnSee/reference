@@ -47,6 +47,16 @@
     </tr>
 </table>
 
+## 列表
+
+* 苹果
+* 香蕉
+* 樱桃
+
+1. first
+2. second
+3. third
+
 ## 图
 
 ### UML类图

@@ -428,3 +428,15 @@ printf "%s world" hello
 ```bash
 sort test.txt | uniq
 ```
+
+alias
+
+```bash
+# 在bash alias中无法直接获取命令行参数，但可通过函数间接操作
+# 如果命令行参数是目录则进入，否则进入文件所在目录
+alias d='function _mycd(){ [ -d $1 ] && cd $1 || cd `dirname $1`; };_mycd'
+
+# 但是在csh中可以获取
+# 如果命令行参数是目录则进入，否则进入文件所在目录
+alias d 'test -d \!* && cd \!* || cd `dirname \!*`'
+```

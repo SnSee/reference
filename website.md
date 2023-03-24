@@ -3,13 +3,25 @@
 
 ## top
 
+## AI
+
 [chatGPT](chat.openai.com)
+
+[chatGPT站点](https://cc.ai55.cc/)
+
+## 导航
+
+[LearnData(开源工具导航)](https://nav.newzone.top/)
+
+[Ext导航](https://www.extnav.com/)
 
 ## 编程
 
 [cplusplus](https://legacy.cplusplus.com/)
 
 [python c-api](https://docs.python.org/zh-cn/3/c-api/)
+
+[Rosetta算法集锦网站(多种语言)](https://rosettacode.org/)
 
 ## 开源网站
 

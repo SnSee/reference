@@ -131,6 +131,10 @@ print("\r{i}%", end="")
 ## pip
 
 ```python
+# 此命令将显示一些关于你的Python环境的详细信息，
+# 包括操作系统、Python版本、CPU架构和编译器等信息，以及与之对应的PEP 425标识符。
+pip debug --verbose
+
 # 查看pip支持的离线安装包版本
 import pip._internal
 print(pip._internal.pep425tags.get_supported())

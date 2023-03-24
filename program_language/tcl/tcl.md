@@ -26,3 +26,154 @@ lsearch ?option? list pattern: 查找列表是否包含指定pattern的元素，
 ```
 
 [lsearch options](https://blog.csdn.net/asty9000/article/details/89693505)
+
+> 布尔运算
+
+在Tcl中，布尔运算符用于比较两个表达式的值，以生成布尔结果（真或假）。
+
+以下是一些常用的布尔运算符：
+
+* ==或eq：检查两个表达式的值是否相等。
+* !=或ne：检查两个表达式的值是否不相等。
+* <或>或<=或>=：比较两个数字表达式的大小。字符串也可以进行比较，但结果可能不如预期。
+* &&或and：逻辑与运算符，如果两个表达式都为真，则结果为真。
+* ||或or：逻辑或运算符，如果至少有一个表达式为真，则结果为真。
+* !或not：逻辑非运算符，将一个表达式的布尔值取反。
+以下是一些示例，演示如何使用布尔运算符：
+
+```tcl
+set x 5
+set y 10
+if {$x == $y} {
+    puts "x equals y"
+}
+
+if {$x < $y} {
+    puts "x is less than y"
+}
+
+set name "john"
+if {$name eq "john" && $age > 18} {
+    puts "John is an adult"
+}
+
+set isAdmin 0
+if {!$isAdmin} {
+    puts "You are not an admin"
+}
+需要注意的是，在Tcl中，由于其动态类型系统，某些情况下会发生类型转换。例如，在使用<或>比较字符串时，Tcl会将字符串转换为数字进行比较。因此，对于字符串比较，应该使用eq和ne比较运算符。
+```
+
+> if语法
+
+```tcl
+if {条件} {
+    # 条件成立时执行的代码块
+} elseif {条件2} {
+    # 条件2成立时执行的代码块
+} else {
+    # 所有条件都不成立时执行的代码块
+}
+```
+
+> 取反
+
+在Tcl中，可以使用!或not关键字对if语句进行取反。具体方法如下：
+
+```tcl
+if {!$condition} { }
+if {not $condition} { }
+```
+
+需要注意的是，!和not都只适用于逻辑运算符，例如&&(与)和||(或)。
+如果要对其他类型的表达式进行取反，可以使用!=或ne比较运算符进行判断，例如：
+
+```tcl
+if {$x != 1} { }
+if {![string equal $name "john"]} { }
+```
+
+> for语法
+
+```tcl
+for {初始化} {条件} {自增/自减} {
+    # 循环体代码块
+}
+```
+
+> while语法
+
+```tcl
+while {条件} {
+    # 循环体代码块
+}
+```
+
+> foreach语法
+
+```tcl
+foreach 变量 集合 {
+    # 循环体代码块
+}
+
+# 示例
+set myList {apple banana cherry}
+foreach item $myList {
+    puts $item
+}
+```
+
+> try语法
+
+```tcl
+try {
+    return [expr 1/$num]
+} on error {code options} {
+    puts $code
+    puts $options
+} on return {res options} {
+    puts $res
+    puts $options
+} finally {
+    puts "finally"
+}
+```
+
+> string命令
+
+string equal命令：检查两个字符串是否完全相等。
+
+```tcl
+if {[string equal $str1 $str2]} {
+    puts "The two strings are the same."
+}
+```
+
+string compare命令：比较两个字符串并返回其字符顺序的差异。
+
+```tcl
+if {[string compare $str1 $str2] > 0} {
+    puts "$str1 comes after $str2 in the dictionary."
+}
+```
+
+string match命令：使用通配符模式匹配来测试一个字符串是否与另一个字符串匹配。
+
+```tcl
+if {[string match "*hello*" $str]} {
+    puts "The string contains the word 'hello'."
+}
+```
+
+string first命令：在一个字符串中查找另一个字符串，并返回第一次出现的位置。
+
+```tcl
+set pos [string first "world" $str]
+if {$pos >= 0} {
+    puts "The string 'world' is found at position $pos."
+}
+```
+
+需要注意的是，在使用string compare命令时，如果返回值为0，则表示两个字符串相同；如果返回值小于0，则表示第一个字符串在字典中排在第二个字符串之前；如果返回值大于0，则表示第一个字符串在字典中排在第二个字符串之后。
+
+此外，还可以使用其他命令，如string length（获取字符串长度）、string tolower（将字符串转换为小写）和string toupper（将字符串转换为大写）等。这些命令可以帮助您处理字符串并执行各种操作。

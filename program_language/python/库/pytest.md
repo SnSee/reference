@@ -132,6 +132,16 @@ def test_my_function(caplog):
     assert "Expected log message" in caplog.text
 ```
 
+覆盖率(pytest-cov)
+
+```text
+pytest --cov=<name> --cov-report=html
+
+<name>: import的包名或模块名
+      如果测试代码涵盖了多个Python包，则需要分别为每个包指定--cov参数。
+      此外，可以使用--cov-branch参数来启用深度覆盖测试，以检测每个条件语句是否都被执行到。
+```
+
 ## tips
 
 检查是否所有case通过测试
