@@ -37,6 +37,12 @@
 
 [Windows下的GNU命令](https://gnuwin32.sourceforge.net/)
 
+## Android
+
+[magisk中文网](https://magiskcn.com/)
+
+[magisk-guide](https://topjohnwu.github.io/Magisk/guides.html)
+
 ## 浏览器
 
 [插件小屋](https://www.chajianxw.com/)
