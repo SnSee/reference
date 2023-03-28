@@ -19,7 +19,9 @@
 
 ```bash
 # 提交任务
-bsub <EXE>
+bsub [-q <queue>] [-m <host>] [-o <log>] [-e <err.log>] [-cwd <working_directory>] <EXE>
+# -Ip: 在当前shell交互
+# 引用jobid: %J
 
 # 查看所有任务
 bjobs 
@@ -32,6 +34,9 @@ bkill <JOBID>
 
 # 查看所有队列
 bqueues
+
+# 查看所有主机
+bhosts
 
 # 查看负载
 lsload [HOST_NAME]

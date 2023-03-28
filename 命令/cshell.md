@@ -37,6 +37,12 @@ if( ! -e filename ) then
 endif
 ```
 
+```csh
+# 判断字符串是否相同
+if ($str1 == $str2) then
+endif
+```
+
 ### while
 
 ```csh
