@@ -124,6 +124,13 @@ print(f"{val:x}")
 ```
 
 ```python
+# 使用变量设置格式化宽度
+name = "test"
+width = 10
+print(f"{name:{width}}###")
+```
+
+```python
 # 进度条(progress bar)
 print("\r{i}%", end="")
 ```
