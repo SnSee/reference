@@ -3,11 +3,38 @@
 
 查看帮助文档: vim内 :h <关键字>
 
-## 外观
+## 发行版
+
+在vimrc中查看是否是gvim
 
 ```vim
-"显示颜色
+if has('gui_running')
+  " 在这里放置只对gvim有效的配置
+else
+  " 在这里放置只对终端版本的vim有效的配置
+endif
+```
+
+## 外观
+
+自定义主题
+
+```text
+将主题配色文件(xxx.vim)放到~/.vim/colors下即可引用
+
+# 查看vim/gvim支持哪些公共主题
+# 在vim/gvim窗口下打开目录
+:e $VIMRUNTIME/colors/
+```
+
+```vim
+" 显示颜色
 syntax on
+
+" 查看当前主题
+colorscheme
+" 设置主题
+colorscheme default
 ```
 
 ## 文件跳转
