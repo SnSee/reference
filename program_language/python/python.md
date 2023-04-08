@@ -124,6 +124,13 @@ print(f"{val:x}")
 ```
 
 ```python
+# 使用变量设置格式化宽度
+name = "test"
+width = 10
+print(f"{name:{width}}###")
+```
+
+```python
 # 进度条(progress bar)
 print("\r{i}%", end="")
 ```
@@ -140,11 +147,22 @@ import pip._internal
 print(pip._internal.pep425tags.get_supported())
 ```
 
+配置pip选项
+
+```text
+# ~/.pip/pip.conf
+[global]
+index-url = https://pypi.tuna.tsinghua.edu.cn/simple
+[install]
+trusted-host = https://pypi.tuna.tsinghua.edu.cn
+```
+
 ```bash
 # 安装线上包
 pip install <package-name>
 # 选项
--i                                  # 指定pip源: -i http://mirrors.aliyun.com/pypi/simple
+-i                   # 指定pip源: -i http://mirrors.aliyun.com/pypi/simple
+--trusted-host       # 指定信任ip
 
 # 安装whl包
 pip install xxx.whl

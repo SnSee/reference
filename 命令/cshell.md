@@ -20,6 +20,15 @@ $?VAR_NAME
 
 [重定向标准错误](https://qa.1r1g.com/sf/ask/2240761841/)
 
+## 光标
+
+```csh
+# 绑定 ctrl + 右方向键 到移动光标到单词尾下个字符
+bindkey "^[[1;5D" backward-word
+# 绑定 ctrl + 左方向键 到移动光标到单词头
+bindkey "^[[1;5C" forward-word
+```
+
 ## 语法
 
 ### if
@@ -34,6 +43,12 @@ endif
 ```csh
 # 判断文件是否存在
 if( ! -e filename ) then
+endif
+```
+
+```csh
+# 判断字符串是否相同
+if ($str1 == $str2) then
 endif
 ```
 

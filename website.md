@@ -23,6 +23,12 @@
 
 [Rosetta算法集锦网站(多种语言)](https://rosettacode.org/)
 
+[pip镜像-阿里](http://mirrors.aliyun.com/pypi/simple/)
+
+[pip镜像-清华](https://pypi.tuna.tsinghua.edu.cn/simple/)
+
+[pip镜像-中科大](http://pypi.mirrors.ustc.edu.cn/simple/)
+
 ## 开源网站
 
 [github](https://github.com/)
@@ -43,6 +49,8 @@
 
 [magisk-guide](https://topjohnwu.github.io/Magisk/guides.html)
 
+## 安装包下载
+
 ## 浏览器
 
 [插件小屋](https://www.chajianxw.com/)
@@ -55,6 +63,4 @@
 
 ## 其他
 
-购买国外虚拟电话号码:
-
-[Tiger-SMS](https://tiger-sms.com/)
+购买国外虚拟电话号码: [Tiger-SMS](https://tiger-sms.com/)

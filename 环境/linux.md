@@ -1,5 +1,30 @@
 # Linux环境
 
+## make(gmake)
+
+[下载链接](https://ftp.gnu.org/gnu/make/)
+
+```bash
+tar xvf make-xxx.tar.gz
+cd make-xxx
+mkdir build && cd build
+../configure --prefix=/where/to/install
+make -j8 && make install
+```
+
+## glibc
+
+[下载链接](https://ftp.gnu.org/gnu/glibc/)
+
+```bash
+tar xvf glibc-xxx.tar.gz
+cd glibc-xxx
+mkdir build && cd build
+# 如果configure报错make版本过低，为最新的make创建一个名为gmake的软链接
+../configure --prefix=/where/to/install
+make -j8 && make install
+```
+
 ## rpm
 
 ```bash

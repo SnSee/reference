@@ -76,6 +76,7 @@ pytest.ini
 
 ```text
 # pytest.ini
+# 全局选项
 [pytest]
 
 # 注册标签
@@ -87,6 +88,9 @@ makers =
 log_format = %(levelname)s:%(message)s
 # 默认日志等级
 log_level = INFO
+
+# 设置运行时额外命令行选项
+add_opts = -s
 ```
 
 ## 插件
@@ -112,6 +116,12 @@ addopts = -n 2      # 设置默认进程数
 ```
 
 重跑失败用例(pytest-rerunfailures)
+
+```text
+# pytest.ini
+[pytest]
+addopts --reruns 3 --reruns_delay 5
+```
 
 ```python
 pytest --reruns 10  --reruns-delay 1    # case失败则1秒后重跑，最多跑10次
