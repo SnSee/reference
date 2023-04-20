@@ -25,6 +25,27 @@ puts $text: 输出变量
 lsearch ?option? list pattern: 查找列表是否包含指定pattern的元素，如果包含返回第一个匹配元素的索引，否则返回-1
 ```
 
+字符串
+
+```tcl
+# 字符串替换
+string map {old new} string
+```
+
+调用shell命令
+
+```tcl
+# shell命令不能用双引号包括，如: "ls -l"
+exec ls -l
+exec sh -c "ls -l"
+```
+
+引用环境变量
+
+```tcl
+$env(PATH)
+```
+
 [lsearch options](https://blog.csdn.net/asty9000/article/details/89693505)
 
 > 布尔运算
@@ -177,3 +198,42 @@ if {$pos >= 0} {
 需要注意的是，在使用string compare命令时，如果返回值为0，则表示两个字符串相同；如果返回值小于0，则表示第一个字符串在字典中排在第二个字符串之前；如果返回值大于0，则表示第一个字符串在字典中排在第二个字符串之后。
 
 此外，还可以使用其他命令，如string length（获取字符串长度）、string tolower（将字符串转换为小写）和string toupper（将字符串转换为大写）等。这些命令可以帮助您处理字符串并执行各种操作。
+
+> proc
+
+```tcl
+proc my_proc {arg1 arg2} {
+  # 在此处进行需要执行的操作，这里我们简单地将两个参数相加
+  set sum [expr {$arg1 + $arg2}]
+  # 使用 return 命令返回计算结果
+  return $sum
+}
+
+set result [my_proc 3 4]
+```
+
+```tcl
+proc my_proc {arg1 arg2} {
+  # 使用 global 命令声明变量为全局变量
+  # 只能引用全局变量，不能定义
+  global my_global_var
+  
+  # 在此处进行需要执行的操作，这里我们简单地将两个参数相加并存储到全局变量中
+  set my_global_var [expr {$arg1 + $arg2}]
+}
+
+proc my_proc {arg1 arg2} {
+  # 在此处进行需要执行的操作，这里我们简单地将两个参数相加并存储到全局变量中
+  # 只能引用全局变量，不能定义
+  set ::my_global_var [expr {$arg1 + $arg2}]
+}
+```
+
+> 读取文件
+
+```tcl
+set fp [open "example.txt" r]
+set content [read $fp]
+close $fp
+puts $content
+```

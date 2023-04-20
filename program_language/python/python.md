@@ -31,6 +31,14 @@ def tmp(a: typing.Callable[[dict[str, int], str], int]) -> typing.Callable: pass
 def tmp(a: typing.Callable[[str, ...], int]) -> typing.Callable: pass   # 设置可变参数
 # 可为空类型
 def tmp(a: typing.Optional[int]) -> typing.Optional[int]: pass
+
+# 其他类型
+typing.Type                                         # 类类型
+T = typing.TypeVar('T')                             # 任意类型
+S = typing.TypeVar('S', bound=str)                  # str及其子类类型
+A = typing.TypeVar('A', str, bytes)                 # 必须str或bytes类型
+U = typing.TypeVar('U', bound=str|bytes)            # str,bytes及其子类类型
+V = typing.TypeVar('V', bound=typing.SupportsAbs)   # 任意包含__abs__方法的类型
 ```
 
 ## 数据结构
@@ -86,6 +94,43 @@ la.sort(key=attrgetter("a", "b"))
 li.sort(key=itemgetter(0, 1))
 assert str(la) == str(li)
 print(la)
+```
+
+### dict
+
+```python
+# 获取长度为1的dict中数据
+my_dict = {'key': 'value'}
+key, value = next(iter(my_dict.items()))
+```
+
+### 枚举
+
+```python
+from enum import Enum
+
+class Color(Enum):
+    RED = 1
+    GREEN = 2
+    BLUE = 3
+```
+
+### 抽象类
+
+```python
+from abc import ABC, abstractmethod
+
+class MyAbstractClass(ABC):
+    @abstractmethod
+    def my_abstract_method(self):
+        pass
+
+class MyConcreteClass(MyAbstractClass):
+    def my_abstract_method(self):
+        print("Implementation of abstract method in concrete class")
+
+my_object = MyConcreteClass()
+my_object.my_abstract_method()
 ```
 
 ## 格式化字符串
@@ -274,20 +319,48 @@ print(text)
 ### 用法
 
 ```python
-输出日志
-    logging.debug(), logging.info(), logging.warning(), logging.error(), logging.critical()
-设置日志等级
-    logging.getLogger().setLevel(logging.DEBUG)
-一次性设置
-    logging.basicConfig(level=logging.DEBUG, format="%(levelname)s %(message)s", datefmt="%H:%M:%S", filename="/tmp/test.log", filemode="w")
+# 输出日志
+logging.debug(), logging.info(), logging.warning(), logging.error(), logging.critical()
+# 设置日志等级
+logging.getLogger().setLevel(logging.DEBUG)
+# 一次性设置
+logging.basicConfig(level=logging.DEBUG, format="%(levelname)s %(message)s", datefmt="%H:%M:%S", filename="/tmp/test.log", filemode="w")
 
-日记记录到文件
+# 日记记录到文件
 logPath = "./log"
 formatter = logging.Formatter('%(asctime)s-%(levelname)s: %(message)s')
 fh = logging.FileHandler(filename=logPath, encoding='utf-8', mode='a')
 fh.setLevel(logging.INFO)
 fh.setFormatter(formatter)
 logging.getLogger().addHandler(fh)
+```
+
+```python
+# 为文件日志和终端日志设置不同日志等级
+import logging
+# logging.basicConfig(level = logging.DEBUG,format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger("vnc")
+logger.setLevel(logging.DEBUG) # 最低日志等级
+log_format = logging.Formatter('%(asctime)s|%(name)s|%(levelname)-8s|%(message)s')
+
+# 输出到文件
+log_file = logging.FileHandler("get_video.log")
+log_file.setLevel(logging.DEBUG)
+log_file.setFormatter(log_format)
+logger.addHandler(log_file)
+
+# 直接输出显示
+log_stream = logging.StreamHandler()
+log_stream.setLevel(logging.INFO)
+log_stream.setFormatter(log_format)
+logger.addHandler(log_stream)
+
+# 测试
+logger.debug('Python debug')
+logger.info('Python info')
+logger.warning('Python warning')
+logger.error('Python Error')
+logger.critical('Python critical')
 ```
 
 注意：
@@ -683,4 +756,19 @@ python -m venv D:/pyvenv
 
 # 使用upx减小文件体积
 pyinstaller --upx-dir /where/to/install/upx xx.py
+```
+
+## 存根文件(pyi)
+
+根据.py生成.pyi
+
+```bash
+# 安装mypy
+pip install mypy
+
+# 查看是否安装成功
+stubgen -h
+
+# 生成存根文件
+stubgen py_file_or_dir
 ```

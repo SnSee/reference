@@ -47,6 +47,11 @@ ctrl + o 回到上一个位置，反之 ctrl + i (只适用于使用了vim跳转
 :b1 跳转到buffers列出的编号为1的文件
 :e fileName 打开文件
 :e 刷新当前文件
+
+m A             创建名为A的标签(mark)
+' A             跳转到A标签
+:delmarks A B   删除A和B标签
+:delmarks!      删除所有标签
 ```
 
 ## 代码跳转
