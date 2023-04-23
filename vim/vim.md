@@ -50,8 +50,8 @@ ctrl + o 回到上一个位置，反之 ctrl + i (只适用于使用了vim跳转
 
 m A             创建名为A的标签(mark)
 ' A             跳转到A标签
-:delmarks A B   删除A和B标签
-:delmarks!      删除所有标签
+:delmark A B    删除A和B标签
+:delmark A-Z    删除所有标签
 ```
 
 ## 代码跳转

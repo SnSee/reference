@@ -46,6 +46,22 @@ exec sh -c "ls -l"
 $env(PATH)
 ```
 
+花括号
+
+```tcl
+# 如果字符串中包含特殊字符，如空格等，需要使用花括号
+set alpha {a b c d}
+puts $alpha             # 输出：a b c d
+
+# 花括号中的变量不会替换为变量值
+set name Tom
+puts $name              # 输出: Tom
+puts {$name}            # 输出: $name
+
+# 如果既要使用花括号又要使用变量
+puts [subst {$name}]    # 输出：Tom
+```
+
 [lsearch options](https://blog.csdn.net/asty9000/article/details/89693505)
 
 > 布尔运算
