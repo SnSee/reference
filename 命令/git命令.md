@@ -83,6 +83,7 @@ revert
 修改远程仓库链接: git remote set-url <lib_name> <new_url>
 删除远程仓库链接: git remote rm <lib_name>
 删除远程仓库分支: git push --delete <lib_name> <branch_name>
+远程仓库链接重命名: git remote rename <old_name> <new_name>
 设置远程仓库链接时指定用户名: https://<user_name>@test.com/test.git
 
 更新远程仓库: git fetch <lib_name>
@@ -93,6 +94,9 @@ revert
 
 重定向远程仓库链接
     git config --global url."https://new.git".insteadOf https://old.git
+
+设置pull/push为当前分支：git config --global push.default "current"
+
 ```
 
 ## 换行符

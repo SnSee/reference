@@ -54,6 +54,26 @@ list.sort(key=lambda x: x[0])
 # python3指定排序函数
 from functools import cmp_to_key
 list.sort(key=cmp_to_key(lambda a, b: a - b))
+
+# 将bool类型返回值作为排序依据
+lst = ['ABC', 'DFFGHI', 'DEF', 'DFFJKL']
+# 使用lambda表达式
+lst.sort(key=lambda x: 'DFF' in x, reverse=True)
+# 使用回调函数
+def _sort(name: str) -> bool:
+    return "DFF" in name
+lst.sort(key=_sort, reverse=True)
+print(lst)  # 结果为：['DFFGHI', 'DFFJKL', 'ABC', 'DEF']
+
+# 如果需要多级排序，可将返回值设置int类型
+def _sort(name: str) -> int:
+    if 'DFF' in name:
+        return 0
+    if 'DEF' in name:
+        return 1
+    return 2
+lst.sort(key=_sort)
+print(lst)  # 结果为：['DFFGHI', 'DFFJKL', 'DEF', 'ABC']
 ```
 
 [sort使用itemgetter,attrgetter](https://docs.python.org/3/howto/sorting.html#sortinghowto)

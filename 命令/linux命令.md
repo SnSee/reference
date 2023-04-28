@@ -1,5 +1,10 @@
 # Linux
 
+```bash
+# 下载部分命令源码
+git clone git://git.savannah.gnu.org/coreutils.git
+```
+
 ## 1. 光标
 
 ```text
@@ -173,6 +178,13 @@ let
 
 重定向标准错误到标准输出
 command > file 2>&1
+```
+
+无限循环
+
+```bash
+while true; do
+done
 ```
 
 按行读取文件
@@ -470,3 +482,8 @@ alias d='function _mycd(){ [ -d $1 ] && cd $1 || cd `dirname $1`; };_mycd'
 # 如果命令行参数是目录则进入，否则进入文件所在目录
 alias d 'test -d \!* && cd \!* || cd `dirname \!*`'
 ```
+
+为其他用户创建终端
+
+> 在Linux/Unix类操作系统中，DISPLAY环境变量用于设置将图形显示到何处
+> 如果需要在远程计算机上运行图形程序， 可以将DISPLAY环境变量设置为远程主机的IP地址或主机名, 例如将DISPLAY环境变量设置为192.168.1.100:0.0，然后使用 konsole 打开一个终端。
