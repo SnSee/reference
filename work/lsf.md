@@ -1,6 +1,10 @@
 
 # lsf
 
+[IBM官方文档(直接搜索lsf命令)](https://www.ibm.com/docs/en)
+
+[IBM官方文档中文版(机翻)](https://www.ibm.com/docs/zh)
+
 [安装openlava](https://www.cnblogs.com/alittlemc/p/16646098.html)
 
 ## 进阶使用方法
@@ -37,6 +41,9 @@ bqueues
 
 # 查看所有主机
 bhosts
+
+# 查看指定队列关联主机
+bhosts <queue>
 
 # 查看负载
 lsload [HOST_NAME]

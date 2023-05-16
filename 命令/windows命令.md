@@ -81,6 +81,30 @@ winRAR.exe a -x*\.git test.zip test
 
 ## 程序
 
+查看进程
+
+```dos
+tasklist
+
+/v: 输出更加详细的信息，包括每个进程使用的用户名、会话 ID、CPU 占用率等，速度会很慢
+/fi "<condition>": 过滤，可以使用通配符
+    /fi "IMAGENAME eq test*.exe": 根据程序名称过滤
+    可用过滤项：
+        IMAGENAME: 程序名称
+        PID      : 进程 ID
+        SESSION  : 会话名称或编号
+        STATUS   : 进程状态 (running、not responding、unknown 等)
+        USERNAME : 进程拥有者的用户名
+        SERVICES : 进程正在运行的服务的名称
+```
+
+结束进程
+
+```dos
+taskkill /im test.exe /f
+taskkill /pid <PID> /f
+```
+
 结束任务管理器中结束不了的任务并强行删除
 
 ```dos

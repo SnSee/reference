@@ -256,9 +256,15 @@ if [[ $s1 == ab"*" ]]   # *作为普通字符
 
 ## 9. 时间
 
-```text
-显示当前时间: date
-显示程序耗时: time ./a.out
+```bash
+# 显示当前时间
+date
+
+# 按固定格式显示时间
+date +"%Y%m%d_%H%M"
+
+# 显示程序耗时
+time ./a.out
 ```
 
 ## 10. 环境变量
@@ -286,6 +292,12 @@ grep -r "example" /path/to/directory/ --include="*.txt"
 
 ### 11.2. sed
 
+如果要使用变量，使用eval调用sed
+
+```bash
+eval sed -i 's/${old}/${new}/g' test.txt
+```
+
 #### 11.2.1. 参数
 
 ```text
@@ -299,6 +311,8 @@ grep -r "example" /path/to/directory/ --include="*.txt"
 通过双引号或单引号内的内容定义行为
 p: 打印
 s: 替换
+i: 当前行位置插入
+a: 当前行下一行添加
 ```
 
 #### 11.2.3. 示例
@@ -308,6 +322,12 @@ s: 替换
 sed -n "2p" test.txt
 # 提取第[2,5]行
 sed -n "2,5p" test.txt
+
+# 在文件第2行位置插入字符串
+set -i '2iMessage to insert' test.txt
+
+# 在文件最后一行追加字符串
+set -i '$aMessage to insert' test.txt
 ```
 
 ### 11.3. awk
@@ -483,7 +503,39 @@ alias d='function _mycd(){ [ -d $1 ] && cd $1 || cd `dirname $1`; };_mycd'
 alias d 'test -d \!* && cd \!* || cd `dirname \!*`'
 ```
 
+cut
+
+```bash
+# 截取第 3 到 5 个字符（从1开始数，包含3，5）
+echo "example" | cut -c 3-5
+```
+
+head/tail
+
+```bash
+# 只显示第一行
+head -n 1 <file>
+
+# 不显示第一行
+tail -n +2 <file>
+
+# 只显示最后一行
+tail -n 1 <file>
+
+# 不显示最后一行
+head -n -1 <file>
+```
+
 为其他用户创建终端
 
 > 在Linux/Unix类操作系统中，DISPLAY环境变量用于设置将图形显示到何处
 > 如果需要在远程计算机上运行图形程序， 可以将DISPLAY环境变量设置为远程主机的IP地址或主机名, 例如将DISPLAY环境变量设置为192.168.1.100:0.0，然后使用 konsole 打开一个终端。
+
+## QA
+
+文件具有执行权限但是无法执行，报错: Permission denied
+
+```text
+通过mount命令查看挂载的文件系统
+查看挂载的目录是否有noexec标志，如果有这个标志即使加了执行权限仍然不可执行
+```

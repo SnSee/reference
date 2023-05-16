@@ -261,6 +261,16 @@ python setup.py install --prefix=...    # 会安装
 获取当前文件绝对路径: __file__
 ```
 
+查看python安装位置
+
+```python
+# 1. which/where python
+
+# 2. 通过sys查看
+import sys
+print(sys.executable)
+```
+
 ### 重定向标准输出(重定向stdout)
 
 重定向到文件
@@ -480,7 +490,7 @@ parser.add_argument("age", type=int)
 # 变长参数
 parser.add_argument('--three', nargs=3)              # 必须跟三个值
 parser.add_argument('--optional', nargs='?')         # 0或1个值
-parser.add_argument('--all', nargs='*', dest='all')  # 所有值(可以没有)
+parser.add_argument('--all', nargs='*')              # 所有值(可以没有)
 parser.add_argument('--one-or-more', nargs='+')      # 所有值(至少需要一个)
 
 # 同一参数可指定多次
@@ -669,32 +679,6 @@ datetime.datetime.now()
 time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
 ```
 
-## 定时器
-
-```python
-import threading
-
-lock = threading.Lock()
-
-def keep_run():
-    print("keep run")
-    lock.acquire()
-    _timer = threading.Timer(1, keep_run)
-    _timer.start()
-    lock.release()
-
-
-def once_run():
-    print("once run")
-
-
-if __name__ == '__main__':
-    timer = threading.Timer(1, function=once_run)
-    # timer = threading.Timer(1, function=keep_run)
-    timer.start()
-    # timer.cancel()
-```
-
 ## 监听 Ctrl-C
 
 ```text
@@ -733,26 +717,6 @@ def print_three(a, b, c):
 # 3 被绑定给了print_three的第一个参数，即 a
 print_bound = partial(print_three, 3)
 print_bound(1, 2)
-```
-
-## 多线程
-
-基础用法
-
-```python
-from threading import Thread
-
-def func(a, b, c):
-    print(a, b, c)
-
-def call():
-    t1 = Thread(target=func, args=(1, 2, 3))
-    t2 = Thread(target=func, args=('a', 'b', 'c'))
-    t1.start()
-    t2.start()
-    t1.join()
-    t2.join()
-    print("over")
 ```
 
 ## 打包工具
