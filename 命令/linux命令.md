@@ -5,7 +5,9 @@
 git clone git://git.savannah.gnu.org/coreutils.git
 ```
 
-## 1. 光标
+## 1. 快捷键
+
+光标
 
 ```text
 ctrl + a: 跳到行首
@@ -13,6 +15,19 @@ ctrl + e: 跳到行尾
 ctrl + u: 删除到行首
 ctrl + k: 删除到行尾
 ctrl + 方向键: 光标按单词移动
+```
+
+历史命令
+
+```text
+# 通过输入关键字查找, 再按一次显示下一个匹配项
+# ctrl + j粘贴为当前命令; 回车直接执行; ctrl + g/c退出
+Ctrl + r：逆向搜索命令历史
+
+Ctrl + p：历史中的上一条命令(上方向键)
+Ctrl + n：历史中的下一条命令(下方向键)
+
+Alt + .：使用上一条命令的最后一个参数
 ```
 
 ## 2. 用户
@@ -180,6 +195,17 @@ let
 command > file 2>&1
 ```
 
+for
+
+```bash
+# 使用seq命令生成1到5这5个数字，并输出它们的平方的示例
+for i in $(seq 1 5)
+do
+  square=$((i*i))
+  echo "The square of $i is $square"
+done
+```
+
 无限循环
 
 ```bash
@@ -284,10 +310,40 @@ $LD_LIBRARY_PATH
 
 ### 11.1. grep
 
-grep递归搜索指定扩展名文件
+grep命令是一种文本搜索工具，可以用于在指定文件、标准输入或者其他命令的输出中查找匹配指定字符串模式的行。
+
+命令行参数
+
+```text
+-i: 忽略大小写
+-v: 显示不匹配行
+-c: 仅显示匹配行数，不显示内容
+-l: 只显示匹配文件名，不显示内容
+-n: 显示行号
+-r: 递归搜索
+-w: 匹配整个单词, 而不是单词一部分
+-e: 可多次指定匹配模式
+-E: 使用正则表达式
+-f: 从文件中获取匹配模式，文件中每行为一个模式
+--exclude: 排除某些文件或目录
+--include: 只匹配指定文件或目录
+```
 
 ```bash
-grep -r "example" /path/to/directory/ --include="*.txt"
+# 如果匹配模式中不包含特殊字符(空格，星号等)，可以不适用双引号括起来
+grep test test.txt
+grep "test1 test2" test.txt
+
+# 匹配 不 包含test的行
+grep -v test test.txt
+
+# 指定多个匹配模式
+grep -e Test -e test test.txt
+
+# grep递归搜索指定扩展名文件
+grep -r example /path/to/directory/ --include="*.txt"
+# 开启了**功能(shopt -s globstar)
+grep -r example /path/to/directory/**/*.txt
 ```
 
 ### 11.2. sed
@@ -334,6 +390,10 @@ set -i '$aMessage to insert' test.txt
 
 #### 11.3.1. 参数
 
+```bash
+-F: 指定分隔符
+```
+
 #### 11.3.2. 语法
 
 ```text
@@ -348,6 +408,9 @@ $1 分割后第一个部分(行首空格会自动忽略), $2 分割后第二个�
 ```bash
 # 打印每行第二个单词
 awk '{print $2}' test.txt
+
+# 按冒号分隔
+awk -F ';' '{print $1}' test.txt
 ```
 
 ## 软件
@@ -484,6 +547,9 @@ sort
 # 对文件行进行排序并去重
 sort test.txt | uniq
 
+# 统计文件中单词个数(文件中每行只有一个单词)
+sort text.txt | uniq -c
+
 # 从第二个字段的第一个字符开始直到第二个字段的结尾
 sort -t : -k 2.1 /tmp/sort.txt
 
@@ -510,6 +576,16 @@ cut
 echo "example" | cut -c 3-5
 ```
 
+tr
+
+```bash
+# 将冒号替换为分号
+echo 'a::b:c' | tr ':' ';'      # output: a;;b;c
+
+# 将冒号替换为分号，并且压缩相邻的字符
+echo 'a:b:c' | tr -s ':' ';'    # output：a;b;c
+```
+
 head/tail
 
 ```bash
@@ -530,6 +606,17 @@ head -n -1 <file>
 
 > 在Linux/Unix类操作系统中，DISPLAY环境变量用于设置将图形显示到何处
 > 如果需要在远程计算机上运行图形程序， 可以将DISPLAY环境变量设置为远程主机的IP地址或主机名, 例如将DISPLAY环境变量设置为192.168.1.100:0.0，然后使用 konsole 打开一个终端。
+
+## tips
+
+```bash
+# ** 通常用于表示“任意多级目录”。它可以用于匹配当前目录及其子目录下的任意文件或者目录，而不需要关心它们的具体层级。
+# 如下面的命令会列出当前目录及所有子目录中的 txt 文件
+# 需要开启 ** 代表多级目录功能: shopt -s globstar
+# 关闭：shopt -u globstar
+# 查看是否开启：shopt globstar
+ls **/*.txt
+```
 
 ## QA
 

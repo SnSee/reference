@@ -79,7 +79,7 @@ set num = 0
 
 ## 示例
 
-### 判断是否是空字符串
+判断是否是空字符串
 
 ```csh
 set str=`which command`
@@ -89,4 +89,13 @@ if($found) then
 else
     echo "not empty"
 endif
+```
+
+字符串替换
+
+```csh
+# 借助sed
+set str="foo is foo"
+set str=`echo $str | sed 's/foo/bar/g'`
+echo $str
 ```
