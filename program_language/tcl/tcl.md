@@ -32,6 +32,34 @@ lsearch ?option? list pattern: 查找列表是否包含指定pattern的元素，
 string map {old new} string
 ```
 
+文件
+
+```tcl
+# 查看文件是否存在
+set file_path "/path/to/*/file.txt"
+if {[file exists $file_path]} {
+    puts "The file exists"
+} else {
+    puts "The file does not exist"
+}
+
+
+# 使用glob命令查找所有匹配文件
+set file_pattern "/path/to/*/file.txt"
+
+# -nocomplain 表示没匹配到文件时不抛出异常而是返回空列表
+set file_list [glob -nocomplain $file_pattern]
+
+if {[llength $file_list] > 0} {
+    puts "The file exists"
+    foreach file $file_list {
+        puts "get file $file"
+    }
+} else {
+    puts "The file does not exist"
+}
+```
+
 调用shell命令
 
 ```tcl

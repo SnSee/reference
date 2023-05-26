@@ -2,6 +2,19 @@
 
 [官方文档](https://markdown.com.cn/)
 
+## markdownlint
+
+[github](https://github.com/DavidAnson/markdownlint/tree/v0.28.2)
+
+禁用rule方式查看github文档 Configuration
+
+<!-- markdownlint-disable-next-line no-emphasis-as-heading -->
+**禁用rule**
+
+## 特殊字符
+
+**加粗**效果
+
 ## 标题 {id="测试id"}
 
 ### 跳转到标题

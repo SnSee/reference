@@ -47,6 +47,11 @@ endif
 ```
 
 ```csh
+# 数字比较
+if ($num < 100) then
+  @ num++
+endif
+
 # 判断字符串是否相同
 if ($str1 == $str2) then
 endif

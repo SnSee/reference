@@ -698,10 +698,13 @@ def _quit(signum, frame):
     print("signum:", signum)
     sys.exit(-1)
 
-
+# 注册监听回调函数
 signal.signal(signal.SIGINT, _quit)
 while True:
     time.sleep(1)
+
+# 取消监听
+signal.signal(signal.SIGINT, signal.SIG_DFL)
 ```
 
 ## 函数绑定参数

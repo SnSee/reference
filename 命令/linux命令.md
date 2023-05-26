@@ -238,6 +238,19 @@ function test() {
 ret=`test fir sec`
 ```
 
+expr 数学运算
+
+```bash
+expr 3 + 5              # 8
+expr 10 - 6             # 4
+expr 3 \* 5             # 15
+expr 10 / 2             # 5
+expr 10 % 3             # 1
+expr 3 \< 5             # 1
+expr 3 \> 5             # 0
+expr "abc" \< "def"     # 1
+```
+
 解析命令行参数
 
 [getopts](https://blog.csdn.net/solinger/article/details/89887155)
@@ -418,6 +431,10 @@ awk -F ';' '{print $1}' test.txt
 ```bash
 # 打开excel表格(xlsx)
 xdg-open xxx.xlsx
+gio open xxx.xlsx
+soffice xxx.xlsx
+libreoffice xxx.xlsx
+
 # 打开图片
 eog xxx.png
 display xxx.png
@@ -499,14 +516,14 @@ sudo update-alternatives --config gcc
 <https://blog.csdn.net/weixin_49439456/article/details/123746038>
 
 ```bash
-# 30:黑
-# 31:红
-# 32:绿
-# 33:黄
-# 34:蓝色
-# 35:紫色
-# 36:深绿
-# 37:白色
+# 30: 黑
+# 31: 红
+# 32: 绿
+# 33: 黄
+# 34: 蓝
+# 35: 紫
+# 36: 天蓝
+# 37: 白
  
 echo -e "\033[32m 绿色字 \033[0m"
  
@@ -607,6 +624,10 @@ head -n -1 <file>
 > 在Linux/Unix类操作系统中，DISPLAY环境变量用于设置将图形显示到何处
 > 如果需要在远程计算机上运行图形程序， 可以将DISPLAY环境变量设置为远程主机的IP地址或主机名, 例如将DISPLAY环境变量设置为192.168.1.100:0.0，然后使用 konsole 打开一个终端。
 
+xdg-open
+
+> xdg-open 是一个在 Linux 和其它 POSIX 兼容系统中使用的命令行工具，用于打开任意类型的文件或 URL。该命令会自动根据系统上安装的默认应用程序打开相应的文件或 URL，可以打开本地文件、远程文件以及通过网络协议（如 HTTP、FTP、mailto 等）指定的文件。xdg-open 命令实际上是一个桥接程序，它会尝试确定默认的应用程序，并将文件或 URL 传递给它们进行处理。
+
 ## tips
 
 ```bash
@@ -616,6 +637,11 @@ head -n -1 <file>
 # 关闭：shopt -u globstar
 # 查看是否开启：shopt globstar
 ls **/*.txt
+```
+
+```bash
+# 查看所有 SIGNAL 信号
+man 7 signal
 ```
 
 ## QA

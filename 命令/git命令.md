@@ -42,6 +42,13 @@
 查看版本2相对于版本1区别: git diff <commit_id1> <commit_id2>
 ```
 
+## 检出
+
+```bash
+# 检出单个文件的历史版本(版本不变，仅仅是文件内容变成检出版本)
+git checkout <commit_id> test.txt
+```
+
 ## 工作区与暂存区
 
 ```text
