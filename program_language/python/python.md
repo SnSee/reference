@@ -45,8 +45,9 @@ V = typing.TypeVar('V', bound=typing.SupportsAbs)   # 任意包含__abs__方法�
 
 ### list
 
+sort (排序)
+
 ```python
-# 排序
 list.sort(cmp=None, key=None, reverse=False)    # python3没有cmp
 # 使用lambda表达式
 l = [[4, 4], [3, 3], [2, 2], [1, 1]]
@@ -54,7 +55,9 @@ list.sort(key=lambda x: x[0])
 # python3指定排序函数
 from functools import cmp_to_key
 list.sort(key=cmp_to_key(lambda a, b: a - b))
+```
 
+```python
 # 将bool类型返回值作为排序依据
 lst = ['ABC', 'DFFGHI', 'DEF', 'DFFJKL']
 # 使用lambda表达式
@@ -64,7 +67,9 @@ def _sort(name: str) -> bool:
     return "DFF" in name
 lst.sort(key=_sort, reverse=True)
 print(lst)  # 结果为：['DFFGHI', 'DFFJKL', 'ABC', 'DEF']
+```
 
+```python
 # 如果需要多级排序，可将返回值设置int类型
 def _sort(name: str) -> int:
     if 'DFF' in name:
@@ -74,6 +79,15 @@ def _sort(name: str) -> int:
     return 2
 lst.sort(key=_sort)
 print(lst)  # 结果为：['DFFGHI', 'DFFJKL', 'DEF', 'ABC']
+```
+
+```python
+# 列表元素为序列, 按序列中某个对象的属性排序
+class Info:
+    def __init__(self, c):
+        self.num = c
+ltInfo = [(1, 2, Info(2)), (3, 4, Info(1))]
+ltInfo.sort(key=lambda x: x[2].num)
 ```
 
 [sort使用itemgetter,attrgetter](https://docs.python.org/3/howto/sorting.html#sortinghowto)
@@ -110,8 +124,8 @@ la.sort(key=attrgetter("a"))
 li.sort(key=itemgetter(0))
 assert str(la) == str(li)
 print(la)
-la.sort(key=attrgetter("a", "b"))
-li.sort(key=itemgetter(0, 1))
+la.sort(key=attrgetter("a", "b"))   # 多级排序
+li.sort(key=itemgetter(0, 1))       # 多级排序
 assert str(la) == str(li)
 print(la)
 ```

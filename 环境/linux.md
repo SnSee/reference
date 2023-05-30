@@ -81,6 +81,7 @@ make -j8 && make install
 # 下载 tar.xz 压缩包
 # gunzip qt-everywhere-opensource-src-%VERSION%.tar.gz        # uncompress the archive
 tar xvf qt-everywhere-opensource-src-%VERSION%.tar          # unpack it
+mkdir build && cd build
 ./configure --prefix=...
 # 选择开源版(o选项)
 make -j8 && make install

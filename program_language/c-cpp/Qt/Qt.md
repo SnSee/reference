@@ -15,6 +15,19 @@ PyQt5.QtGui
 PyQt5.QWidgets.QWidget
 ```
 
+注意
+
+```text
+1.anaconda下的Qt可能会影响系统安装的Qt的使用，如camke find_package时找到anaconda下的Qt
+```
+
+## pro 文件
+
+```qt
+QMAKE_CC = /usr/bin/gcc         # 设置 gcc 路径
+QMAKE_CXX = /usr/bin/g++        # 设置 g++ 路径
+```
+
 ## 控件
 
 ### QWidget

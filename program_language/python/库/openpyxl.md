@@ -3,7 +3,39 @@
 
 [官方文档](https://openpyxl.readthedocs.io/en/stable/)
 
-[用法](https://blog.csdn.net/m0_47170642/article/details/119137885)
+## 注意事项
+
+```text
+1. 行的编号从 1 开始计数，如 ws.iter_rows的min_row参数最小值为 1
+```
+
+## 基础用法
+
+读取 xlsx 文档
+
+```python
+import openpyxl
+from openpyxl.workbook.workbook import Workbook
+from openpyxl.worksheet.worksheet import Worksheet
+from openpyxl.cell.cell import Cell
+
+def print_excel_data(file_path):
+    # 加载表格文件
+    wb: Workbook = openpyxl.load_workbook(file_path)
+    # 选择第一个工作表
+    ws: Worksheet = wb.active
+
+    # 按行遍历
+    # min_row可以指定起始行号，最小为 1
+    # values_only 为 True 表示只返回值，否则返回 Cell 对象
+    for row in ws.iter_rows(min_row=1, values_only=True):
+        cols = []
+        for i in range(ws.max_column):
+            # 直接获取到的数据可能是int, float等类型
+            # 空白单元格和被合并的单元格(除左上角那个格子)返回 None
+            cols.append(str(row[i]))
+        print(" | ".join(cols))
+```
 
 ## tips
 
@@ -28,17 +60,29 @@ worksheet["A1"]
 worksheet["A1:A3"]  # 获取多个cell，tuple类型
 ```
 
+判断cell是否被 merge
+
 ```python
-# 判断cell是否被merge
 def cell_merged(self, cell, worksheet):
     for merged_range in worksheet.merged_cells.ranges:
         if cell.coordinate in merged_range:
             return True
     return False
+
+def print_excel_data(file_path):
+    wb: Workbook = openpyxl.load_workbook(file_path)
+    ws: Worksheet = wb.active
+    for row in ws.iter_rows(min_row=1):
+        for i in range(ws.max_column):
+            cell: Cell = row[i]
+            if cell_merged(cell, ws):
+                print(f"merged: ({cell.row}, {cell.column})")
+                print(cell.coordinate)      # A1, A2这种形式
 ```
 
+自动适配单元格宽度
+
 ```python
-# 自动适配单元格宽度
 from openpyxl.utils import get_column_letter
 def adjust_width(worksheet):
     for row in worksheet.rows:
@@ -49,6 +93,8 @@ def adjust_width(worksheet):
     for col, value in widths.items():
         worksheet.column_dimensions[get_column_letter(col)].width = min(value, MAX_CELL_WIDTH)
 ```
+
+单元格格式
 
 ```python
 # 加粗字体

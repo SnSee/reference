@@ -178,20 +178,44 @@ jk上下选择目录，h回到上一级，l进入子目录
 
 ## 8. shell编程(bash)
 
-```text
-睡眠: sleep, usleep
+睡眠
+
+```bash
+sleep 5     # 睡眠 5 秒
+sleep 0.5   # 睡眠 0.5 秒
+usleep 5    # 睡眠 5 微秒
+```
+
 数组
-    定义数组: arr=("1" "2" "3" "4")
-    所有元素: ${arr[@]}
-    数组长度: ${#arr[@]}
-    访问数组: ${arr[index]}
-    追加数据: arr[${arr[@]}]=element
-let
-    自加: let ++index
+
+```bash
+arr=("1" "2" "3" "4")       # 定义数组
+${arr[@]}                   # 获取所有元素
+${#arr[@]}                  # 获取长度
+${arr[index]}               # 访问索引
+arr[${arr[@]}]=element      # 追加数据
+```
+
 进度条
-    printf "....\r" (最后的\r会把输出位置定位到本行行首)
+
+```bash
+printf "....\r"     # 最后的\r会把输出位置定位到本行行首
+
+# 动画效果
+frames="\\ | / -"
+while true
+do
+    for frame in $frames
+    do
+        printf "\rLoading... $frame"
+        sleep 0.25
+    done
+done
+```
 
 重定向标准错误到标准输出
+
+```bash
 command > file 2>&1
 ```
 
@@ -238,7 +262,20 @@ function test() {
 ret=`test fir sec`
 ```
 
-expr 数学运算
+let 数学运算(只能计算整数)
+
+```bash
+index=0
+let ++index
+let --index
+let index+=1
+let index+=1+2
+let index=index+1
+let index*=2
+let index/=2        # 小数位会被舍弃
+```
+
+expr 数学运算(只能计算整数)
 
 ```bash
 expr 3 + 5              # 8
@@ -293,6 +330,21 @@ if [[ $s1 == ab* ]] # 可使用正则表达式
 if [[ $s1 == ab"*" ]]   # *作为普通字符
 ```
 
+富文本
+
+```bash
+bold=$(tput bold)           # 加粗
+underline=$(tput smul)      # 下划线
+italic=$(tput sitm)
+info=$(tput setaf 2)        # 绿色
+error=$(tput setaf 160)     # 红色
+warn=$(tput setaf 214)      # 黄色
+reset=$(tput sgr0)          # 恢复所有设置
+echo "${info}INFO${reset}: This is an ${bold}info${reset} message"
+echo "${error}ERROR${reset}: This is an ${underline}error${reset} message"
+echo "${warn}WARN${reset}: This is a ${italic}warning${reset} message"
+```
+
 ## 9. 时间
 
 ```bash
@@ -309,14 +361,14 @@ time ./a.out
 ## 10. 环境变量
 
 ```bash
-# 当前shell类型
-$SHELL
-
-# 可执行文件查找路径
-$PATH
-
-# 临时动态库查找路径
-$LD_LIBRARY_PATH
+$SHELL                  # 当前shell类型
+$PATH                   # 可执行文件查找路径
+$HOME                   # 用户家目录
+$USER                   # 用户名
+$HOSTNAME               # 主机名($HOST)
+$LD_LIBRARY_PATH        # 临时动态库查找路径
+$PYTHONHOME             # python 家目录(默认lib及 site-package 路径)
+$PYTHONPATH             # python 库搜索路径
 ```
 
 ## 11. 三剑客
@@ -367,14 +419,14 @@ grep -r example /path/to/directory/**/*.txt
 eval sed -i 's/${old}/${new}/g' test.txt
 ```
 
-#### 11.2.1. 参数
+命令行参数
 
 ```text
 -n: 不打印原文件内容
 -i: 将修改应用到原文件
 ```
 
-#### 11.2.2. 语法
+语法
 
 ```text
 通过双引号或单引号内的内容定义行为
@@ -384,7 +436,7 @@ i: 当前行位置插入
 a: 当前行下一行添加
 ```
 
-#### 11.2.3. 示例
+示例
 
 ```bash
 # 提取第2行
@@ -401,13 +453,13 @@ set -i '$aMessage to insert' test.txt
 
 ### 11.3. awk
 
-#### 11.3.1. 参数
+命令行参数
 
 ```bash
 -F: 指定分隔符
 ```
 
-#### 11.3.2. 语法
+语法
 
 ```text
 通过定义在 '{ }' 中的内容定义行为
@@ -416,7 +468,7 @@ print: 打印
 $1 分割后第一个部分(行首空格会自动忽略), $2 分割后第二个部分
 ```
 
-#### 11.3.3. 示例
+示例
 
 ```bash
 # 打印每行第二个单词

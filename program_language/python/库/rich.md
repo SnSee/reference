@@ -9,6 +9,8 @@
 
 ## 简单输出
 
+输出到命令行
+
 ```python
 from rich.console import Console
 
@@ -20,6 +22,15 @@ console.print('line1', style='green')
 # 输出空行
 console.print()
 console.print('line2', style='green')
+```
+
+输出到文本文件
+
+```python
+# 将表格渲染为字符串并写入文本文件
+with open('table.txt', 'w') as fp:
+    console = Console(file=fp)
+    console.print(table)    # table参考下面的写法
 ```
 
 ## table
