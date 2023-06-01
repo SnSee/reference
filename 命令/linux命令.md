@@ -671,6 +671,18 @@ tail -n 1 <file>
 head -n -1 <file>
 ```
 
+readelf
+
+> readelf 是一个用于分析 ELF 文件的命令行工具，可以查看各个节（section）的详细内容。
+
+```bash
+# 查看编译动态库时的gcc版本
+# 查看 .comment 节
+# 当 test.so 依赖于多个库且编译这些库由GCC版本不同时，可能会显示多个版本 GCC
+readelf -p .comment test.so
+```
+
+
 为其他用户创建终端
 
 > 在Linux/Unix类操作系统中，DISPLAY环境变量用于设置将图形显示到何处

@@ -12,12 +12,6 @@
 
 ## 2. pandas
 
-[官方手册](https://pandas.pydata.org/docs/user_guide/index.html#user-guide)
-
-[官方手册: 绘图](https://pandas.pydata.org/docs/user_guide/visualization.html)
-
-[菜鸟教程](https://www.runoob.com/pandas/pandas-tutorial.html)
-
 ## 3. Excel
 
 [相关库总结](https://blog.csdn.net/weixin_38037405/article/details/123705853)

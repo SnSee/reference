@@ -202,16 +202,24 @@ val = 1024
 print(f"{val:x}")
 ```
 
+使用变量设置格式化宽度
+
 ```python
-# 使用变量设置格式化宽度
 name = "test"
 width = 10
 print(f"{name:{width}}###")
 ```
 
+进度条(progress bar)
+
 ```python
-# 进度条(progress bar)
 print("\r{i}%", end="")
+```
+
+移除字符串两端指定字符
+
+```python
+'*test*'.strip('*')
 ```
 
 ## pip
@@ -261,9 +269,26 @@ python setup.py install --prefix=...    # 会安装
 ## 添加包搜索路径
 
 ```text
-1.在site-package下新建 *.pth(*可以任意命名)，并写入包路径
+# 如果没设置 PYTHONHOME, 默认为 python 可执行文件上一级
+1.在PYTHONHOME的site-packages下新建 *.pth(*可以任意命名)，并写入包路径
 2.通过sys.path.append(path)添加
 3.添加到环境变量PYTHONPATH中
+```
+
+包查找优先级
+
+```text
+1. 可执行文件所在路径
+2. $PYTHONPATH 中的路径
+3. $PYTHONHOME/lib/pythonxx.zip
+4. $PYTHONHOME/lib/pythonxx
+5. $PYTHONHOME/lib/pythonxx/lib-dynload
+6. ~/.local/lib/pythonxx/site-packages
+7. $PYTHONHOME/lib/pythonxx/site-packages
+8. $PYTHONHOME/lib/pythonxx/site-packages/*.egg
+9. .pth文件中路径
+
+这些路径最终都会被添加到sys.path列表中，按列表顺序查找，可以print查看
 ```
 
 ## tips
@@ -772,4 +797,135 @@ stubgen -h
 
 # 生成存根文件
 stubgen py_file_or_dir
+```
+
+## Mess
+
+> 可迭代对象与迭代器
+
+* 可迭代对象需要通过迭代器访问其中的元素
+* 可迭代对象与迭代器的关系类似于 C 的数组和数组指针？
+* 可迭代对象实现了 **\_\_iter\_\_()** 方法，该方法返回一个迭代器对象
+* 假设有一个可迭代对象 **seq**, 可以使用 **iter(seq)** 或者 **for** 循环语法将其转换为迭代器对象
+* 迭代器实现了 **\_\_iter\_\_()** 和 **\_\_next\_\_()** 方法，__iter__方法返回迭代器自身，__next__方法产生序列下个值，如果达到末尾则抛出StopIteration异常(for循环不会抛出异常)
+
+```python
+from collections.abc import Iterable
+from collections.abc import Iterator
+from typing import Sequence
+
+x = [1, 2, 3]
+assert isinstance(x, Iterable)
+assert isinstance(x, Sequence)  # Sequence 相当于 Iterable 别名
+
+it = iter(x)
+assert isinstance(it, Iterator)
+
+while True:
+    try:
+        value = next(it)
+        print(value)
+    except StopIteration:
+        print('end')
+        break
+```
+
+> yield 关键字
+
+* 用于生成器函数中，它的作用是将一个函数变成一个生成器对象(内置 **__generator** 类型)
+* generator 可以理解为一种特殊的迭代器
+* 函数在 yield 处会立即返回，并在下次迭代时继续向下执行
+* 可以通过 **for** 循环对generator自动迭代
+* 当主程序退出时，生成器对象会被销毁
+* 用 yield 可以实现协程机制?
+
+适用场景
+
+```text
+1. 耗时较长的循环
+2. 一次性生成所有值很占内存
+```
+
+示例
+
+```python
+import inspect
+import typing
+
+# typing.Generator[YieldType, SendType, ReturnType]
+def show() -> typing.Generator[int, int, int]:
+    start = 1
+    while start < 3:
+        print('============')
+        print('before yield')
+        yield start
+        print('after yield')
+        start += 1
+    print('************')
+    print('before return')
+    return start
+
+generator = show()
+assert isinstance(generator, typing.Generator)
+assert inspect.isgenerator(generator)           # 判断一个对象是否是 generator
+assert inspect.isgeneratorfunction(show)        # 判断一个函数是否是 generator 函数
+
+for i in generator:
+    print('before print')
+    print('print: ', i)
+    print('after print')
+```
+
+向生成器发送值
+
+```python
+def show():
+    while True:
+        num = yield
+        if not isinstance(num, int):
+            break
+        print(num)
+    yield None
+
+g = show()
+next(g)
+g.send(2)
+g.send(1)
+g.send('')
+```
+
+yield from
+
+* 也用于生成器函数中，但其返回值为另一个迭代器(生成器)的所有值
+* 会自动迭代被委派的迭代器，每次从中产出一个元素
+* 可以手动在 委派生成器 中捕获 被委派迭代器 抛出的异常，或进行其他操作(如日志？)
+
+```python
+def sub_generator():
+    print('---------')
+    print('sub start')
+    for index in range(3):
+        print('************')
+        print('before yield')
+        yield index
+        print('after yield')
+    print('sub end')
+    print('---------')
+
+
+def main_generator():
+    print('==========')
+    print('main start')
+    yield from sub_generator()
+    print('main end')
+    print('==========')
+
+
+generator = main_generator()
+assert generator.__name__ == 'main_generator'
+
+for i in generator:
+    print('before print')
+    print('print:', i)
+    print('after print')
 ```
