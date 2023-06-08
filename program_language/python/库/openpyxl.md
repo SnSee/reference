@@ -37,6 +37,19 @@ def print_excel_data(file_path):
         print(" | ".join(cols))
 ```
 
+写入 xlsx 文档
+
+```python
+import openpyxl
+
+data = [['This is a test', 'Hello world', 'Python openpyxl'], ['Goodbye', 'World', 'Excel']]
+wb = openpyxl.Workbook()
+ws = wb.active
+for row in data:
+    ws.append(row)
+wb.save("test.xlsx")
+```
+
 ## tips
 
 [字体,列宽,对齐,边框,填充](https://blog.csdn.net/qq_39147299/article/details/123378749)
@@ -81,10 +94,17 @@ def print_excel_data(file_path):
 ```
 
 自动适配单元格宽度
+如果字体在tkinter字体库中，可以使用 [tkinter](../%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%9D%97.md#tkinter) 中的方法获取字符串宽度
+如果有 **ttf** 字体文件，可以使用 [pillow](./PIL.md#get_text_width) 库获取字符串宽度
 
 ```python
 from openpyxl.utils import get_column_letter
 def adjust_width(worksheet):
+    # 平均字符宽度系数（获取实际字符宽度需要加载字体库，不好确定字体库位置）
+    CELL_WITH_MULTIPLE = 1.2    
+    MIN_CELL_WIDTH = 5          # 最小宽度
+    MAX_CELL_WIDTH = 50         # 最大宽度
+    widths = {}
     for row in worksheet.rows:
         for cell in row:
             if cell.value:

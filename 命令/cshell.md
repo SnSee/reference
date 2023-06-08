@@ -38,6 +38,12 @@ if(xxx) then
 else if(xxx) then
 else
 endif
+
+if(xxx || xxx) then
+endif
+
+if(xxx && xxx) then
+endif
 ```
 
 ```csh
@@ -54,6 +60,10 @@ endif
 
 # 判断字符串是否相同
 if ($str1 == $str2) then
+endif
+
+# 模糊比较
+if ($str1 =~ "*.txt") then
 endif
 ```
 
@@ -85,6 +95,13 @@ set num = 0
 ## 示例
 
 判断是否是空字符串
+
+```csh
+set str=""
+if($str == "") then
+    echo "empty"
+endif
+```
 
 ```csh
 set str=`which command`

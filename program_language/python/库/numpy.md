@@ -1,6 +1,12 @@
 
 # numpy
 
+[官方手册翻译](https://blog.csdn.net/xiaoxiangzi222/article/details/53084336/)
+
+[菜鸟教程](https://www.runoob.com/numpy/numpy-tutorial.html)
+
+[教程](https://baijiahao.baidu.com/s?id=1725904977525083283&wfr=spider&for=pc)
+
 基础用法
 
 ```python
@@ -127,4 +133,53 @@ header = ['A', 'B', 'C']
 table = np.vstack((header, data))
 
 print(table)
+```
+
+运算符
+
+```python
+```
+
+数学函数
+
+```python
+import numpy as np
+from decimal import Decimal
+from functools import partial
+
+a = np.arange(10)
+
+print('sum  :', np.sum(a))                          # 求和
+print('std  :', np.std(a))                          # 标准差
+print('mean :', np.mean(a))                         # 平均值
+print('abs  :', np.abs([-1, -2]))                   # 绝对值
+print('max  :', np.max(a))                          # 最大值
+print('maximum:', np.maximum(a, np.flip(a)))        # 取两个数组中相同位置元素大的那一个
+print('around:', np.around(a + 0.015, decimals=2))  # 四舍五入，由于浮点数不精准性，小数位为 5 可能无法进1
+print('around:', np.vectorize(partial(round, ndigits=2))(a + Decimal('0.015')))
+# print('around:', np.around(a + Decimal('0.015'), decimals=2))   # 不能对 Decimal 使用 np.around
+
+print('square:', np.square(a))                      # 平方
+print('sqrt :', np.sqrt(a))                         # 对所有数据开方
+# print(np.sqrt(np.array([-1, -2])))                # 负数开方为 float('nan') 并报错
+print('sin   :', np.sin(a))                         # 三角函数
+print('log  :', np.log(a[1:]))                      # 取对数, e 为底
+print('log10:', np.log10(a[1:]))                    # 取对数
+print('log2 :', np.log2(a[1:]))                     # 取对数
+print('log1p:', np.log1p(a))                        # 取对数, 相当于 log(1 + a)
+```
+
+其他函数
+
+```python
+import numpy as np
+
+a = np.arange(10)
+
+print('sort:', np.sort(a))                          # 排序
+print('flip:', np.flip(a))                          # 翻转
+
+print('split:', np.split(a, 2))                     # 平均拆分成两部分, 无法平均分配会抛异常
+print(np.split(a, [2, 3]))                          # 按索引拆分成多个部分
+print(np.split(a, [2, -1]))                         # 按索引拆分成多个部分
 ```

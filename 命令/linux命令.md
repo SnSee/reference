@@ -21,7 +21,10 @@ ctrl + 方向键: 光标按单词移动
 
 ```text
 # 通过输入关键字查找, 再按一次显示下一个匹配项
-# ctrl + j粘贴为当前命令; 回车直接执行; ctrl + g/c退出
+# 回车直接执行
+# ctrl + g 退出（清空已有内容）
+# ctrl + c 强制退出（新命令行）
+# esc 退出（保留命令行内容但不执行）
 Ctrl + r：逆向搜索命令历史
 
 Ctrl + p：历史中的上一条命令(上方向键)
@@ -93,7 +96,7 @@ USER: 用户名
 PR  : 内核调度优先级
 NI  : Nice值，影响PR
 RES : 使用内存，包括swap内存和物理内存
-RES : 使用物理内存
+VIRT: 使用物理内存
 SHR : 当前进程和其他进程共享内存大小
 %CPU: 使用CPU占比
 %MEM: 使用内存占总内存比例
@@ -642,7 +645,55 @@ cut
 
 ```bash
 # 截取第 3 到 5 个字符（从1开始数，包含3，5）
-echo "example" | cut -c 3-5
+echo "example" | cut -c 3-5                 # amp
+
+# 移除前两个字符
+echo "example" | cut -c 3-                  # ample
+
+# 保留前两个字符
+echo "example" | cut -c -2                  # ex
+
+# 移除最后 3 个字符
+echo 'example' | rev | cut -c 4- | rev      # exam
+```
+
+seq
+
+```bash
+# 生成序列
+seq [OPTION]... LAST
+seq [OPTION]... FIRST LAST
+seq [OPTION]... FIRST INCREMENT LAST
+
+seq 5                   # 1 2 3 4 5
+seq 0 5                 # 0 1 2 3 4 5
+seq 0 2 5               # 0 2 4
+
+seq -f "b%ge" 2         # b1e b2e
+seq -f "b%2ge" 2        # 'b 1e', 'b 2e'
+seq -f "b%02ge" 2       # 'b01e', 'b02e'
+
+# -s 指定分隔符，默认 \n
+seq -s '*' 5            # 1*2*3*4*5
+```
+
+tee
+
+```bash
+# tee 不仅会将输出写入文件，还会写入标准输出
+# 可写入多个文件
+ls | tee a.txt b.txt
+
+# 以追加方式写入
+ls | tee -a a.txt b.txt
+```
+
+wc
+
+```bash
+wc -l test.txt          # 统计文件行数
+wc -w test.txt          # 统计文件单词数(空格分割)
+wc -c test.txt          # 统计文件字符数(包含空白字符)
 ```
 
 tr
@@ -652,7 +703,7 @@ tr
 echo 'a::b:c' | tr ':' ';'      # output: a;;b;c
 
 # 将冒号替换为分号，并且压缩相邻的字符
-echo 'a:b:c' | tr -s ':' ';'    # output：a;b;c
+echo 'a::b:c' | tr -s ':' ';'   # output：a;b;c
 ```
 
 head/tail

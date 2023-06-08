@@ -134,6 +134,25 @@ for colIndex in range(df.shape[1]):
         print(df.values[rowIndex][colIndex])
 ```
 
+排序
+
+```python
+data = {'Name': ['Tom', 'Jerry', 'Dog'], 'Age': [18, 20, 22]}
+df = pd.DataFrame(data, index=[1, 2, 3])
+
+# ascending: 按升序排序，默认 True
+#            如果有多个行/列名可指定多个(list[bool])
+# inplace  : 是否修改当前DataFrame，默认 False
+
+# 按行名排序
+df.sort_index(ascending=True, inplace=True)
+
+# 按列名排序
+df.sort_values(by='Age', ascending=False, inplace=True)
+# 多级排序
+df.sort_values(by=['Age', 'Name'], ascending=[False, True], inplace=True)
+```
+
 多级表头
 
 ```python
@@ -156,6 +175,28 @@ for colNames, colCells in df.items():
         rowName = cell[0]
         value = cell[1]
         print(value)
+```
+
+打印 DataFrame 时的一些设置
+
+```python
+# 不显示行名和列名
+df.to_string(index=False, header=False)
+
+# 设置最大行宽
+df.to_string(max_colwidth=10)
+
+# 格式化字符串
+df = pd.DataFrame({'A': [1.234567, 2.345678], 'B': [3.456789, 4.567890]})
+formatters = {'A': '{:.2f}'.format, 'B': '{:.3f}'.format}
+print(df.to_string(formatters=formatters))
+
+# 设置浮点数输出位数
+df.to_string(float_format='%.2f')
+
+
+df.to_string()
+df.to_string()
 ```
 
 注意

@@ -2,46 +2,60 @@
 
 [pip离线安装](../python.md#pip)
 
-## 1. numpy
+> 科学计算
 
-[官方手册翻译](https://blog.csdn.net/xiaoxiangzi222/article/details/53084336/)
+* [numpy](./numpy.md)
 
-[菜鸟教程](https://www.runoob.com/numpy/numpy-tutorial.html)
+* [pandas](./pandas.md)
 
-<https://baijiahao.baidu.com/s?id=1725904977525083283&wfr=spider&for=pc>
+> 美化输出(表格)
 
-## 2. pandas
+* [pandas](./pandas.md)
 
-## 3. Excel
+* [tabulate](./tabulate.md)
+
+* [rich](./rich.md)
+
+* prettytable
+
+> Excel
 
 [相关库总结](https://blog.csdn.net/weixin_38037405/article/details/123705853)
 
-### 3.1. xlsxwriter
+* [openpyxl](./openpyxl.md)
 
-[官方文档](https://xlsxwriter.readthedocs.io/)
+* [pandas](./pandas.md)
 
-#### 3.1.1. tips
+* xlsxwriter [官方文档](https://xlsxwriter.readthedocs.io/) [合并单元格](https://www.freesion.com/article/1593175682/)
 
-[合并单元格](https://www.freesion.com/article/1593175682/)
+* xlwings [官方文档](https://docs.xlwings.org/en/stable/index.html) [用法](https://blog.csdn.net/qfxietian/article/details/123822358)
 
-### 3.2. openpyxl
+> 文本模板
 
-[openpyxl](./openpyxl.md)
+* [jinja2](./jinja2.md)
 
-### 3.3. xlwings
+> 界面，绘图
 
-[官方文档](https://docs.xlwings.org/en/stable/index.html)
+* [PyQt](./PyQt5.md)
 
-[用法](https://blog.csdn.net/qfxietian/article/details/123822358)
+* [matplotlib](./matplotlib.md)
 
-## 4. jinja
+> 测试
 
-[英文文档](https://jinja.palletsprojects.com/en/2.10.x/)
+* [pytest](./pytest.md)
 
-[机翻中文文档](http://doc.yonyoucloud.com/doc/jinja2-docs-cn/index.html)
+> OCR 文字识别
 
-## 绘图
+* [pytesseract](./pytesseract.md)
 
-### matplotlib
+> html
 
-[matplotlib](./matplotlib.md)
+* [beautifulsoup](./beautifulsoup4.md)
+
+> 配置文件
+
+* [xml](./xml.md)
+
+> 爬虫
+
+* [selenium](./selenium.md)
