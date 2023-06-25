@@ -116,11 +116,12 @@ bison
 ### 3.1. 运行时动态库加载顺序
 
 ```text
+可执行程序所在目录
 -Wl,-rpath指定路径
 LD_LIBRARY_PATH
 /etc/ld.so.conf中的路径
-/lib/
-/usr/lib
+/lib:/lib64
+/usr/lib:/usr/lib64
 ```
 
 ### 3.2. 查看

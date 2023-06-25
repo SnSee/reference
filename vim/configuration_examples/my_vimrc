@@ -31,6 +31,15 @@ set softtabstop=4
 "set cursorline		 	"高亮显示当前行背景色
 set hlsearch			"高亮显示搜索结果	set nolhsearch
 
+" 互换visual快捷键
+nnoremap <C-v> v
+nnoremap v <C-v>
+
+" 组合键改为Alt
+nnoremap <M-]> <C-]>
+nnoremap <M-o> <C-o>
+nnoremap <M-i> <C-i>
+
 " 设置自动补全括号
 inoremap { {<Enter>}<Esc>O
 inoremap { {}<Esc>i

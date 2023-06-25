@@ -9,6 +9,34 @@
 
 ## 插件
 
+### Vim
+
+修改快捷键
+
+```text
+1. 打开设置
+2. 搜索 keybindings, 选择 Vim
+3. "Vim: Normal Mode Key Bindings" 或其他模式下的 "Edit in setting.json" 编辑
+4. 点击 README 查看帮助网页
+```
+
+互换快捷键
+
+```json
+{
+    "vim.normalModeKeyBindingsNonRecursive": [
+        {
+            "before": ["v"],
+            "after": ["<C-v>"]
+        },
+        {
+            "before": ["<C-v>"],
+            "after": ["v"]
+        },
+    ]
+}
+```
+
 ### Qt Configure
 
 ```text

@@ -37,6 +37,22 @@ colorscheme
 colorscheme default
 ```
 
+快捷键
+
+```vim
+" 命令互换
+nnoremap <C-C> <C-V>
+nnoremap <C-V> <C-C>
+
+" 设置 Alt 组合键
+" 在insert模式下先按 Ctrl+V, 再按 Alt + key
+" 显示效果如下
+nnoremap ^[] <C-]>
+nnoremap ^[o <C-o>
+" 不能设置 ]
+" nnoremap ^[i <C-]>
+```
+
 ## 文件跳转
 
 ```text
@@ -128,6 +144,10 @@ linux vim 捕获时的括号需要转义 \( \), vscode下不需要转义
 按十六进制显示
     :%!xxd
     :%!xxd -r 恢复默认
+
+查看/隐藏不可见字符
+    :set list
+    :set nolist
 ```
 
 ## 条件判断

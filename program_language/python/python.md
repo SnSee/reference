@@ -222,6 +222,19 @@ print("\r{i}%", end="")
 '*test*'.strip('*')
 ```
 
+解决浮点数精度问题
+
+```python
+from decimal import Decimal
+
+val1 = Decimal("1.234")
+val2 = Decimal("2.567")
+print(val1 + val2)
+print(val1 - val2)
+print(val1 * val2)
+print(val1 / val2)
+```
+
 ## pip
 
 ```python
@@ -547,7 +560,7 @@ group.add_argument('-c', '--config')
 parser.add_argument('--hide', help=argparse.SUPPRESS)
 
 # 解析
-args = parser.parse_args()
+args: argparse.Namespace = parser.parse_args()
 
 # 获取参数
 # 方式一

@@ -137,9 +137,17 @@ top -p <PID>    # PID 可通过ps获取
 
 ## 6. 编程
 
-```text
-查看程序运行时动态库搜索路径: readelf -d app_name | head - 20
-查看动态库中有那些符号: strings test.so，如果要查找是否含有特定字符串，配合grep使用
+```bash
+# 查看程序运行时动态库搜索路径
+readelf -d app_or_so | head - 20
+ldd app_or_so
+
+# 查看动态库版本及依赖库版本信息
+readelf -V app_or_so
+
+# 查看动态库中有那些符号
+# 如果要查找是否含有特定字符串，配合grep使用
+strings test.so
 ```
 
 ## 7. 文件
