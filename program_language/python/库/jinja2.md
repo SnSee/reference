@@ -5,7 +5,7 @@
 
 [机翻中文文档](http://doc.yonyoucloud.com/doc/jinja2-docs-cn/index.html)
 
-## 加载模板
+## 用法
 
 加载模板方式一
 
@@ -27,9 +27,20 @@ def getTemplate():
 from jinja2 import Template
 template = Template('Hello {{ name }}!')
 template.render(name='John Doe')
+
+with open('test.txt') as fp:
+    template = Template(fp.read())
+template.render(name='Tom')
 ```
 
-## 添加函数
+传递变量
+
+```python
+# var_name 是模板中使用的变量名称
+template.render(var_name=var_value)
+```
+
+添加函数
 
 ```python
 fileLoader = FileSystemLoader('templates')
@@ -37,6 +48,22 @@ env = Environment(loader=fileLoader)
 env.globals.update(isinstance=isinstance)
 # 或
 env.globals["isinstance"] = isinstance
+```
+
+使用字典及自定义变量
+
+```python
+from jinja2 import Template
+
+class Person:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+
+context = {'person': Person("Tom", 18)}
+template = Template('{{ person.name }}: {{ person.age }}')
+output = template.render(**context)
+print(output)
 ```
 
 ## 模板

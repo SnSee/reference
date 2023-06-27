@@ -134,7 +134,7 @@ ws.conditional_formatting.add('A1:B3', rule3)
 wb.save('test.xlsx')
 ```
 
-根据坐标回去表格范围
+根据坐标获取表格范围
 
 ```python
 def getCellRange(startRow: int, startCol: int, endRow: int, endCol: int) -> str:
