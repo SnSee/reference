@@ -479,6 +479,29 @@ print: 打印
 $1 分割后第一个部分(行首空格会自动忽略), $2 分割后第二个部分
 ```
 
+特殊变量
+
+```text
+NR: 行号，从1开始
+```
+
+数学运算
+
+```bash
+# 求和
+awk '{sum += $1; sum += $2} END {print sum}' test.txt
+```
+
+数组
+
+```bash
+# 打印出来的内容顺序随机
+awk '{arr[i++]=$1} END {for (i in arr) print arr[i]}' test.txt
+
+# 按行号打印
+awk '{arr[NR]=$1} END {for(i=1;i<=length(arr);++i) print i, arr[i]}' test.txt
+```
+
 示例
 
 ```bash
@@ -749,7 +772,6 @@ readelf
 # 当 test.so 依赖于多个库且编译这些库由GCC版本不同时，可能会显示多个版本 GCC
 readelf -p .comment test.so
 ```
-
 
 为其他用户创建终端
 

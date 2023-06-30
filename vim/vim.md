@@ -45,7 +45,8 @@ nnoremap <C-C> <C-V>
 nnoremap <C-V> <C-C>
 
 " 设置 Alt 组合键
-" 在insert模式下先按 Ctrl+V, 再按 Alt + key
+nnoremap <M-o> <C-o>
+" 如果不行，在insert模式下先按 Ctrl+V, 再按 Alt + key
 " 显示效果如下
 nnoremap ^[] <C-]>
 nnoremap ^[o <C-o>
@@ -82,20 +83,25 @@ m A             创建名为A的标签(mark)
 
 查看vim自带帮助文档 :h Folding
 
-```text
-设置折叠模式 :set fdm=indent
-设置打开文件时默认不折叠代码 :set foldlevelstart=99
-可用折叠模式: manual, indent, expr, syntax, diff, marker
-indent: 根据缩进折叠，每级缩进所需空格数由shiftwidth决定
-syntax: 根据语法进行折叠，如c/c++，但能识别的语法较少
-expr: 自定义折叠规则
-    变量解释
-        vim 在扫描每一行时，都会将行号存储至 v:lnum 变量
-        getline(v:lnum)便可获得该行内容
-    :set foldexpr=getline(v:lnum)[0]==\"\\t\"   "按tab折叠
-    :set foldexpr=MyFoldLevel(v:lnum)           "调用自定义的折叠函数
-    :set foldexpr=getline(v:lnum)=~'^\\s*$'&&getline(v:lnum+1)=~'\\S'?'<1':1    "按空行折叠
-在括号处创建到匹配括号的折叠: zf%(需要marker模式)
+```vim
+" 可用折叠模式: manual, indent, expr, syntax, diff, marker
+set foldmethod=indent           " 设置折叠模式
+set foldlevelstart=99           " 设置打开文件时默认不折叠
+
+" 根据 {} 折叠
+set foldmethod=marker
+set foldmarker={,}
+
+" indent: 根据缩进折叠，每级缩进所需空格数由shiftwidth决定
+" syntax: 根据语法进行折叠，如c/c++，但能识别的语法较少
+" expr: 自定义折叠规则
+"     变量解释
+"         vim 在扫描每一行时，都会将行号存储至 v:lnum 变量
+"         getline(v:lnum)便可获得该行内容
+"     set foldexpr=getline(v:lnum)[0]==\"\\t\"   "按tab折叠
+"     set foldexpr=MyFoldLevel(v:lnum)           "调用自定义的折叠函数
+"     :set foldexpr=getline(v:lnum)=~'^\\s*$'&&getline(v:lnum+1)=~'\\S'?'<1':1    "按空行折叠
+" 在括号处创建到匹配括号的折叠: zf%(需要marker模式)
 ```
 
 折叠快捷键

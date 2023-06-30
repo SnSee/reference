@@ -15,9 +15,12 @@
 
 ## 编码
 
-```text
-设置编码: git config --global gui.encoding utf-8
-禁止转义中文: git config core.quotepath false
+```bash
+# 设置编码
+git config --global gui.encoding utf-8
+
+# 禁止转义中文
+git config --global core.quotepath false
 ```
 
 ## 分支
