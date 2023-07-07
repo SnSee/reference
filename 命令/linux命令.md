@@ -160,12 +160,12 @@ locate <file_name> (支持wildcard)
 
 ### 7.2. find
 
-```text
+```bash
 # 按名称查找
 find ./ -name "*.txt"
 ```
 
-```text
+```bash
 # 递归删除当前路径下所有名称及类型符合匹配条件的文件
 find ./ -type {type} -name {name} | xargs rm -rf
 find ./ -type {type} -name {name} -exec rm -rf {} \;
@@ -311,6 +311,21 @@ $1      # 获取 第一个命令行参数(空格分隔)
 ```
 
 [$@和$*区别](https://blog.csdn.net/f2157120/article/details/105649551)
+
+在shell脚本内向程序输入字符串
+
+```bash
+python << EOF
+import os
+print(os.getcwd())
+EOF
+```
+
+```tcl
+tclsh << EOF
+puts "string from shell bu executed in tcl interpreter"
+EOF
+```
 
 ### 字符串操作
 
@@ -760,6 +775,19 @@ tail -n 1 <file>
 
 # 不显示最后一行
 head -n -1 <file>
+```
+
+diff
+
+```bash
+# 比较两个文件
+diff a.txt b.txt
+
+# 根据返回值查看两个文件是否有不同
+echo $?     # 0 表示相同，1 表示不同
+
+# 忽略只有空白字符不同的行
+diff -w a.txt b.txt
 ```
 
 readelf

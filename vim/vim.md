@@ -71,6 +71,23 @@ m A             创建名为A的标签(mark)
 :delmark A-Z    删除所有标签
 ```
 
+比较文件
+
+```bash
+# ]c 跳转到下个不同的地方
+# [c 跳转到上个不同的地方
+
+# :set diffopt+=iwhiteall 忽略只有空白字符不同的行
+# 通过 : h diffopt 查看更多比较选项
+vim -d test1.txt test2.txt
+
+# 如果已经打开一个文件
+# :vert diffsplit test2.txt
+
+# 如果连个文件已经打开为两个窗口
+# 分别在每个文件中 :diffthis
+```
+
 ## 代码跳转
 
 ```text
