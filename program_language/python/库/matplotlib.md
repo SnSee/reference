@@ -214,3 +214,51 @@ cmap = [
     plt.cm.Paired(0),plt.cm.Paired(7),plt.cm.Paired(8),plt.cm.Paired(9),plt.cm.Paired(10)
 ]
 ```
+
+## 控件（Widgets）
+
+### CheckButtons 复选框
+
+通过勾选复选框动态设置不同正弦曲线可见性
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.widgets import CheckButtons
+
+t = np.arange(0.0, 2.0, 0.01)
+s0 = np.sin(2*np.pi*t)
+s1 = np.sin(4*np.pi*t)
+s2 = np.sin(6*np.pi*t)
+
+fig, ax = plt.subplots()
+l0, = ax.plot(t, s0, visible=False, lw=2, color='black', label='1 Hz')
+l1, = ax.plot(t, s1, lw=2, color='red', label='2 Hz')
+l2, = ax.plot(t, s2, lw=2, color='green', label='3 Hz')
+fig.subplots_adjust(left=0.2)
+
+lines_by_label = {lx.get_label(): lx for lx in [l0, l1, l2]}
+line_colors = [lx.get_color() for lx in lines_by_label.values()]
+
+# Make check buttons with all plotted lines with correct visibility
+rax = fig.add_axes([0.05, 0.4, 0.1, 0.15])
+check = CheckButtons(
+    ax=rax,
+    labels=list(lines_by_label.keys()),
+    actives=[lx.get_visible() for lx in lines_by_label.values()],
+    label_props={'color': line_colors},             # 3.7版本之后才支持 props
+    frame_props={'edgecolor': line_colors},
+    check_props={'facecolor': line_colors},
+)
+
+
+def callback(label: str):
+    ln = lines_by_label[label]
+    ln.set_visible(not ln.get_visible())
+    ln.figure.canvas.draw_idle()
+
+
+check.on_clicked(callback)
+
+plt.show()
+```
