@@ -9,7 +9,7 @@
 注意：不要安装在默认路径，路径中不能有空格
 ```
 
-## 安装msys2/mingw(id="安装msys2")
+## 安装msys2/mingw {id="安装msys2"}
 
 <https://www.msys2.org/>
 

@@ -106,12 +106,24 @@ revert
     git config --global url."https://new.git".insteadOf https://old.git
 
 设置pull/push为当前分支：git config --global push.default "current"
+```
 
+## submodule
+
+```sh
+# 查看子模块
+git submodule
+
+# 添加子模块
+git submodule add <repository_URL> <path>
+
+# 更新子模块
+git submodule update --remote
 ```
 
 ## 换行符
 
-```text
+```sh
 #提交时转换为LF，检出时转换为CRLF
 git config --global core.autocrlf true
  

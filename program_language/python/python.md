@@ -263,6 +263,7 @@ pip install <package-name>
 # 选项
 -i                   # 指定pip源: -i http://mirrors.aliyun.com/pypi/simple
 --trusted-host       # 指定信任ip
+--upgrade            # 升级已经安装的包
 
 # 安装whl包
 pip install xxx.whl

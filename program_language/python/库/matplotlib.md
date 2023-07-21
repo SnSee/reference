@@ -160,6 +160,7 @@ ax2.set_xlabel("treatment", loc="right", labelpad=0)
 
 ### 实现group效果
 
+<!-- markdownlint-disable-next-line no-inline-html -->
 <div><img src="./pics/group-annotation.png", width="50%"></div>
 
 ```python

@@ -17,7 +17,15 @@ $ENV{PATH}
 set(ENV{name} value)
 ```
 
-### 指定gcc路径
+### 注意事项
+
+```sh
+# 如果更改CMakeLists.txt后错误没解决，可能是缓存问题，删除 build/CMakeCache.txt
+```
+
+### 指定编译选项
+
+指定gcc路径
 
 ```bash
 export CC=/usr/local/bin/gcc
@@ -28,6 +36,19 @@ export CXX=/usr/local/bin/g++
 
 ```bash
 cmake -D CMAKE_C_COMPILER=/gcc_path/bin/gcc -D CMAKE_CXX_COMPILER=/gcc_path/bin/g++ .
+```
+
+指定编译器
+
+```sh
+# 使用 mingw 编译器
+cmake -G "MinGW Makefiles" ..
+```
+
+vscode编译命令示例
+
+```sh
+cmake -DCMAKE_BUILD_TYPE:STRING=Debug -DCMAKE_C_COMPILER:FILEPATH=/bin/gcc -DCMAKE_CXX_COMPILER:FILEPATH=/bin/g++ -S/my/project -B/my/project/build -G "Unix Makefiles"
 ```
 
 ## 语法
@@ -132,19 +153,24 @@ endwhile()
 ### 列表
 
 ```cmake
-列表是由;分隔的字符串
-通过set定义列表
-    set(var a b c) 得到列表var, 值为"a;b;c"
-获取列表长度
-    list(LENGTH list_name list_len) 将列表长度赋值给list_len
-获取元素
-    list(GET index1 [index2..] ele) 将元素赋值给ele
-    索引可为负数，表示从后数
-将列表连接成字符串
-    list(JOIN list_name <连接符> str_var)
-截取列表
-    list(SUBLIST list_name start_index 元素个数 sub_list)
-    元素个数为-1时表示到末尾，必须>=-1
+## 列表是由;分隔的字符串
+# 通过set定义列表
+set(var a b c) 得到列表var, 值为"a;b;c"
+
+# 获取列表长度
+list(LENGTH list_name list_len) 将列表长度赋值给list_len
+
+# 获取元素
+list(GET index1 [index2..] ele) # 将元素赋值给ele, 索引可为负数，表示从后数
+
+# 添加元素
+list(APPEND CMAKE_PREFIX_PATH path/to/directory)
+
+# 将列表连接成字符串
+list(JOIN list_name <连接符> str_var)
+
+# 截取列表(切片)
+list(SUBLIST list_name start_index 元素个数 sub_list) # 元素个数为-1时表示到末尾，必须>=-1
 ```
 
 ### 设置debug/release
@@ -164,72 +190,94 @@ endif()
 ### 生成
 
 ```cmake
-设置c++标准
-    set(CMAKE_CXX_STANDARD 11)
-    禁止使用其他标准
-        set(CMAKE_CXX_EXTENSION OFF)
-        set(CMAKE_CXX_STANDARD_REQUIRED ON)
-添加头文件路径
-    include_directories(..)
-    target_include_directories(<target> PRIVATE/PUBLIC ..)
-添加源文件
-    aux_source_directory(path SRCS)    将path下所有源文件append到变量SRCS中，不会递归目录
-添加编译选项
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ...")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ...")
-添加子项目
-    add_subdirectory(..)
-设置输出路径
-    set(EXECUTABLE_OUTPUT_PATH path) 可执行文件
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY path) 静态库
-    set_target_properties(so_name PROPERTIES RUNTIME_OUTPUT_DIRECTORY path) 动态库
-生成可执行文件
-    add_executable(exe_name main.cpp 1.cpp 2.cpp ${SRCS})
-生成动态库
-    add_library(so_name SHARED 1.cpp 2.cpp ${SRCS})
-添加宏
-    target_compile_definitions(exe_name PRIVATE MACRO_NAME)
-添加编译选项
-    add_compile_options(-Wall)
-设置依赖项目(编译该项目前会先编译依赖项目)
-    add_dependencies(exe_name need_lib_project1 need_lib_project2)
-设置链接动态库路径
-    link_directories(path)
-添加链接库
-    target_link_libraries(exe_name lib1.so lib2.so ...)
+# 设置c++标准
+set(CMAKE_CXX_STANDARD 11)
 
-设置运行时动态库路径(rpath)
-    set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE) 
-    set(CMAKE_INSTALL_RPATH "\${ORIGIN}/../lib")
+# 添加包搜索路径
+list(APPEND CMAKE_PREFIX_PATH /path/to/directory)
 
-设置生成路径
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ../lib)    # 静态库
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ../lib)    # 动态库
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ../bin)    # 可执行文件
-    或者只对目标设置路径
-    set_target_properties(${target} PROPERTIES
-        ARCHIVE_OUTPUT_DIRECTORY "../lib"
-        LIBRARY_OUTPUT_DIRECTORY "../lib"
-        RUNTIME_OUTPUT_DIRECTORY "../bin"
-    )
-设置安装路径
-    install(TARGETS so_name
-            EXPORT so_name2
-            LIBRARY DESTINATION lib # 可选，动态库安装路径
-            ARCHIVE DESTINATION lib # 可选，静态库安装路径
-            RUNTIME DESTINATION bin # 可选，可执行文件安装路径
-            PUBLIC_HEADER DESTINATION include # 可选，头文件安装路径
-    )
+# 禁止使用其他标准
+set(CMAKE_CXX_EXTENSION OFF)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# 添加头文件路径
+include_directories(..)
+target_include_directories(<target> PRIVATE/PUBLIC ..)
+# 添加源文件
+aux_source_directory(path SRCS)    # 将path下所有源文件append到变量SRCS中，不会递归目录
+
+# 添加编译选项
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ...")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ...")
+
+# 添加子项目
+add_subdirectory(..)
+
+# 设置输出路径
+set(EXECUTABLE_OUTPUT_PATH path) 可执行文件
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY path) 静态库
+set_target_properties(so_name PROPERTIES RUNTIME_OUTPUT_DIRECTORY path) 动态库
+
+# 生成可执行文件
+add_executable(exe_name main.cpp 1.cpp 2.cpp ${SRCS})
+# 生成动态库
+add_library(so_name SHARED 1.cpp 2.cpp ${SRCS})
+
+# 添加宏
+target_compile_definitions(exe_name PRIVATE MACRO_NAME)
+# 添加编译选项
+add_compile_options(-Wall)
+
+# 设置依赖项目(编译该项目前会先编译依赖项目)
+add_dependencies(exe_name need_lib_project1 need_lib_project2)
+# 设置链接动态库路径
+link_directories(path)
+# 添加链接库
+target_link_libraries(exe_name lib1.so lib2.so ...)
+
+# 设置运行时动态库路径(rpath)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE) 
+set(CMAKE_INSTALL_RPATH "\${ORIGIN}/../lib")
+
+# 设置生成路径
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ../lib)    # 静态库
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ../lib)    # 动态库
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ../bin)    # 可执行文件
+# 或者只对目标设置路径
+set_target_properties(${target} PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY "../lib"
+    LIBRARY_OUTPUT_DIRECTORY "../lib"
+    RUNTIME_OUTPUT_DIRECTORY "../bin"
+)
+
+# 设置安装路径
+install(TARGETS so_name
+        EXPORT so_name2
+        LIBRARY DESTINATION lib # 可选，动态库安装路径
+        ARCHIVE DESTINATION lib # 可选，静态库安装路径
+        RUNTIME DESTINATION bin # 可选，可执行文件安装路径
+        PUBLIC_HEADER DESTINATION include # 可选，头文件安装路径
+)
+
+# 设置 *.cmake 安装路径
+configure_file(example.cmake.in ${CMAKE_INSTALL_PREFIX}/lib/example.cmake)
 ```
 
 ### cmake预定义变量
 
 ```cmake
-CMAKE_SOURCE_DIR: 工程根目录，即最顶层CMakeLists.txt所在路径
-PROJECT_SOURCE_DIR: 最近的使用了project命令的CMakeList.txt所在路径，如未使用同CMAKE_SOURCE_DIR
-PROJECT_BINARY_DIR: 运行cmake命令的目录
-PROJECT_NAME: project定义的项目名称
+CMAKE_SOURCE_DIR    : 工程根目录，即最顶层CMakeLists.txt所在路径
+PROJECT_SOURCE_DIR  : 最近的使用了project命令的CMakeList.txt所在路径，如未使用同CMAKE_SOURCE_DIR
+PROJECT_BINARY_DIR  : 运行cmake命令的目录
+PROJECT_NAME        : project定义的项目名称
+CMAKE_PREFIX_PATH   : 默认包搜索路径
 CMAKE_CURRENT_SOURCE_DIR: 当前CMakeLists.txt所在路径
+```
+
+推荐变量
+
+```cmake
+CMAKE_INSTALL_PREFIX: 安装路径
 ```
 
 ### 使用Qt
@@ -247,6 +295,16 @@ qt5_add_resources(QRC_FILES ./resource.qrc)
     add_library(${PROJECT_NAME} SHARED ${QRC_FILES})
 # 链接
 target_link_libraries(${PROJECT_NAME} Qt5::Core Qt5::Widgets)
+```
+
+### 使用 boost
+
+```cmake
+set(Boost_DIR ${CMAKE_SOURCE_DIR}/third_party/boost_1_78_0/stage/lib/cmake/Boost-1.78.0)
+find_package(Boost REQUIRED COMPONENTS Python)
+
+include_directories(${Boost_INCLUDE_DIRS})
+include_directories(${PYTHON_INCLUDE_DIRS})
 ```
 
 ### 执行系统/shell命令

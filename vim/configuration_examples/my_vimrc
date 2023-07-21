@@ -13,7 +13,9 @@ let loaded_matchparen = 1  "设置不高亮显示配对的括号
 
 set showcmd
 
-set fdm=indent 			" 设置按缩进折叠
+"set fdm=indent 			" 设置按 shiftwidth 缩进折叠
+set foldmethod=marker
+set foldmarker={,}		" 设置根据大括号折叠
 set foldlevelstart=99 	" 设置打开文件时默认不折叠代码
 
 " have Vim jump to the last position when reopening a file
