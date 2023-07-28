@@ -41,6 +41,38 @@ U = typing.TypeVar('U', bound=str|bytes)            # str,bytes及其子类类�
 V = typing.TypeVar('V', bound=typing.SupportsAbs)   # 任意包含__abs__方法的类型
 ```
 
+使用注释方式
+
+```python
+
+def operate(x, y, opt='add'):
+    """
+    Operate two numbers.
+
+    Parameters
+    ----------
+    x : int
+        First number.
+    y : int
+        Second number.
+    opt : str, optional
+        Operation type.
+
+    Returns
+    -------
+    : int, optional
+        Result number or None on invalid opt.
+    """
+    ret = x + y if opt == 'add' else None
+    return ret
+
+
+print(operate(1, 2))
+print(operate(1, 2, opt='add') + 1)
+print(operate(1, 2, opt='sub'))
+print(operate(1, 2, opt=0))
+```
+
 ## 数据结构
 
 ### list

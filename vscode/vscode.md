@@ -7,6 +7,19 @@
 安装nodejs
 ```
 
+## 快捷键
+
+```text
+1. 点击左下角齿轮，选择 Keyboard Shortcuts
+2. 输入关键字搜索，选中 Record Keys 时可根据快捷键搜索
+```
+
+* **Alt + H**   : 切换到左侧tab页(View: Open Previous Editor)
+* **Alt + L**   : 切换到右侧tab页(View: Open Next Editor)
+* **Alt + ]**   : 跳转到声明或引用(使用vim默认即可：extension.vim_ctrl+])
+* **Alt + O**   : 回退(Go Back)
+* **Alt + I**   : 前进(Go Forward)
+
 ## 插件
 
 ### Vim

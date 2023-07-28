@@ -25,6 +25,18 @@ set(ENV{name} value)
 
 ### 指定编译选项
 
+```sh
+# 配置
+cd build && cmake ..
+
+# 编译
+cmake --build . -j 10
+# linux下可以 make -j10
+
+# 安装
+cmake --build . --target install
+```
+
 指定gcc路径
 
 ```bash
@@ -38,11 +50,11 @@ export CXX=/usr/local/bin/g++
 cmake -D CMAKE_C_COMPILER=/gcc_path/bin/gcc -D CMAKE_CXX_COMPILER=/gcc_path/bin/g++ .
 ```
 
-指定编译器
+指定编译器及安装路径
 
 ```sh
 # 使用 mingw 编译器
-cmake -G "MinGW Makefiles" ..
+cmake -G "MinGW Makefiles" ..  -DCMAKE_INSTALL_PREFIX=/path/to/install
 ```
 
 vscode编译命令示例
@@ -222,6 +234,8 @@ set_target_properties(so_name PROPERTIES RUNTIME_OUTPUT_DIRECTORY path) 动态�
 add_executable(exe_name main.cpp 1.cpp 2.cpp ${SRCS})
 # 生成动态库
 add_library(so_name SHARED 1.cpp 2.cpp ${SRCS})
+# 生成静态库
+add_library(so_name STATIC 1.cpp 2.cpp ${SRCS})
 
 # 添加宏
 target_compile_definitions(exe_name PRIVATE MACRO_NAME)
@@ -232,8 +246,12 @@ add_compile_options(-Wall)
 add_dependencies(exe_name need_lib_project1 need_lib_project2)
 # 设置链接动态库路径
 link_directories(path)
-# 添加链接库
-target_link_libraries(exe_name lib1.so lib2.so ...)
+# 链接动态库(库名为libtest1.so, libtest2.so)
+target_link_libraries(exe_name test1 test2 ...)
+# 链接静态库
+target_link_libraries(exe_name /lib/dir/libtest.a ...)
+# windows下链接
+target_link_libraries(exe_name D:/test/libtest.dll.a)
 
 # 设置运行时动态库路径(rpath)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE) 
@@ -261,6 +279,15 @@ install(TARGETS so_name
 
 # 设置 *.cmake 安装路径
 configure_file(example.cmake.in ${CMAKE_INSTALL_PREFIX}/lib/example.cmake)
+```
+
+注意
+
+```cmake
+# 被链接的库要放在目标库后面，如 可执行程序 a 要链接 b 库，b 库要链接 c 库，则链接顺序为
+target_link_libraries(a b c)
+target_link_libraries(a b)
+target_link_libraries(a b)
 ```
 
 ### cmake预定义变量

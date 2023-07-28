@@ -160,3 +160,16 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/your/lib/path
 # 打开 configure, 在<line>上方删除 -V 和 -qversion
 make -j8 && make install
 ```
+
+## 安装boost
+
+[下载地址](https://www.boost.org/users/download/)
+
+```sh
+# 解压
+./bootstrap.sh              # 编译 b2
+./b2                        # 编译所有模块
+./b2 --with-<module_name>   # 编译指定模块
+# 安装
+sudo ./b2 install --prefix=/where/to/install
+```
