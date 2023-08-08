@@ -1,2 +1,5 @@
 *.chw
 .vscode
+build
+dist
+*.egg-info
