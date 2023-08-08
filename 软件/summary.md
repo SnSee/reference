@@ -12,3 +12,5 @@ powerToys(windows小工具)
 fastGithub(加速github)
 
 [f.lux屏幕亮度调节](https://justgetflux.com/)
+
+[potplayer](http://potplayer.tv/?lang=zh_CN)

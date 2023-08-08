@@ -54,6 +54,31 @@ nnoremap ^[o <C-o>
 " nnoremap ^[i <C-]>
 ```
 
+## 分屏（多窗口）
+
+打开为两个窗口
+
+```sh
+# 横向分屏
+vim -o a.txt b.txt
+
+# 竖向分屏
+vim -O a.txt b.txt
+```
+
+窗口跳转: 先按下 ctrl + w, 然后按 hjkl
+
+窗口尺寸调节
+
+```text
+# n 是数字，默认为 1，表明增减行列数
+ctrl+w [n]+: 增大高度
+ctrl+w [n]-: 减小高度
+ctrl+w [n]>: 增大宽度
+ctrl+w [n]<: 减小宽度
+ctrl+w =   : 子窗口均分主窗口
+```
+
 ## 文件跳转
 
 ```text

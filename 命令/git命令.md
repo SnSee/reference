@@ -86,6 +86,20 @@ revert
         注意: revert仅仅回退这一次commit相关的文件，如果指定commit之后的commit也修改了这个文件会冲突，需要解决冲突并手动提交
 ```
 
+## 其他命令
+
+```sh
+# 不指定 stash@{n} 的默认为最近一次缓存
+git stash                       # 暂存当前分支下改动
+git stash list stash@{n}        # 查看缓存列表
+git stash pop stash@{n}         # 恢复最后一次缓存, 并删除该缓存
+git stash apply stash@{n}       # 恢复指定编号的缓存，但不删除缓存
+git stash drop stash@{n}        # 丢弃指定缓存
+git stash push <path1> <path2>  # 缓存指定文件
+git stash show stash@{n}        # 查看缓存涉及哪些文件
+git stash show -p stash@{n}     # 查看缓存修改了哪些内容，相当于diff
+```
+
 ## 远程
 
 ```text

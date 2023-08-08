@@ -1,6 +1,8 @@
 
 # boost
 
+[代码示例](../../templates/code/boost-python/python-lib/README.md)
+
 ## 编译
 
 windows下使用 git-bash + msys2 编译
@@ -21,6 +23,10 @@ threading=multi: 单/多线程编译，一般写多线程，直接指定为multi
 [编译python](https://blog.csdn.net/NarutoInspire/article/details/116306260)
 
 ## 使用boost::python
+
+注意事项
+
+* boost::python::list 如果未与python对象绑定, 作为成员变量时不能直接使用？否则析构时会引发段错误，需要使用指针形式
 
 ### 在其他项目中使用
 
@@ -46,7 +52,14 @@ bp::object tmp = module_namespace["attr_name"]
 bp::object obj = tmp(1, "test");
 ```
 
-### bp::list
+### 数据类型
+
+```cpp
+auto a = bp::object(1);         // 对应 python int
+int ia = bp::extract<int>(a);   // 一般情况下无需转换, boost对象重载了int类型的运算符
+```
+
+bp::list
 
 ```cpp
 // bp::list可以添加任意bp::object类型的对象
@@ -63,5 +76,62 @@ boost::python::stl_input_iterator<int> begin(mAllMacros), end;
 for (auto i = begin; i != end; ++i) {
     int value = *i;
     std::cout << value << std::endl;
+}
+
+for (int i = 0; i < bp::len(bl); ++i) {
+    auto tmp = bl[i];
+    // int value = bp::extract<int>(tmp);
+}
+```
+
+tuple
+
+```cpp
+bp::make_tuple("test", 1);
+```
+
+bp::dict
+
+```cpp
+bp::dict d;
+d['a'] = 1;
+bool ha = d.has_key('a');
+```
+
+遍历
+
+```cpp
+#include <boost/python.hpp>
+#include <iostream>
+
+namespace bp = boost::python;
+
+int main() {
+    bp::dict dict;
+    dict["key1"] = "value1";
+    dict["key2"] = 42;
+    dict["key3"] = true;
+
+    for (bp::dict::iterator iter = dict.begin(); iter != dict.end(); ++iter) {
+        bp::object key_obj = iter->first;
+        bp::object value_obj = iter->second;
+
+        string key = bp::extract<string>(key_obj);
+
+        if (PyBool_Check(value_obj.ptr())) {
+            bool value = bp::extract<bool>(value_obj);
+        } else if (PyInt_Check(value_obj.ptr())) {
+            int value = bp::extract<int>(value_obj);
+        } else if (PyString_Check(value_obj.ptr())) {
+            string value = bp::extract<string>(value_obj);
+        }
+    }
+
+    for (const bp::object& item : bp::object(dict.items())) {
+        bp::object key_obj = item[0];
+        bp::object value_obj = item[1];
+    }
+
+    return 0;
 }
 ```

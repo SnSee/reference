@@ -72,6 +72,16 @@ exec sh -c "ls -l"
 
 ```tcl
 $env(PATH)
+
+# 设置环境变量
+set env(PATH) "/test:$env(PATH)"
+
+# 判断环境变量是否存在
+if {[info exists ::env(PATH)]} {
+    puts "has"
+} else {
+    puts "no"
+}
 ```
 
 花括号
@@ -280,4 +290,17 @@ set fp [open "example.txt" r]
 set content [read $fp]
 close $fp
 puts $content
+```
+
+> 正则表达式
+
+```tcl
+set test_pat {^([a-z]+)(\d+)_(\d+)(\w+)$}
+set test_str "abc123_456def"
+if {[regexp $test_pat $test_str match word1 num1 num2 word2]} {
+    puts $word1
+    puts $word2
+    puts $num1
+    puts $num2
+}
 ```
