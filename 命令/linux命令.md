@@ -487,6 +487,9 @@ set -i '2iMessage to insert' test.txt
 
 # 在文件最后一行追加字符串
 set -i '$aMessage to insert' test.txt
+
+# 移除最后4个字符
+echo "Hello World!" | sed 's/.\{4\}$//'
 ```
 
 ### 11.3. awk

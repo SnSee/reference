@@ -66,6 +66,15 @@ if {[llength $file_list] > 0} {
 # shell命令不能用双引号包括，如: "ls -l"
 exec ls -l
 exec sh -c "ls -l"
+
+# 获取标准输出及返回码
+set cmd "ls"
+# set cmd "invalid_cmd"
+catch {exec $cmd} output code_info
+set return_code [lindex $code_info 1]
+puts "output     : $output"
+puts "return info: $code_info"
+puts "return code: $return_code"
 ```
 
 引用环境变量
@@ -212,6 +221,11 @@ try {
 } finally {
     puts "finally"
 }
+
+catch {<command>} output error_info
+puts "output     : $output"
+puts "return info: $code_info"
+puts "return code: $return_code"
 ```
 
 > string命令

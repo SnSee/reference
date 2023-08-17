@@ -39,6 +39,8 @@ S = typing.TypeVar('S', bound=str)                  # str及其子类类型
 A = typing.TypeVar('A', str, bytes)                 # 必须str或bytes类型
 U = typing.TypeVar('U', bound=str|bytes)            # str,bytes及其子类类型
 V = typing.TypeVar('V', bound=typing.SupportsAbs)   # 任意包含__abs__方法的类型
+
+# 使用typing.TypeVar而不是typing.Any可以使多个参数保持类型一致
 ```
 
 使用注释方式
