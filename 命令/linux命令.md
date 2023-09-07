@@ -5,6 +5,8 @@
 git clone git://git.savannah.gnu.org/coreutils.git
 ```
 
+[命令在线查询](https://www.lzltool.com/LinuxCommand)
+
 ## 1. 快捷键
 
 光标
@@ -490,6 +492,10 @@ set -i '$aMessage to insert' test.txt
 
 # 移除最后4个字符
 echo "Hello World!" | sed 's/.\{4\}$//'
+
+# 打印起始标记到结束标记间的内容(标记所在行也会打印)
+# 目前测试不能用正则表达式，匹配方式猜测是 if str in line
+sed -n '/start/,/end/p' input.txt
 ```
 
 ### 11.3. awk
@@ -821,6 +827,31 @@ head -n -1 <file>
 head -n 3 <file> | tail -n 1
 ```
 
+crontab
+
+```sh
+# 定时执行任务
+crontab <cmd-list>
+
+# 查看当前用户任务列表
+crontab -l
+# 查看指定用户任务列表
+crontab -u <user-name> -l
+
+# 取消任务
+crontab -e          # 删除要取消的任务后保存退出
+```
+
+```sh
+# cmd-list: cron表达式
+# week 0 表示周日，其他数字均从1开始
+# * 表示不限制时间
+<minute> <hour> <month> <date> <week> <file-to-execute>
+
+# 每周六零时执行脚本
+0 0 * * 6 /path/to/test.sh
+```
+
 diff
 
 ```bash
@@ -853,6 +884,17 @@ readelf -p .comment test.so
 xdg-open
 
 > xdg-open 是一个在 Linux 和其它 POSIX 兼容系统中使用的命令行工具，用于打开任意类型的文件或 URL。该命令会自动根据系统上安装的默认应用程序打开相应的文件或 URL，可以打开本地文件、远程文件以及通过网络协议（如 HTTP、FTP、mailto 等）指定的文件。xdg-open 命令实际上是一个桥接程序，它会尝试确定默认的应用程序，并将文件或 URL 传递给它们进行处理。
+
+关闭终端提示音
+
+```sh
+# 以下命令都试一下
+setterm -blength 0
+xset b off
+set bell-style none
+set matchbeep = never
+set nobeep=1
+```
 
 ## tips
 

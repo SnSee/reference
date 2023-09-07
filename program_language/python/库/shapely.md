@@ -1,6 +1,10 @@
 
 # shapely
 
+注意
+
+* Polygon使用的是浮点数，判断坐标是否相同时使用的是 == 而不是math.isclose，存在浮点数不精准的问题.
+
 Polygon
 
 ```python
@@ -22,7 +26,7 @@ from shapely.geometry import Polygon, Point
 from shapely.geometry.multipolygon import MultiPolygon
 
 
-def plot_polygons(polygons: list, title: str):
+def plot_polygons(polygons: list, title: str = 'untitled'):
     fig, ax = plt.subplots()
     if polygons:
         if not isinstance(polygons[0], list):
@@ -57,6 +61,7 @@ def polygon_to_list(polygon: typing.Union[Polygon, MultiPolygon]) -> list[list[t
 判断点是否在polygon内或边缘
 
 ```python
+# 如果在边界上不会出现浮点数不精确导致的问题
 def in_polygon(x: float, y: float, polygon: typing.Union[Polygon, MultiPolygon]) -> bool:
     if isinstance(polygon, Polygon):
         if polygon.is_empty:
@@ -69,6 +74,43 @@ def in_polygon(x: float, y: float, polygon: typing.Union[Polygon, MultiPolygon])
         if in_polygon(x, y, part):
             return True
     return False
+
+a = 0.3
+b = 1 - 0.7
+p1 = Polygon([(a, 0), (a, 10), (10, 10), (10, 0)])
+print(in_polygon(b, 0, p1))
+print(p1.contains(Point(b, 0)))
+print(p1.touches(Point(b, 0)))
+```
+
+判断多边形是否相同
+
+```python
+def is_polygon_same(p1: Polygon, p2: Polygon) -> bool:
+    l1 = polygon_to_list(p1)[0]
+    l2 = polygon_to_list(p2)[0]
+    if len(l1) != len(l2):
+        return False
+    l1.sort()
+    l2.sort()
+    for point1, point2 in zip(l1, l2):
+        x1, y1 = point1
+        x2, y2 = point2
+        if not math.isclose(x1, x2) or not math.isclose(y1, y2):
+            return False
+    return True
+
+
+a = 0.3
+b = 1 - 0.7
+c = 1 - 0.8
+
+p1 = Polygon([(10, 10), (10, 0), (a, 0), (a, 10)])
+p2 = Polygon([(b, 0), (b, 10), (10, 10), (10, 0)])
+p3 = Polygon([(c, 0), (c, 10), (10, 10), (10, 0)])
+
+print(p1 == p2, is_polygon_same(p1, p2))
+print(p1 == p3, is_polygon_same(p1, p3))
 ```
 
 剪切及分割多边形测试
@@ -98,6 +140,13 @@ def cut_test():
 多边形交集测试
 
 ```python
+def intersect_test1():
+    p1 = Polygon([(0, 0), (0, 1), (1, 1), (1, 0)])
+    p2 = Polygon([(1, 0), (1, 1), (2, 1), (2, 0)])
+    p3 = Polygon([(3, 0), (3, 1), (4, 1), (4, 0)])
+    print('p1 & p2:', p1.intersects(p2))
+    print('p1 & p3:', p1.intersects(p3))
+
 def intersect_test():
     main_polygon = [(0, 0), (0, 10), (10, 10), (10, 0)]
     # 没有交集

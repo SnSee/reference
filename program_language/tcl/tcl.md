@@ -25,11 +25,60 @@ puts $text: 输出变量
 lsearch ?option? list pattern: 查找列表是否包含指定pattern的元素，如果包含返回第一个匹配元素的索引，否则返回-1
 ```
 
+脚本搜索路径
+
+```tcl
+# 将当前目录添加到脚本搜索路径
+lappend auto_path [file dirname [info script]]
+
+# 添加自定义目录到脚本搜索路径
+lappend auto_path "/path/to/custom/directory"
+```
+
 字符串
 
 ```tcl
 # 字符串替换
 string map {old new} string
+```
+
+列表(list)
+
+```tcl
+set my_list {}              # 创建空列表
+set my_list {1 2 3}         # 创建列表
+set my_list [list 1 2 3]    # 创建列表
+
+lappend my_list 4           # 插入元素(修改当前list)
+lappend $my_list 4          # 插入元素(不修改当前list)
+
+if {$e in $my_list} {}                      # 判断元素是否存在
+if {[lsearch $myList $element] != -1} {}    # 判断元素是否存在
+if {!($e in $my_list)} {}                   # 判断元素不存在
+if {[lsearch $myList $element] == -1} {}    # 判断元素不存在
+```
+
+字典映射(map)
+
+```tcl
+set myDict [dict create]            # 创建
+dict set myDict key1 value1         # 添加元素
+dict set myDict key2 value2
+
+set value [dict get $myDict key1]   # 访问
+
+if {[dict exists $myDict key1]} {
+    puts "has key1"
+}
+
+dict for {key value} $myDict {      # 遍历
+    puts "$key: $value"
+}
+
+set keys [dict keys $myDict]
+set values [dict values $myDict]
+
+dict unset myDict key1              # 删除元素
 ```
 
 文件
@@ -183,6 +232,13 @@ if {![string equal $name "john"]} { }
 for {初始化} {条件} {自增/自减} {
     # 循环体代码块
 }
+
+set my_list {1 2 3 4 5 6 7 8 9 10}
+for {set i 0} {$i < [llength $my_list]} {incr i 2} {
+    set e1 [lindex $my_list $i]
+    set e2 [lindex $my_list [expr {$i + 1}]]
+    puts "$e1, $e2"
+}
 ```
 
 > while语法
@@ -204,6 +260,28 @@ foreach 变量 集合 {
 set myList {apple banana cherry}
 foreach item $myList {
     puts $item
+}
+```
+
+> 数学运算
+
+```tcl
+# 自增/自加
+set cnt 0
+incr cnt
+puts $cnt
+# 自减
+incr cnt -1
+
+# 浮点数比较
+proc is_close {num1 num2} {
+    set epsilon 1e-6
+    set diff [expr {abs($num1 - $num2)}]
+    if { $diff < $epsilon } {
+        return 1
+    } else {
+        return 0
+    }
 }
 ```
 
@@ -263,6 +341,13 @@ if {$pos >= 0} {
 }
 ```
 
+判断字符串是否为空字符串
+
+```tcl
+set s ''
+if {[string length $s] == 0} {}
+```
+
 需要注意的是，在使用string compare命令时，如果返回值为0，则表示两个字符串相同；如果返回值小于0，则表示第一个字符串在字典中排在第二个字符串之前；如果返回值大于0，则表示第一个字符串在字典中排在第二个字符串之后。
 
 此外，还可以使用其他命令，如string length（获取字符串长度）、string tolower（将字符串转换为小写）和string toupper（将字符串转换为大写）等。这些命令可以帮助您处理字符串并执行各种操作。
@@ -297,13 +382,19 @@ proc my_proc {arg1 arg2} {
 }
 ```
 
-> 读取文件
+> 读取文件(写入文件)/读写
 
 ```tcl
+# 读取文件
 set fp [open "example.txt" r]
 set content [read $fp]
 close $fp
 puts $content
+
+# 写入文件
+set file [open "file.txt" "w"]
+puts $file "Hello, World!"
+close $file
 ```
 
 > 正则表达式
@@ -317,4 +408,30 @@ if {[regexp $test_pat $test_str match word1 num1 num2 word2]} {
     puts $num1
     puts $num2
 }
+```
+
+> 排序
+
+```tcl
+# 按字母的ASCII码 升序排序
+set list {b c a}
+puts [lsort -ascii $list]       # 输出：a b c
+
+# 按整数值 降序排序
+set list {3 1 2}
+puts [lsort -integer -decreasing $list]     # 输出：3 2 1
+
+# 自定义排序函数
+proc compareByLength {a b} {
+    if {[string length $a] < [string length $b]} {
+        return -1
+    } elseif {[string length $a] > [string length $b]} {
+        return 1
+    } else {
+        return 0
+    }
+}
+
+set list {abc aa b}
+puts [lsort -command compareByLength $list]     # 输出：b aa abc
 ```
