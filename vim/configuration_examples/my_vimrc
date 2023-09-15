@@ -37,10 +37,20 @@ set hlsearch			"高亮显示搜索结果	set nolhsearch
 nnoremap <C-v> v
 nnoremap v <C-v>
 
+" shortcut begin
+
+let mapleader = "," 
+
 " 组合键改为Alt
 nnoremap <M-]> <C-]>
 nnoremap <M-o> <C-o>
 nnoremap <M-i> <C-i>
+
+" 窗口跳转
+nnoremap <C-h> <C-w>h
+nnoremap <C-j> <C-w>j
+nnoremap <C-k> <C-w>k
+nnoremap <C-l> <C-w>l
 
 " 设置自动补全括号
 inoremap { {<Enter>}<Esc>O
@@ -52,6 +62,8 @@ inoremap } <c-r>=ClosePair('}')<CR>
 inoremap ) <c-r>=ClosePair(')')<CR>
 inoremap ] <c-r>=ClosePair(']')<CR>
 " inoremap <c-r>=ClosePair
+
+" shortcut end
 
 " 设置输入右括号时移动到右括号右侧
 function! ClosePair(char)
@@ -115,3 +127,13 @@ augroup Format-Options
     " This can be done as well instead of the previous line, for setting formatoptions as you choose:
     autocmd BufEnter * setlocal formatoptions=crqn2l1j
 augroup END
+
+" 插件
+call plug#begin('~/.vim/plugged')
+
+Plug 'preservim/nerdtree'
+
+call plug#end()
+
+" 打开关闭nerdtree
+nnoremap <silent> <leader>n :NERDTreeToggle<CR>

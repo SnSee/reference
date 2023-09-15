@@ -1,6 +1,8 @@
 
 # vim
 
+[vim官网](https://www.vim.org/)
+
 查看帮助文档: vim内 :h <关键字>
 
 ## 发行版
@@ -13,6 +15,12 @@ if has('gui_running')
 else
   " 在这里放置只对终端版本的vim有效的配置
 endif
+```
+
+查看vim版本及配置信息
+
+```vim
+:version
 ```
 
 ## 外观
@@ -37,9 +45,21 @@ colorscheme
 colorscheme default
 ```
 
-快捷键
+## 模式
 
 ```vim
+普通模式(Normal): 可使用快捷键，如 hjkl 等
+插入模式(Insert): 输入文本
+可视模式(Visual): v/Ctrl+v 进入，选中多行或多行多列字符
+命令行模式(Command-line): 按 : 后输入命令
+```
+
+## 快捷键
+
+```vim
+" 按下该键后再按其他按键触发组合快捷键（不用同时按）
+let mapleader = "," 
+
 " 命令互换
 nnoremap <C-C> <C-V>
 nnoremap <C-V> <C-C>
@@ -52,6 +72,16 @@ nnoremap ^[] <C-]>
 nnoremap ^[o <C-o>
 " 不能设置 ]
 " nnoremap ^[i <C-]>
+
+" 切换分屏
+nnoremap <C-h> <C-w>h
+nnoremap <C-j> <C-w>j
+nnoremap <C-k> <C-w>k
+nnoremap <C-l> <C-w>l
+
+" 切换tab页
+nnoremap <leader>l :tabn<CR>
+nnoremap <leader>h :tabp<CR>
 ```
 
 ## 分屏（多窗口）
@@ -217,6 +247,110 @@ if has("gui_running")
 ## 寄存器
 
 ```vim
+" 查看所有寄存器
+:reg
+" 查看a寄存器
+:reg a
+```
+
+```vim
 最后一次复制的值会被存储到0寄存器中，通过"0p可以引用，删除操作不影响该寄存器
 最新的复制和删除操作的值都会存储到1寄存器, 1寄存器中的值会存储的2寄存器中，以此类推，最多到9寄存器
+```
+
+## 重复操作
+
+宏
+
+```vim
+1.宏会记录用户所有按键操作
+2.录制宏: q + a-z(非q) 将宏绑定到快捷键，如 qa, 在 Normal-mode 下按 q 结束录制
+3.重复宏: @ + a-z, 如 @a 将会执行宏录制的所有按键操作, 使用 <n>@a 将会重复 n 次
+```
+
+.
+
+```vim
+重复上次修改操作:
+1.从Normal到Insert再回到Normal算一次修改
+2.使用d/p修改
+```
+
+## 插件
+
+[插件查找网站](https://vimawesome.com/)
+
+[vim-plug](https://github.com/junegunn/vim-plug)
+
+```sh
+# 在线安装插件根据vim-plug教程即可
+# 离线安装插件(使用vim-plug)
+1. mkdir ~/.vim/autoload
+2. 将教程中的 plug.vim 放到 autoload 中
+3. mkdir ~/.vim/plugged
+4. 在github上下载nerdtree zip包，解压到 plugged，改名和 .vimrc 中名称一致
+5. 将如下的插件配置添加到 ~/.vimrc, 需要安装的插件通过 Plug 添加
+6. 重新啊打开vim执行 :PlugInstall 安装
+```
+
+```vim
+call plug#begin('~/.vim/plugged')
+
+" 目录树
+Plug 'preservim/nerdtree'
+
+" 显示最近打开的文件/目录
+Plug 'mhinz/vim-startify'
+
+" 自动补全
+Plug 'valloric/youcompleteme'
+Plug 'ervandew/supertab'
+
+call plug#end()
+```
+
+> [nerdtree](https://github.com/preservim/nerdtree)
+
+```vim
+" 打开/关闭nerdtree
+" 打开目录时会自动进入nerdtree
+nnoremap <silent> <leader>n :NERDTreeToggle<CR>
+```
+
+```text
+" 查看/退出帮助文档
+?
+
+# 目录操作
+o: 打开/关闭光标处目录
+O: 打开目录（递归）
+x: 关闭光标处所在目录
+X: 关闭光标处目录所有子目录(递归), 只打开一级子目录
+
+# 文件操作
+i: 打开文件(split出窗口)
+o: 打开文件(多文件方式，会覆盖当前窗口)
+t: 打开文件(tab页方式并切换到新打开的tab)
+T: 打开文件(tab页方式但不切换)
+```
+
+> [startify](https://github.com/mhinz/vim-startify)
+
+```sh
+# 直接vim即可
+# 打开后直接输入文件对应数字，或在数字位置按enter打开文件
+vim
+```
+
+> [youcompleteme](https://github.com/ycm-core/YouCompleteMe)
+
+需要编译
+
+```sh
+# 下载安装包
+git clone https://github.com/ycm-core/YouCompleteMe
+# 更新子模块
+git submodule update --init --recursive
+# 打包上传到无网环境后解压
+# 编译
 ```

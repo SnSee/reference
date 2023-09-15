@@ -39,6 +39,8 @@
 
 [Bash FAQ](http://mywiki.wooledge.org/BashFAQ/)
 
+[命令在线查询](https://www.lzltool.com/LinuxCommand)
+
 ## Windows
 
 [Windows下的GNU命令](https://gnuwin32.sourceforge.net/)

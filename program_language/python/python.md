@@ -722,7 +722,7 @@ output = sp.stdout  # 字符串
 
 [run,call,Popen介绍](https://www.cnblogs.com/hanfe1/p/12885200.html)
 
-### subprocess.Popen
+### subprocess
 
 [subprocess.Popen和os.popen区别](https://blog.csdn.net/Ls4034/article/details/89386857)
 
@@ -748,6 +748,22 @@ subprocess.Popen(["/bin/sh", "-c", "ls"])
 sp = subprocess.Popen("ls", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding="utf-8")
 outptu = sp.stdout.read()
 error = sp.stderr.read()
+```
+
+实时显示子进程日志
+
+```python
+import subprocess
+
+# 启动子进程
+process = subprocess.Popen(['command', 'arg1', 'arg2'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+
+# 实时显示子进程的日志
+for line in iter(process.stdout.readline, ''):
+    print(line.strip())
+
+# 等待子进程结束
+process.communicate()
 ```
 
 ## 调用c++

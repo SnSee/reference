@@ -453,6 +453,8 @@ grep -r example /path/to/directory/**/*.txt
 
 ### 11.2. sed
 
+[在线查看](https://www.lzltool.com/LinuxCommand/sed)
+
 如果要使用变量，使用eval调用sed
 
 ```bash
@@ -476,6 +478,25 @@ i: 当前行位置插入
 a: 当前行下一行添加
 ```
 
+正则表达式(非通用正则表达式)
+
+```text
+不支持 +
+^           : 行开始
+$           : 行结束
+.           : 任意非换行符的字符
+*           : 0或多个字符
+[]          : 匹配范围内任意字符
+[^]         : 匹配不在范围内的任意字符
+\(..\)      : 捕获子串，通过数字访问捕获内容，如's/\(aa\)bb/\1cc/'，aabb替换为aacc
+&           : 捕获整个pattern字符串，相当于\0，如's/love/**&**/'，love替换为**love** 。
+\<          : 单词开始
+\>          : 单词结束
+x\{m\}      : 重复字符m次
+x\{m,\}     : 重复字符至少m次
+x\{m,n\}    : 重复字符m-n次
+```
+
 示例
 
 ```bash
@@ -494,7 +515,7 @@ set -i '$aMessage to insert' test.txt
 echo "Hello World!" | sed 's/.\{4\}$//'
 
 # 打印起始标记到结束标记间的内容(标记所在行也会打印)
-# 目前测试不能用正则表达式，匹配方式猜测是 if str in line
+# 能用正则表达式，匹配方式是 search 而不是 match
 sed -n '/start/,/end/p' input.txt
 ```
 

@@ -133,6 +133,7 @@ git submodule add <repository_URL> <path>
 
 # 更新子模块
 git submodule update --remote
+git submodule update --init --recursive
 ```
 
 ## 换行符
