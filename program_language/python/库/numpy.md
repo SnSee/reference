@@ -40,6 +40,20 @@ print('转置矩阵:')
 print(f)
 ```
 
+二维矩阵增加数据
+
+```python
+import numpy as np
+b = np.array([[1, 2, 3], [4, 5, 6]])
+# 增加一行数据(增加数据列数需要与已有数据列数一致)
+br = np.append(b, [[7, 8, 9]], axis=0)
+# 增加一列数据(增加数据行数需要与已有数据行数一致)
+bc = np.append(b, [[7], [8]], axis=1)
+print('ori:', b)
+print('row:', br)
+print('col:', bc)
+```
+
 三维矩阵(切片与矩阵访问)
 
 ```python

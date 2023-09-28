@@ -136,5 +136,13 @@ while(<DATA>){
 }
 ```
 
+split 拆分字符串
+
 ```perl
+my $str = "a.b.c";
+my @parts = split(/\./, $str);
+# print "@parts[0]\n"
+foreach my $part (@parts) {
+    print "$part\n";
+}
 ```

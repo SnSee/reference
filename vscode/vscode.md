@@ -1,13 +1,13 @@
 
 # VS-Code
 
-## 制作插件
+> 制作插件
 
 ```text
 安装nodejs
 ```
 
-## 快捷键
+> 快捷键
 
 ```text
 1. 点击左下角齿轮，选择 Keyboard Shortcuts
@@ -19,6 +19,24 @@
 * **Alt + ]**   : 跳转到声明或引用(使用vim默认即可：extension.vim_ctrl+])
 * **Alt + O**   : 回退(Go Back)
 * **Alt + I**   : 前进(Go Forward)
+
+> 针对某个文件类型设置
+
+如设置markdown自动补全功能: crtl+shift+p, 搜索 settings，打开User Settings, 添加下面的json项
+
+```json
+"[markdown]": {
+    "editor.quickSuggestions": {
+        "other": "on",
+        "comments": "off",
+        "strings": "off"
+    },
+    // 基于单词自动补全
+    "editor.wordBasedSuggestions": false,
+    // 基于代码块自动补全
+    "editor.snippetSuggestions": "none",
+},
+```
 
 ## 插件
 

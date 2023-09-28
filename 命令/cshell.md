@@ -98,7 +98,7 @@ set num = 0
 
 ```csh
 set str=""
-if($str == "") then
+if("$str" == "") then
     echo "empty"
 endif
 ```

@@ -1,6 +1,8 @@
 
 # rich
 
+**如果要将表格写入文件，建议优先使用 [tabulate](./tabulate.md), rich更适用于在terminal显示**
+
 [github](https://github.com/Textualize/rich)
 
 [官方文档](https://rich.readthedocs.io/en/latest/index.html)
@@ -44,7 +46,7 @@ from rich import box
 
 table = Table(show_header=True, show_lines=True, header_style='bold green', box=box.ASCII)
 table.add_column('col1', justify='left', vertical='top', width=10)
-table.add_column('col2', justify='center', vertical='middle')
+table.add_column('col2', justify='center', vertical='middle', overflow='fold')
 table.add_row('row1_col1', 'row1_col2', style='green')
 table.add_row('row2_col1', 'row2_col2', style='yellow')
 Console().print(table)
@@ -54,6 +56,7 @@ Console().print(table)
 
 ```text
 1. 长字符串会自动显示为多行(多个单词间有空格), 长单词如果超出单元格宽度最后会显示为 ...
+   (可以在add_column设置overflow='fold'多行显示)
 2. add_column 时指定的 width 不包括表格线和前后空格
 3. 当列名中出现 单词 宽度大于列宽时会出现乱码
 4. 当表格宽度过长时后面的部分无法显示，设置了Table的 width 也不行，最长为79个字符或当前terminal宽度？

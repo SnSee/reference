@@ -30,6 +30,37 @@ df = pd.DataFrame(data)
 print(df)
 ```
 
+第一行/列作为列名
+
+```python
+import pandas as pd
+import numpy as np
+
+# 第一行做列名
+data = [['c1', 'c2', 'c3'], [1, 2, 3], [4, 5, 6]]
+print(pd.DataFrame(data[1:], columns=data[0]).to_string(index=False))
+
+# 第一列做列名
+data = np.array([['c1', 1, 2, 3], ['c2', 4, 5, 6], ['c3', 7, 8, 9]])
+columns = data[:, 0]
+data = data[:, 1:]
+assert len(columns) == len(data[0])
+print(pd.DataFrame(data, columns=columns).to_string(index=False))
+```
+
+插入新行
+
+```python
+df = pd.DataFrame([], columns=['c1', 'c2', 'c3'])
+# 方式一
+df.loc[len(df)] = [1, 2, 3]
+df.loc[len(df)] = [4, 5, 6]
+# 方式二
+newLine = {key: val for key, val in zip(cs, [7, 8, 9])}
+df = pd.concat([df, pd.DataFrame([newLine])], ignore_index=True)
+print(df.to_string(index=False))
+```
+
 插入新列
 
 ```python
