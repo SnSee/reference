@@ -753,17 +753,22 @@ error = sp.stderr.read()
 实时显示子进程日志
 
 ```python
+# 方式一: 需要子进程刷新缓冲后才能输出: 1. 缓冲区满刷新；2.使用 sys.stdout.flush() 手动刷新；3.子进程退出刷新
 import subprocess
 
-# 启动子进程
-process = subprocess.Popen(['command', 'arg1', 'arg2'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-
-# 实时显示子进程的日志
+process = subprocess.Popen(['command', 'arg1', 'arg2'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 for line in iter(process.stdout.readline, ''):
     print(line.strip())
+process.wait()
 
-# 等待子进程结束
-process.communicate()
+# 方式二：直接将子进程输出刷新到当前标准输出
+process = subprocess.Popen(['command', 'arg1', 'arg2'], stdout=sys.stdout, stderr=sys.stderr, text=True)
+process.wait()
+
+# 方式三：输出到文件，同样有方式一的刷新问题
+with open('tmp', 'w') as fp:
+    process = subprocess.Popen(['command', 'arg1', 'arg2'], stdout=fp, stderr=fp, text=True)
+    process.wait()
 ```
 
 ## 调用c++

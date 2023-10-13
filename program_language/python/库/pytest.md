@@ -161,6 +161,10 @@ pytest --cov=<name> --cov-report=html
 pytest; echo $?
 ```
 
+> **fixture + conftest.py**
+
+注册为fixture的函数可以用函数名直接作为test函数的参数，当执行test函数时会自动调用
+
 使用fixture + conftest.py传递命令行参数
 
 ```python
@@ -187,6 +191,16 @@ def test_index(get_index):
 pytest --index 2
 ```
 
+定义执行test函数之前自动执行的函数
+
+```python
+# conftest.py
+@pytest.fixture(autouse=True)
+def setup_before_test():
+    # 在每个测试函数执行之前执行的代码
+    print("Setup before test")
+```
+
 调用conftest.py中定义的普通函数
 
 ```python
@@ -197,7 +211,7 @@ def test():
     my_func()
 ```
 
-日志
+> 日志
 
 ```bash
 # 直接使用logging就可以

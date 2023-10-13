@@ -98,6 +98,9 @@ git stash drop stash@{n}        # 丢弃指定缓存
 git stash push <path1> <path2>  # 缓存指定文件
 git stash show stash@{n}        # 查看缓存涉及哪些文件
 git stash show -p stash@{n}     # 查看缓存修改了哪些内容，相当于diff
+
+# 重命名
+git mv old.txt new.txt
 ```
 
 ## 远程

@@ -4,7 +4,7 @@
 启动
 
 ```python
-python3 -m pdb test.py
+python3 -m pdb test.py -- arg1 arg2
 ```
 
 调试命令

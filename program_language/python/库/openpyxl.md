@@ -11,6 +11,13 @@
 
 ## 基础用法
 
+查看版本
+
+```python
+import openpyxl
+print(openpyxl.__version__)
+```
+
 读取 xlsx 文档
 
 ```python
@@ -155,7 +162,7 @@ def getCellRange(startRow: int, startCol: int, endRow: int, endCol: int) -> str:
 ws['C2'] = '=A2+B2'
 ```
 
-获取cell
+获取cell/访问cell
 
 ```python
 # 方式一
@@ -178,7 +185,7 @@ worksheet["A1:A3"]  # 获取多个cell，tuple类型
 判断cell是否被 merge
 
 ```python
-def cell_merged(self, cell, worksheet):
+def cell_merged(cell, worksheet):
     for merged_range in worksheet.merged_cells.ranges:
         if cell.coordinate in merged_range:
             return True
@@ -195,7 +202,7 @@ def print_excel_data(file_path):
                 print(cell.coordinate)      # A1, A2这种形式
 ```
 
-自动适配单元格宽度
+自动适配单元格宽度及高度
 如果字体在tkinter字体库中，可以使用 [tkinter](../%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%9D%97.md#tkinter) 中的方法获取字符串宽度
 如果有 **ttf** 字体文件，可以使用 [pillow](./PIL.md#get_text_width) 库获取字符串宽度
 
@@ -204,6 +211,7 @@ from openpyxl.utils import get_column_letter
 def adjust_width(ws: Worksheet):
     # 平均字符宽度系数（获取实际字符宽度需要加载字体库，不好确定字体库位置）
     CELL_WITH_MULTIPLE = 1.2    
+    CELL_HEIGHT_MULTIPLE = 16
     MIN_CELL_WIDTH = 5          # 最小宽度
     MAX_CELL_WIDTH = 50         # 最大宽度
     widths = {}
@@ -214,6 +222,15 @@ def adjust_width(ws: Worksheet):
                 widths[cell.column] = max((widths.get(cell.column, MIN_CELL_WIDTH), cell_len))
     for col, value in widths.items():
         ws.column_dimensions[get_column_letter(col)].width = min(value, MAX_CELL_WIDTH)
+    
+    # 适配宽度后适配高度
+    for row in ws.rows:
+        lineCnt = 1
+        for cell in row:
+            if cell.value and not cell_merged(cell, ws):
+                value = str(cell.value)
+                lineCnt = max(len(str(value)) // MAX_CELL_WIDTH + 1, lineCnt, value.count('\n') + 1)
+        ws.row_dimensions[row[0].row].height = CELL_HEIGHT_MULTIPLE * lineCnt
 ```
 
 单元格格式
