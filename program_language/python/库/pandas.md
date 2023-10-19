@@ -7,6 +7,11 @@
 
 [菜鸟教程](https://www.runoob.com/pandas/pandas-tutorial.html)
 
+```python
+# 查看版本
+print(pandas.__version__)
+```
+
 ## DataFrame
 
 创建

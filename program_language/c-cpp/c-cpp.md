@@ -1,7 +1,8 @@
 
 # c-cpp
 
-> printf格式化
+<a id="printf-format"></a>
+> printf格式化输出
 
 ```text
 %d  ：以十进制形式输出整数。

@@ -1,4 +1,5 @@
 
+<!-- markdownlint-disable -->
 # csh
 
 <https://blog.csdn.net/gsjthxy/article/details/88363489>

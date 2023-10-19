@@ -164,6 +164,8 @@ tui reg <寄存器类型>: 打开寄存器窗口，显示处理器的寄存器�
 格式化输出(变量替换方式同c语言的printf): printf "format-string", ...
 ```
 
+参考[c-printf](../program_language/c-cpp/c-cpp.md#printf-format)
+
 ## 注意事项
 
 ```gdb

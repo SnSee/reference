@@ -10,6 +10,13 @@ git clone git://git.savannah.gnu.org/coreutils.git
 
 ## 1. 快捷键
 
+终端
+
+```sh
+# 查看终端类型
+echo $TERM          # 如：xterm-256color
+```
+
 光标([csh可能需要自定义快捷键](./cshell.md#光标))
 [bind命令](https://blog.csdn.net/cnds123321/article/details/124815867)
 
@@ -31,8 +38,10 @@ ctrl + 方向键: 光标按单词移动
 
 ```sh
 # bash
+# 在 wsl 上无效
 bind -P                     # 查看已绑定快捷键
 bind -l                     # 查看支持的操作
+# \C: ctrl, \e: alt/escape?
 bind '"<key>":<option>'     # 绑定操作到快捷键
 
 # csh
@@ -513,7 +522,8 @@ eval $cmd
 语法
 
 ```sh
-sed '[range][option]' <file>
+# i: 忽略大小写
+sed '[range][option][i]' <file>
 
 # range: 如果指定范围，只会对范围内的行进行操作
 单行          ：5 表示第5行
@@ -539,6 +549,7 @@ a: 当前行下一行插入新行, 'a' 或 '/pat/a'
 '5,/end/{/pat/p}'   # [5,end]符合pat的行
 ```
 
+<a id='sed-regexp'></a>
 正则表达式(非通用正则表达式)
 
 ```text
@@ -549,6 +560,7 @@ $           : 行结束
 *           : 0或多个字符
 []          : 匹配范围内任意字符
 [^]         : 匹配不在范围内的任意字符
+\|          : 或，如 's/\(aa\|bb\)/NEW/gi'
 \(..\)      : 捕获子串，通过数字访问捕获内容，如's/\(aa\)bb/\1cc/'，aabb替换为aacc
 &           : 捕获整个pattern字符串，相当于\0，如's/love/**&**/'，love替换为**love** 。
 \<          : 单词开始
@@ -586,6 +598,17 @@ sed -n '/start/,/end/p' input.txt
 
 ### 11.3. awk
 
+```sh
+awk [options] '[pattern]{action}' file
+
+options: 命令行参数
+pattern: 匹配模式等
+action:  具体操作，如调用函数，一般是print，通过 ; 分隔多个函数
+
+# [pattern]{action} 可重复多次，如对包含pat的行打印两次
+awk '{print} /pat/{print}' file
+```
+
 命令行参数
 
 ```bash
@@ -598,20 +621,89 @@ sed -n '/start/,/end/p' input.txt
 通过定义在 '{ }' 中的内容定义行为
 print: 打印
 分隔符: 默认是空格
-$1 分割后第一个部分(行首空格会自动忽略), $2 分割后第二个部分
+$0 表示原始数据，$1 分割后第一个部分(行首空格会自动忽略)，$2 分割后第二个部分
+$NF最后一列(注意：如果各行列数不同，则输出列为当前行最后y)，$(NF-1)倒数第二列
 ```
 
 特殊变量
 
 ```text
-NR: 行号，从1开始
-NF: 当前行列数
+NR    : 行号，从1开始
+NF    : 当前行列数
+BEGIN : 在编辑第一行前执行操作
+END   : 在编辑最后一行后执行操作
+&&    : 与
+||    : 或
+!     : 非（可能需要转义 \!）
+```
+
+[正则表达式(未列出的参考sed)](#sed-regexp)
+
+```sh
+# | 等不需要转义
+# 不支持捕获组，可以使用match替代
++   : 匹配前面的模式至少 1 次
+?   : 匹配前面到模式 0 或 1 次
+```
+
+函数
+
+```sh
+exit                        # 退出编辑
+length(str)                 # 字符串长度
+split(str, arr, splitter)   # 根据splitter拆分str，结果存储到数组arr中
+index(str, pat)             # pat在str中位置，从1开始，没找到返回0
+tolower(str)                # 转小写
+toupper(str)                # 转大写
+
+match(str, regexp, arr)     # search，结果存在arr中，支持捕获分组
+echo 'Tom 10' | awk '{match($0,/([a-zA-Z]+) ([0-9]+)/,arr);printf("name: %s, age: %d\n",arr[1],arr[2])}'
+
+substr(str, start, length)  # 截取子字符串
+getline                     # 读取下一行(会移动文件指针)，并存储在$0中(当前行被取代)
+
+# sub/gsub: 变量替换(sub只替换第一个，gsub全都替换)
+# target默认为 $0
+sub(regexp, replacement, target)
+```
+
+```sh
+```
+
+操作区间
+
+```sh
+awk 'NR>=5&&NR<=10 {print}' file                # 指定行区间 [5,10]
+awk 'NR==5,NR==10 {print}' file                 # 指定行区间 [5,10]
+awk '/pat/ {print}' file                        # 只编辑能search到pat的行
+awk '!/pat/ {print}' file                       # 只编辑不能search到pat的行, csh需要转义!, 即 \!  
+awk 'NR>1 && /pat/ {print}' file                # 同时指定行号和正则
+
+# 指定正则表达式区间
+awk '/begin/,/end/ {print}' file                # [begin,end]
+awk 'NR==1,/end/ {print}' file                  # [1,end]
+awk 'NR>0 {print} /end/{exit}' file             # [1,end]
+awk '/begin/,/^$/ {print}' file                 # [begin, $]
+
+# 同时指定区间和条件
+awk '/begin/,/end/ {if(/pat/){print}}' file     # [begin,end]符合pat的行
+
+# BEGIN, END
+awk 'BEGIN {print "Start processing file"}
+     NR<=5 {print $0}
+     END {print "Finished processing file"}' file
 ```
 
 格式化输出
 
+参考[c-printf](../program_language/c-cpp/c-cpp.md#printf-format)
+
 ```bash
+# 使用printf
 awk '{ printf("%-10s %-10s %-10s\n", $1, $2, $3) }' file.txt
+
+# 拼接字符串
+awk '{print $1"splitter"$2} file
 ```
 
 循环及条件语句
@@ -663,7 +755,7 @@ echo "data1:data2:data3" | awk -F ':' '{for(i=1; i<=NF; i++) print $i}'
 echo "a.b.c" | awk -F. '{for(i=1;i<NF;++i){printf("%s", $i);if(i<NF-1){printf(".");}} printf("\n");}'
 
 # 从start_pattern到end_pattern的多行数据替换为new_str
-awk '/start_pattern/,/end_pattern/ {sub(/.*/, "hello")} 1' test.txt
+awk '/start_pattern/,/end_pattern/ {sub(/.*/, "hello");print}' test.txt
 ```
 
 ## 软件

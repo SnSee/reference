@@ -1,4 +1,5 @@
 
+<!-- markdownlint-disable no-inline-html -->
 # matplotlib
 
 [官网](https://matplotlib.org/stable/index.html)
@@ -15,11 +16,26 @@
 
 [图元素一览](https://matplotlib.org/stable/tutorials/introductory/quick_start.html#sphx-glr-tutorials-introductory-quick-start-py)
 
+<a id='color-map'></a>
 [颜色对照图](https://blog.csdn.net/qq_44901949/article/details/124738392)
 
 [maker形状](https://matplotlib.org/stable/gallery/lines_bars_and_markers/marker_reference.html)
 
 ## 基本
+
+[更详细画布中元素展示](https://matplotlib.org/stable/users/explain/quick_start.html)
+
+<div><img src="./pics/canvas_component.png", width="50%"></div>
+
+* 画布: 单位为英寸，每英寸点个数为dpi，即分辨率，如 figsize=(8,6)表示8x6英寸, dpi=100表示每英寸有100个点
+
+```python
+import matplotlib.pyplot as plt
+fig = plt.figure()
+size = fig.get_size_inches()            # 画布尺寸
+fig.dpi                                 # 画布分辨率(每英寸点数)
+
+```
 
 ```python
 import matplotlib.pyplot as plt
@@ -27,7 +43,8 @@ import matplotlib.pyplot as plt
 # 清空画布
 plt.close()
 # 自定义画布大小及清晰度
-# figsize: 1000 px * 1000 px
+# figsize: 10英寸*10英寸
+# dpi: 分辨率72(每英寸72个点)，默认：100
 plt.figure(figsize=(10,10), dpi=72)
 
 # 绘制折线图
@@ -42,7 +59,7 @@ plt.title("test")
 plt.legend()
 
 # 设置x/y轴刻度
-# rotation: 倾斜角度，fontsize: 字号
+# rotation: 旋转/倾斜角度，fontsize: 字号
 plt.xticks(list, rotation=45, fontsize=10)
 plt.yticks(list)
 # 设置x/y轴名称
@@ -93,16 +110,38 @@ matplotlib.pyplot.subplots_adjust(left=0.1)
 ```python
 fig, ax = plt.subplots(figsize=(18, 9))
 colors = ['r', 'g', 'b']
+# width: 表示柱宽所占比例，有效范围 (0,1]
 # color: 柱状图会根据列表中颜色依次对柱状图着色, 每组颜色为color列表长度
 columns = ax.bar(xTicks, values, width=barWidth, color=colors)
 ax.bar_label(columns, padding=3)    # 柱状图上显示数值
 
+# x, y: 和坐标轴单位相同
 ax.text(x, y, text, fontSize=fs, ha="center", va="center")    # 单个位置显示text
 ```
 
 ## 坐标
 
-坐标包含概念: 坐标轴(spine), 坐标刻度(ticks), 坐标名称(label)
+坐标包括: x/y坐标轴(spine), 坐标刻度(ticks), 坐标名称(label)等
+
+```python
+# 获取Axes bounding box
+import matplotlib.pyplot as plt
+from matplotlib.widgets import Button
+fig, ax = plt.subplots()
+ax.plot([1, 2, 3], [4, 5, 6])
+
+# Bbox(x0=0.125, y0=0.1, x1=0.9, y1=0.88)
+# 即方框范围, (x0, y0)为左下角，(x1,y1)为右上角
+# Bbox中 x/y取值范围为[0,1]，表示在整个图片中位置比例
+bbox = ax.get_position()
+left, bottom, right, top = bbox.x0, bbox.y0, bbox.x1, bbox.y1
+width, height = 0.1, 0.05
+Button(plt.axes([left, bottom, width, height]), "left-bot")
+Button(plt.axes([right, top, width, height]), "right-top")
+ax.set_xlabel('x\ny\nz', loc="right", labelpad=0)
+# plt.subplots_adjust(bottom=0.5)
+plt.show()
+```
 
 ### 设置坐标轴名称
 
@@ -110,7 +149,7 @@ ax.text(x, y, text, fontSize=fs, ha="center", va="center")    # 单个位置显�
 Axes.set_xlabel(xlabel: str, fontdict=None, labelpad=None, *, loc=None, **kwargs)
 """
 fontdict: 字典，示例: {'family': 'Times New Roman', 'weight': 'normal', 'size': 23}
-labelpad: 坐标轴名称到坐标轴刻度下/右边缘垂直距离, 默认为 4.0, 可取负值, 单位是像素？
+labelpad: Spacing in points from the Axes bounding box including ticks and tick labels, default: 4.0 
 loc: 坐标轴名称相对坐标轴的位置, 可取值 left/center/right, 默认为 center
 """
 ```
@@ -123,7 +162,9 @@ matplotlib.spines.Spine.set_position(position: tuple(str, float))
 float为0表示不移动，为1表示移动到坐标框最上/右, 可为负值
 """
 # 一般用法
+# 设置刻度线及刻度值位置，bottom表示矩形框底部，top表示顶部
 AxesSubplot.xaxis.set_ticks_position("bottom")
+# 设置坐标轴名称位置
 AxesSubplot.xaxis.set_label_position("bottom")
 AxesSubplot.spines["bottom"].set_position(("axes", -0.15))   # 向下移动
 ```
@@ -152,6 +193,34 @@ ax2.spines["bottom"].set_position(("axes", -0.15))   # move it down
 ax.xaxis.set_ticks_position("bottom")
 ax.xaxis.set_label_position("bottom")
 ax2.set_xlabel("treatment", loc="right", labelpad=0)
+```
+
+### 其他
+
+设置x轴坐标刻度值位置
+
+<div><img src="./pics/xtick_label_offset.png", width="50%"></div>
+
+```python
+import matplotlib.pyplot as plt
+# 设置x轴坐标刻度值位置
+# pos 为相对矩形框位置，0表示不偏移，1表示刻度值显示到矩形顶部
+def set_xtick_label_pos(ax: plt.Axes, pos: float):
+    for tick in ax.get_xticklabels():
+        assert isinstance(tick, plt.Text)
+        tick.set_x(0)       # x轴方向不偏移
+        tick.set_y(pos)     # 设置y值，即相对轴线偏移
+
+# 多条x轴
+fig, _ax = plt.subplots()
+_ax2 = _ax.twiny()
+_ax3 = _ax.twiny()
+for tmp_ax, _pos in zip([_ax, _ax2, _ax3], [0, 0.5, 1]):
+    tmp_ax.plot([1, 2, 3], [4, 5, 6])
+    # 设置不同x轴刻度值(xtick-label)偏移量
+    set_xtick_label_pos(tmp_ax, _pos)
+set_xtick_label_pos(_ax, 0)
+plt.show()
 ```
 
 ## Annotation
@@ -203,7 +272,7 @@ plt.show()
 
 ## 颜色
 
-所有颜色查看颜色对照图链接
+所有颜色查看[颜色对照图](#color-map)
 
 默认配色: "C0" - "C9"
 

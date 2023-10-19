@@ -79,6 +79,21 @@ print(operate(1, 2, opt=0))
 
 ### list
 
+列表推导
+
+```python
+# 一维列表
+line = [1, 2, 3]
+print([num for num in line if num > 1])
+
+# 二维列表
+matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+# 二维转一维
+print([num for row in matrix for num in row])
+# 保持二维
+print([[num for num in row] for row in matrix])
+```
+
 sort (排序)
 
 ```python
