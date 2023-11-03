@@ -8,12 +8,20 @@
 Polygon
 
 ```python
+from shapely import Polygon
 # 创建
 points = [(0, 0), (0, 10), (10, 10), (10, 0)]
 p = Polygon(points)
 
 p.length                # 周长
 p.area                  # 面积
+
+# 边缘
+print('min x:', min([x for x, y in polygon.exterior.coords]))
+print('max x:', max([x for x, y in polygon.exterior.coords]))
+print('min y:', min([y for x, y in polygon.exterior.coords]))
+print('max y:', max([y for x, y in polygon.exterior.coords]))
+
 ```
 
 展示polygon图形

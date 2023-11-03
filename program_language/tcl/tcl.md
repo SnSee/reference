@@ -7,6 +7,8 @@
 
 [wiki](https://wiki.tcl-lang.org/welcome)
 
+* tcl 中所有数据结构的本质都是字符串，具体是什么数据类型取决于如何解析
+
 ## 命令
 
 [disassemble](https://wiki.tcl-lang.org/page/disassemble)
@@ -25,7 +27,7 @@ puts $text: 输出变量
 lsearch ?option? list pattern: 查找列表是否包含指定pattern的元素，如果包含返回第一个匹配元素的索引，否则返回-1
 ```
 
-脚本搜索路径
+### 脚本搜索路径
 
 ```tcl
 # 将当前目录添加到脚本搜索路径
@@ -35,30 +37,74 @@ lappend auto_path [file dirname [info script]]
 lappend auto_path "/path/to/custom/directory"
 ```
 
-字符串
+### 命令行参数
 
 ```tcl
-# 字符串替换
-string map {old new} string
+# tclsh tmp.tcl 1 2
+set argc [llength $argv]
+set v1 [lindex $argv 0]     # 第一个参数
+set v2 [lindex $argv 1]
+set v3 [lindex $argv 2]     # 超出列表长度时值为空
 ```
 
-列表(list)
+### 类型及类型转换
+
+```tcl
+true, false     # 布尔值
+1               # 整型
+1.23            # 浮点型
+"123"           # 字符串
+```
+
+```tcl
+# int -> float
+set d [expr double(1)]
+
+# float -> int
+set i [expr int(1.2)]
+```
+
+### 列表(list)
 
 ```tcl
 set my_list {}              # 创建空列表
 set my_list {1 2 3}         # 创建列表
 set my_list [list 1 2 3]    # 创建列表
 
-lappend my_list 4           # 插入元素(修改当前list)
-lappend $my_list 4          # 插入元素(不修改当前list)
+lindex $my_list 1                           # 访问列表，通过索引获取元素
+lset my_list 1 5                            # 修改元素值 my_list[1] = 5
+lappend my_list 4                           # 追加元素(修改当前list)
+lappend $my_list 4                          # 追加元素(不修改当前list)
+set my_list [linsert $my_list 1 5]          # 插入元素，可插入多个值
 
 if {$e in $my_list} {}                      # 判断元素是否存在
 if {[lsearch $myList $element] != -1} {}    # 判断元素是否存在
 if {!($e in $my_list)} {}                   # 判断元素不存在
 if {[lsearch $myList $element] == -1} {}    # 判断元素不存在
+
+# 合并/拼接列表
+set new_list [concat $my_list $my_list]
 ```
 
-字典映射(map)
+排序
+
+```tcl
+# 使用 lsort 命令，原列表不变
+set my_list {1 3 8 2 4 10 8.8}
+set sorted_list [lsort $my_list]                # 按ascii顺序
+set sorted_list [lsort -integer $my_list]       # 按整数大小(不支持列表中有非整数)
+set sorted_list [lsort -real $my_list]          # 按实数大小
+set sorted_list [lsort -decreasing $my_list]    # 降序
+
+# 返回true表示交换位置
+# 按数值升序排序
+proc cmp {v1 v2} {
+    return [expr $v1 > $v2]
+}
+set sorted_list [lsort -command cmp $my_list]   # 自定义排序函数
+```
+
+### 字典映射(map)
 
 ```tcl
 set myDict [dict create]            # 创建
@@ -81,7 +127,7 @@ set values [dict values $myDict]
 dict unset myDict key1              # 删除元素
 ```
 
-文件
+### 文件
 
 ```tcl
 # 查看文件是否存在
@@ -109,7 +155,7 @@ if {[llength $file_list] > 0} {
 }
 ```
 
-调用shell命令
+### 调用shell命令
 
 ```tcl
 # shell命令不能用双引号包括，如: "ls -l"
@@ -142,7 +188,7 @@ if {[info exists ::env(PATH)]} {
 }
 ```
 
-花括号
+### 花括号
 
 ```tcl
 # 如果字符串中包含特殊字符，如空格等，需要使用花括号
@@ -160,7 +206,7 @@ puts [subst {$name}]    # 输出：Tom
 
 [lsearch options](https://blog.csdn.net/asty9000/article/details/89693505)
 
-> 布尔运算
+### 布尔运算
 
 在Tcl中，布尔运算符用于比较两个表达式的值，以生成布尔结果（真或假）。
 
@@ -197,7 +243,7 @@ if {!$isAdmin} {
 需要注意的是，在Tcl中，由于其动态类型系统，某些情况下会发生类型转换。例如，在使用<或>比较字符串时，Tcl会将字符串转换为数字进行比较。因此，对于字符串比较，应该使用eq和ne比较运算符。
 ```
 
-> if语法
+### if语法
 
 ```tcl
 if {条件} {
@@ -209,7 +255,7 @@ if {条件} {
 }
 ```
 
-> 取反
+### 取反
 
 在Tcl中，可以使用!或not关键字对if语句进行取反。具体方法如下：
 
@@ -226,7 +272,7 @@ if {$x != 1} { }
 if {![string equal $name "john"]} { }
 ```
 
-> for语法
+### for语法
 
 ```tcl
 for {初始化} {条件} {自增/自减} {
@@ -241,7 +287,7 @@ for {set i 0} {$i < [llength $my_list]} {incr i 2} {
 }
 ```
 
-> while语法
+### while语法
 
 ```tcl
 while {条件} {
@@ -249,7 +295,7 @@ while {条件} {
 }
 ```
 
-> foreach语法
+### foreach语法
 
 ```tcl
 foreach 变量 集合 {
@@ -263,7 +309,9 @@ foreach item $myList {
 }
 ```
 
-> 数学运算
+### 数学运算
+
+[expr 算数运算符及内置函数](https://www.cnblogs.com/Icer-newer/p/17056032.html)
 
 ```tcl
 # 自增/自加
@@ -273,19 +321,35 @@ puts $cnt
 # 自减
 incr cnt -1
 
+# 数值比较
+# 支持符号: <  <=  >  >=  ==  !=
+expr 1 < 2      # 1
+expr 1 > 2      # 0
+# if 条件中可以直接比较
+if {1 < 2} {puts "True"}
+
 # 浮点数比较
 proc is_close {num1 num2} {
     set epsilon 1e-6
     set diff [expr {abs($num1 - $num2)}]
-    if { $diff < $epsilon } {
-        return 1
-    } else {
-        return 0
-    }
+    return [expr $diff < $epsilon]
 }
 ```
 
-> try语法
+幂运算/指数运算
+
+```tcl
+expr 3 ** 3
+```
+
+求最大值,求最小值
+
+```tcl
+expr max(1, 2, 3, 4.2, 5)       # 5
+expr min(1, 2, 3, 4.2, 5)       # 1
+```
+
+### try语法
 
 ```tcl
 try {
@@ -306,7 +370,13 @@ puts "return info: $code_info"
 puts "return code: $return_code"
 ```
 
-> string命令
+### string命令
+
+字符串替换
+
+```tcl
+string map {old new} string
+```
 
 string equal命令：检查两个字符串是否完全相等。
 
@@ -352,7 +422,7 @@ if {[string length $s] == 0} {}
 
 此外，还可以使用其他命令，如string length（获取字符串长度）、string tolower（将字符串转换为小写）和string toupper（将字符串转换为大写）等。这些命令可以帮助您处理字符串并执行各种操作。
 
-> proc
+### proc定义函数
 
 ```tcl
 proc my_proc {arg1 arg2} {
@@ -382,7 +452,17 @@ proc my_proc {arg1 arg2} {
 }
 ```
 
-> 读取文件(写入文件)/读写
+默认参数
+
+```tcl
+proc func {x {y 10}} {
+   puts "x = $x, y = $y"
+}
+func 5          # x = 5, y = 10
+func 5 20       # x = 5, y = 20
+```
+
+### 读取文件(写入文件)/读写
 
 ```tcl
 # 读取文件
@@ -397,7 +477,7 @@ puts $file "Hello, World!"
 close $file
 ```
 
-> 正则表达式
+### 正则表达式
 
 ```tcl
 set test_pat {^([a-z]+)(\d+)_(\d+)(\w+)$}
@@ -410,7 +490,7 @@ if {[regexp $test_pat $test_str match word1 num1 num2 word2]} {
 }
 ```
 
-> 排序
+### 排序
 
 ```tcl
 # 按字母的ASCII码 升序排序

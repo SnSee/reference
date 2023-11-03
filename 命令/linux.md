@@ -112,6 +112,14 @@ tar czvf test.tar.gz [--exclude ..] ./*
 
 ## 4. 进程
 
+查看cpu核数
+
+```sh
+nproc
+lscpu | grep 'CPU(s)'
+cat /proc/cpuinfo | grep "core id" | wc -l
+```
+
 ### 4.1. ps
 
 ```text
@@ -141,8 +149,8 @@ PID : 进程号
 USER: 用户名
 PR  : 内核调度优先级
 NI  : Nice值，影响PR
-RES : 使用内存，包括swap内存和物理内存
-VIRT: 使用物理内存
+VIRT: 使用内存，包括swap内存和物理内存
+RES : 使用物理内存
 SHR : 当前进程和其他进程共享内存大小
 %CPU: 使用CPU占比
 %MEM: 使用内存占总内存比例
@@ -343,7 +351,7 @@ let index*=2
 let index/=2        # 小数位会被舍弃
 ```
 
-expr 数学运算(只能计算整数)
+expr 数学运算(只能计算整数，操作符两边必须有空格)
 
 ```bash
 expr 3 + 5              # 8
@@ -354,6 +362,19 @@ expr 10 % 3             # 1
 expr 3 \< 5             # 1
 expr 3 \> 5             # 0
 expr "abc" \< "def"     # 1
+```
+
+浮点数运算
+
+```sh
+# bc参数需要是文件，因此需要管道
+echo "2.5 + 3.7" | bc
+
+# 借助awk
+echo "2.5 3.7" | awk '{print $1 + $2}'
+
+# 借助python
+python -c 'print(2.5 + 3.7)'
 ```
 
 解析命令行参数
@@ -460,6 +481,11 @@ $PYTHONPATH             # python 库搜索路径
 
 grep命令是一种文本搜索工具，可以用于在指定文件、标准输入或者其他命令的输出中查找匹配指定字符串模式的行。
 
+* grep本身支持基础正则(BRE)，一些正则字符需要使用 \ 转义，如 ? + 等
+* -E 选项支持扩展正则(ERE)，不需要转义符号
+* egrep相当于grep -E
+* fgrep相当于grep -F，速度比正则快
+
 命令行参数
 
 ```text
@@ -474,6 +500,7 @@ grep命令是一种文本搜索工具，可以用于在指定文件、标准输�
 -w: 匹配整个单词, 而不是单词一部分
 -e: 可多次指定匹配模式
 -E: 使用正则表达式
+-F: 使用固定字符串(非正则，*? 等会当作普通字符)
 -f: 从文件中获取匹配模式，文件中每行为一个模式
 --exclude: 排除某些文件或目录
 --include: 只匹配指定文件或目录
@@ -481,6 +508,18 @@ grep命令是一种文本搜索工具，可以用于在指定文件、标准输�
 -B: 显示匹配行及其前n行，-B n
 -C: 显示匹配行及其前后n行，-C n
 ```
+
+单引号和双引号区别：双引号中 $ 会进行变量替换，单引号不会
+
+```sh
+# grep不到
+a=1&&echo '123'|grep '$a'
+
+# 能grep到
+a=1&&echo '123'|grep "$a"
+```
+
+示例
 
 ```bash
 # 如果匹配模式中不包含特殊字符(空格，星号等)，可以不适用双引号括起来
@@ -492,6 +531,7 @@ grep -v test test.txt
 
 # 指定多个匹配模式
 grep -e Test -e test test.txt
+grep -e '\wa' -e 'a\w' test.txt
 
 # grep递归搜索指定扩展名文件
 grep -r example /path/to/directory/ --include="*.txt"
@@ -552,6 +592,9 @@ a: 当前行下一行插入新行, 'a' 或 '/pat/a'
 <a id='sed-regexp'></a>
 正则表达式(非通用正则表达式)
 
+支持\w
+不支持\d
+
 ```text
 不支持 +
 ^           : 行开始
@@ -602,7 +645,7 @@ sed -n '/start/,/end/p' input.txt
 awk [options] '[pattern]{action}' file
 
 options: 命令行参数
-pattern: 匹配模式等
+pattern: 正则匹配模式，bool表达式等
 action:  具体操作，如调用函数，一般是print，通过 ; 分隔多个函数
 
 # [pattern]{action} 可重复多次，如对包含pat的行打印两次
@@ -639,6 +682,9 @@ END   : 在编辑最后一行后执行操作
 
 [正则表达式(未列出的参考sed)](#sed-regexp)
 
+支持 \w 等用法，参考[正则表达式](../算法/mess.md#正则表达式)
+不支持 \d
+
 ```sh
 # | 等不需要转义
 # 不支持捕获组，可以使用match替代
@@ -659,12 +705,16 @@ toupper(str)                # 转大写
 match(str, regexp, arr)     # search，结果存在arr中，支持捕获分组
 echo 'Tom 10' | awk '{match($0,/([a-zA-Z]+) ([0-9]+)/,arr);printf("name: %s, age: %d\n",arr[1],arr[2])}'
 
-substr(str, start, length)  # 截取子字符串
+substr(str, start, length)  # 截取子字符串, length可以不设置，表示到末尾
 getline                     # 读取下一行(会移动文件指针)，并存储在$0中(当前行被取代)
 
 # sub/gsub: 变量替换(sub只替换第一个，gsub全都替换)
 # target默认为 $0
+# 返回值：进行替换次数，因此可以通过gsub实现count功能
 sub(regexp, replacement, target)
+'{count=gsub("a", "")}'     # 统计一行中字符a的数量
+** 注意 ** ：sub/gsub会修改原有字符串，如果不想修改原字符串可以使用变量
+'{tmp=$0;gsub("pat","new")}'
 ```
 
 ```sh
@@ -725,13 +775,17 @@ echo "1 2 3" | awk '{
 数学运算
 
 ```bash
+# 变量无需声明，默认值为 0
 # 求和
 awk '{sum += $1; sum += $2} END {print sum}' test.txt
 ```
 
-数组
+数组(相当于python无序字典)
 
 ```bash
+# 无需声明，value 默认值为 0
+awk 'arr[$0]+=1 {} END {for(key in arr){print arr[key],key}}' file
+
 # 打印出来的内容顺序随机
 awk '{arr[i++]=$1} END {for (i in arr) print arr[i]}' test.txt
 
@@ -756,6 +810,19 @@ echo "a.b.c" | awk -F. '{for(i=1;i<NF;++i){printf("%s", $i);if(i<NF-1){printf(".
 
 # 从start_pattern到end_pattern的多行数据替换为new_str
 awk '/start_pattern/,/end_pattern/ {sub(/.*/, "hello");print}' test.txt
+```
+
+<a id='awk-tips'></a>
+tips
+
+```sh
+# 当$1不在a中时，a[$1]=0，进行自加后为 1，由于是后置++，!取反的是进行++操作之前的对象 0，因此为真
+# 当$1在a中时，a[$1]至少为1，取反后为假
+# 只有当表达式为真，即$1不存在a中时才会触发默认打印行为
+# 最终 a 中key为第一个单词，value为该单词出现次数
+awk '!a[$1]++' file         # 只根据第一个单词去重
+# 如果使用前置++则为
+awk '++a[$1]==1' file         # 只根据第一个单词去重
 ```
 
 ## 软件
@@ -809,7 +876,7 @@ apt-show-versions -a <package>
 
 [去除Window行尾标记^M](https://www.cnblogs.com/rsapaper/p/15697099.html)
 
-ssh密钥登录
+### ssh密钥登录
 
 ```bash
 ssh-keygen     # 生成密钥，需要输入直接回车就行
@@ -821,7 +888,7 @@ cat ~/.ssh/id-rsa.pub   # 然后将复制内容添加到要登录主机的 ~/.ss
 # 注意：要登陆的主机.ssh 及 authorized_keys只能自己有 读写 权限，家目录只能自己有 写 权限
 ```
 
-等待/获取用户输入
+### 等待/获取用户输入
 
 ```bash
 read    # 需要输入回车确认，信息被保存在 $REPLAY 中
@@ -830,7 +897,7 @@ read -p "提示信息" message  # 输入内容会存储到 $message 中
 echo $message
 ```
 
-查看及切换版本
+### 查看及切换版本
 
 ```bash
 # 以gcc为例
@@ -843,7 +910,7 @@ sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 70
 sudo update-alternatives --config gcc
 ```
 
-显示颜色
+### 显示颜色
 
 <https://blog.csdn.net/weixin_49439456/article/details/123746038>
 
@@ -861,13 +928,21 @@ echo -e "\033[32m 绿色字 \033[0m"
  
 ```
 
-格式化输出
+### 格式化输出
 
 ```bash
 printf "%s world" hello
 ```
 
-sort
+### uniq
+
+只根据第n个单词去重参考 [awk-tips](#awk-tips)
+
+```sh
+uniq file           # 去除文件中相邻的重复行
+```
+
+### sort
 
 [参考](https://zhuanlan.zhihu.com/p/373104953)
 
@@ -892,6 +967,12 @@ sort
 # 使用-n时非数字等同于0
 ```
 
+**注意**
+
+* 默认排序不会忽略行首尾空格，使用-k时也不会忽略单词前后空格, 看起来单词前空格会作为单词的一部分，最后一个单词尾的空格会作为单词的一部分
+* 使用 -b 选项可以忽略段首/单词首空格
+* 行尾/单词尾空格可以使用 sed 's/\s*$//' 移除
+
 ```bash
 # 对文件行进行排序并去重
 sort test.txt | uniq
@@ -904,9 +985,22 @@ sort -t : -k 2.1 /tmp/sort.txt
 
 # 从第二个字段的第二个字符开始直到第三个字符
 sort -t : -k 2.2,2.3 /tmp/sort.txt 
+
+# 多级排序
+# 第1级按第2列排序，第2级按第1列排序
+sort -b -k 2 -k 1 test.txt
+
+# test.py
+# from itertools import product
+# for p in product([1,2,3], repeat=3): 
+#     print(' '.join([str(n) for n in p]))
+python test.py | sort -k 1n -k 2nr -k3n
+# 第1级按第1列数字升序
+# 第2级按第2列数字降序
+# 第3级按第3列数字升序
 ```
 
-alias
+### alias
 
 ```bash
 # 在bash alias中无法直接获取命令行参数，但可通过函数间接操作
@@ -918,9 +1012,11 @@ alias d='function _mycd(){ [ -d $1 ] && cd $1 || cd `dirname $1`; ls; };_mycd'
 alias d 'test -d \!* && cd \!* || cd `dirname \!*`'
 ```
 
-cut
+### cut
 
 ```bash
+cut [OPTIONS] FILE
+
 # 截取第 3 到 5 个字符（从1开始数，包含3，5）
 echo "example" | cut -c 3-5                 # amp
 
@@ -939,7 +1035,7 @@ echo '1 2 3 4' | cut -d ' ' -f 2,4
 echo '1 2 3 4' | cut -d ' ' -f 2-4
 ```
 
-seq
+### seq
 
 ```bash
 # 生成序列
@@ -959,7 +1055,7 @@ seq -f "b%02ge" 2       # 'b01e', 'b02e'
 seq -s '*' 5            # 1*2*3*4*5
 ```
 
-tee
+### tee
 
 ```bash
 # tee 不仅会将输出写入文件，还会写入标准输出
@@ -970,7 +1066,7 @@ ls | tee a.txt b.txt
 ls | tee -a a.txt b.txt
 ```
 
-wc
+### wc
 
 ```bash
 wc -l test.txt          # 统计文件行数
@@ -978,7 +1074,7 @@ wc -w test.txt          # 统计文件单词数(空格分割)
 wc -c test.txt          # 统计文件字符数(包含空白字符)
 ```
 
-tr
+### tr
 
 ```bash
 # 将冒号替换为分号
@@ -994,7 +1090,7 @@ echo "data1:data2:data3" | tr ':' '\n'
 echo "a:b:c" | tr -d ":"
 ```
 
-head/tail
+### head/tail
 
 ```bash
 # 只显示第一行
@@ -1013,7 +1109,7 @@ head -n -1 <file>
 head -n 3 <file> | tail -n 1
 ```
 
-crontab
+### crontab
 
 ```sh
 # 定时执行任务
@@ -1038,7 +1134,7 @@ crontab -e          # 删除要取消的任务后保存退出
 0 0 * * 6 /path/to/test.sh
 ```
 
-> diff
+### diff
 
 ```bash
 # 比较两个文件
@@ -1078,7 +1174,15 @@ diff结果如果有多出不一样会显示多次以下介绍内容
 < line2 in file1
 ```
 
-> readelf
+### rsync
+
+```sh
+# 删除大文件夹
+# 文件夹后的 / 不能去掉
+mkdir empty && rsync --delete -d ./empty/ ./dir_to_delete/ && rm -r empty
+```
+
+### readelf
 
 readelf 是一个用于分析 ELF 文件的命令行工具，可以查看各个节（section）的详细内容。
 
@@ -1089,7 +1193,7 @@ readelf 是一个用于分析 ELF 文件的命令行工具，可以查看各个�
 readelf -p .comment test.so
 ```
 
-> DISPLAY 为其他用户创建终端
+### DISPLAY 为其他用户创建终端
 
 格式 hostname:display-number.scree-number
 
@@ -1105,7 +1209,7 @@ screen-number  : 屏幕号
 
 xdg-open 是一个在 Linux 和其它 POSIX 兼容系统中使用的命令行工具，用于打开任意类型的文件或 URL。该命令会自动根据系统上安装的默认应用程序打开相应的文件或 URL，可以打开本地文件、远程文件以及通过网络协议（如 HTTP、FTP、mailto 等）指定的文件。xdg-open 命令实际上是一个桥接程序，它会尝试确定默认的应用程序，并将文件或 URL 传递给它们进行处理。
 
-> 关闭终端提示音
+### 关闭终端提示音
 
 ```sh
 # 以下命令都试一下
@@ -1117,7 +1221,8 @@ set nobeep=1
 ```
 
 <a id="showkey"></a>
-> showkey
+
+### showkey
 
 ```sh
 # 查看键盘按键转换为ascii字符是什么
@@ -1125,7 +1230,7 @@ set nobeep=1
 showkey -a
 ```
 
-> who
+### who
 
 查看所有登录用户，一个终端为一个登录
 
@@ -1139,6 +1244,18 @@ user3       pts/2       2023-10-11 09:51 (172.168.1.100)            # ssh登录�
 
 # 查看当前终端的pts值
 tty         # /dev/pts/2
+```
+
+### apropos
+
+根据命令中部分字符显示所有可能的命令
+
+```sh
+# 显示所有名称包含wh的命令
+apropos wh
+
+# 使用正则表达式查找
+apropos . | egrep 'wh.*'
 ```
 
 ## tips

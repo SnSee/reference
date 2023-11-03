@@ -276,6 +276,13 @@ if has("gui_running")
 2.使用d/p修改
 ```
 
+## tips
+
+```vim
+# 删除所有匹配行
+:g/regex_pat/d
+```
+
 ## 插件
 
 [插件查找网站](https://vimawesome.com/)

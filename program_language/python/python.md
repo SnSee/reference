@@ -3,6 +3,14 @@
 
 官方文档: <https://docs.python.org/zh-cn/3/>
 
+[命令行参数](https://docs.python.org/3/using/cmdline.html#using-on-general)
+
+```sh
+python -c 'print("Hello World!")'   # 执行字符串中的代码
+# 相当于python test.py? 会自动搜索sys.path中的module?
+python -m test                      
+```
+
 ## 类型
 
 [官方文档](https://docs.python.org/zh-cn/3/library/typing.html)
@@ -1012,4 +1020,33 @@ for i in generator:
     print('before print')
     print('print:', i)
     print('after print')
+```
+
+## 提升性能技巧
+
+### 数学运算
+
+使用 a += b 替代 a = a + b
+
+```python
+a = 1
+b = 2
+b += a      # 替代 b = b + a
+```
+
+多次运算放在一个表达式中
+
+```python
+a = 1
+b = 2
+c = 3
+c += (a + b)    # 替代 c += a; c += b
+```
+
+不要使用临时变量
+
+```python
+a = 2
+c = 0
+c += pow(a, 2)  # 替代 b = pow(a, 2); c += b
 ```
