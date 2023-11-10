@@ -58,6 +58,14 @@ call        :: 调用其他bat
 takeown /f <文件路径>   :: 将文件所有者改为当前用户（需要管理员权限）
 ```
 
+### ipconfig
+
+#### 清空dns
+
+```bat
+ipconfig /flushdns
+```
+
 ## 文件操作
 
 ```bat

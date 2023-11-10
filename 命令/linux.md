@@ -1193,6 +1193,69 @@ readelf 是一个用于分析 ELF 文件的命令行工具，可以查看各个�
 readelf -p .comment test.so
 ```
 
+### watch
+
+监测命令输出，每隔一定时间（默认2秒）自动执行命令并显示输出
+
+```sh
+watch ls -l
+# -n <seconds>: 指定执行间隔
+# -d: 显示两次输出差异(效果不好)
+# -t: 不显示最上方一行的标题信息
+# -b: 命令返回非零值发出蜂鸣
+# -g: 两次输出不一致时自动退出
+
+# 退出时执行命令
+watch -g "ls -l" && echo "exit"
+```
+
+### nslookup 查看域名ip
+
+查看域名对应的ip地址
+
+```sh
+nslookup www.test.com
+dig www.test.com
+```
+
+### iptables
+
+不同链(chain)数据包流向
+
+* INPUT: 进入本地
+* OUTPUT: 发往服务器
+* FORWARD: 系统内转发?
+
+对数据包处理方式（man iptables-extensions查看更多）
+
+* ACCEPT: 允许通过
+* DROP: 丢弃
+
+命令行选项
+
+||||
+| -- | :--          | :--
+| -I | --insert     | 指定在哪条链插入规则(INPUT/OUTPUT)
+| -D | --delete     | 从哪条链删除规则
+| -s | --source     | 数据包从哪个地址过来
+| -d | --destination| 数据包要到哪个地址
+| -j | --jump       | 如何操作数据包(ACCEPT/DROP)
+
+禁止访问特定网站(需要sudo权限)
+
+```sh
+# 屏蔽网站，会自动解析域名对应的ipv4地址，也可直接指定ip
+# 实际屏蔽的是ip地址
+iptables -I OUTPUT -d "www.test.com" -j DROP
+
+# 查看iptables
+iptables -L
+
+# 恢复访问
+# 如果使用域名恢复不了，可以改为ip地址
+iptables -D OUTPUT -d "www.test.com" -j DROP
+```
+
 ### DISPLAY 为其他用户创建终端
 
 格式 hostname:display-number.scree-number
@@ -1205,7 +1268,7 @@ screen-number  : 屏幕号
 
 在Linux/Unix类操作系统中，DISPLAY环境变量用于设置将图形显示到何处，如果需要在远程计算机上运行图形程序， 可以将DISPLAY环境变量设置为远程主机的IP地址或主机名, 例如将DISPLAY环境变量设置为192.168.1.100:0.0，然后使用 konsole 打开一个终端。
 
-> xdg-open
+### xdg-open(gio open)
 
 xdg-open 是一个在 Linux 和其它 POSIX 兼容系统中使用的命令行工具，用于打开任意类型的文件或 URL。该命令会自动根据系统上安装的默认应用程序打开相应的文件或 URL，可以打开本地文件、远程文件以及通过网络协议（如 HTTP、FTP、mailto 等）指定的文件。xdg-open 命令实际上是一个桥接程序，它会尝试确定默认的应用程序，并将文件或 URL 传递给它们进行处理。
 

@@ -20,6 +20,12 @@ $?VAR_NAME
 # setenv | grep VAR_NAME
 ```
 
+```csh
+ls ~
+# 复用上一条命令最后一个参数
+ll !$
+```
+
 [重定向标准错误](https://qa.1r1g.com/sf/ask/2240761841/)
 
 设置退出时自动执行命令(需要使用exit退出, 直接关闭tab页不行)

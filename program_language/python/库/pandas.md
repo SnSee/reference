@@ -60,6 +60,7 @@ df = pd.DataFrame([], columns=['c1', 'c2', 'c3'])
 # 方式一
 df.loc[len(df)] = [1, 2, 3]
 df.loc[len(df)] = [4, 5, 6]
+df.loc['row_name'] = [4, 5, 6]      # 同时设置行名
 # 方式二
 newLine = {key: val for key, val in zip(cs, [7, 8, 9])}
 df = pd.concat([df, pd.DataFrame([newLine])], ignore_index=True)
@@ -128,6 +129,9 @@ df.iloc[0:2, 1:2]                   # 分别对行列切片获取子表
 ```python
 # 创建时指定行名，index长度要和表格行数一致
 df = pd.DataFrame(data, index=['First', 'Second', 'Third'])
+
+# 插入行时指定行名称
+df.loc['row_name'] = [1, 2, 3]
 
 # 指定已有列为行名
 df.set_index('Name', inplace=True)
