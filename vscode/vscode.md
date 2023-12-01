@@ -68,6 +68,14 @@
 }
 ```
 
+<h1 id="vim-foldopen"></h1>
+
+按 j 时自动打开折叠问题
+
+```text
+打开设置，搜索 foldfix，勾选即可
+```
+
 ### Qt Configure
 
 ```text

@@ -88,6 +88,8 @@ revert
 
 ## 其他命令
 
+### stash 缓存
+
 ```sh
 # 不指定 stash@{n} 的默认为最近一次缓存
 git stash                       # 暂存当前分支下改动

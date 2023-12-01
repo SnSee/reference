@@ -80,14 +80,6 @@ endif
 if ($num < 100) then
   @ num++
 endif
-
-# 判断字符串是否相同
-if ($str1 == $str2) then
-endif
-
-# 模糊比较
-if ($str1 =~ "*.txt") then
-endif
 ```
 
 ### while
@@ -115,7 +107,7 @@ set num = 0
 @ num++     # @后必须有空格
 ```
 
-## 示例
+### 字符串
 
 判断是否是空字符串/字符串为空
 
@@ -143,6 +135,35 @@ endif
 set str="foo is foo"
 set str=`echo $str | sed 's/foo/bar/g'`
 echo $str
+```
+
+判断字符串是否相同/字符串比较
+
+```csh
+if ("$str1" == "$str2") then
+endif
+if ("$str1" != "$str2") then
+endif
+```
+
+模糊比较
+
+```csh
+# 模糊项必须在后边
+if ("$str1" =~ "*.txt") then
+endif
+
+# 判断字符串是否包含字串
+set str1 = 'bb'
+set str2 = 'aabbcc'
+if ("$str2" =~ "*$str1*") then
+  echo "has"
+endif
+
+# 取反
+if (!("$str2" =~ "*$str1*")) then
+  echo "no"
+endif
 ```
 
 ## 命令

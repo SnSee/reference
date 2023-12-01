@@ -84,17 +84,10 @@ ll | wc -l
 find ./ -name "*.cpp" | wc -l
 ```
 
-时间戳
+时间戳([stat](#stat-文件元数据))
 
 ```sh
 ls -l           # 查看最后修改时间
-
-stat <file>     # 查看所有时间
-                # Access : 最后一次访问时间
-                # Modify : 最后一次修改文件内容时间
-                # Change : 最后一次修改文件元数据(权限等)时间
-                # Birth  : 创建时间(有的文件系统没有，显示为 -)
-                #          复制出的文件Birth为复制时的时间而不是源文件时间
 ```
 
 ### tar
@@ -218,6 +211,9 @@ locate <file_name> (支持wildcard)
 # 按名称查找
 find ./ -name "*.txt"
 
+# 查找可执行文件
+find . -type f -executable
+
 # 忽略指定目录
 find . -name "*.txt" -prune -o -path "./tmp" -prune
 
@@ -234,6 +230,9 @@ find . -name "*.txt" -exec cat {} \;
 # 递归删除当前路径下所有名称及类型符合匹配条件的文件
 find ./ -type {type} -name {name} | xargs rm -rf
 find ./ -type {type} -name {name} -exec rm -rf {} \;
+
+# 使用管道
+find . name "*.txt" -exec sh -c 'basename {} | fgrep test' \;
 ```
 
 ### 7.3. ncdu
@@ -493,6 +492,7 @@ grep命令是一种文本搜索工具，可以用于在指定文件、标准输�
 -v: 不匹配行
 -h: 仅显示匹配行
 -c: 仅显示匹配文件及行号
+-o: 仅显示匹配的部分，如果一行中有多个部分匹配，显示为多行
 -l: 仅显示匹配文件
 -L: 仅显示不匹配文件
 -n: 显示行号
@@ -537,6 +537,9 @@ grep -e '\wa' -e 'a\w' test.txt
 grep -r example /path/to/directory/ --include="*.txt"
 # 开启了**功能(shopt -s globstar)
 grep -r example /path/to/directory/**/*.txt
+
+# 统计字符串中某个字符/字符串的数量
+echo '1-2-3-4' | fgrep -o '-' | wc -l       # 结果: 3
 ```
 
 ### 11.2. sed
@@ -910,7 +913,7 @@ sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 70
 sudo update-alternatives --config gcc
 ```
 
-### 显示颜色
+### 显示颜色/color
 
 <https://blog.csdn.net/weixin_49439456/article/details/123746038>
 
@@ -1112,8 +1115,9 @@ head -n 3 <file> | tail -n 1
 ### crontab
 
 ```sh
-# 定时执行任务
-crontab <cmd-list>
+# 定时执行文件中的任务
+# 也可以通过 -e 打开命令列表直接添加
+crontab <cron-expr-file>
 
 # 查看当前用户任务列表
 crontab -l
@@ -1125,7 +1129,7 @@ crontab -e          # 删除要取消的任务后保存退出
 ```
 
 ```sh
-# cmd-list: cron表达式
+# cron-expr: cron表达式
 # week 0 表示周日，其他数字均从1开始
 # * 表示不限制时间
 <minute> <hour> <month> <date> <week> <file-to-execute>
@@ -1193,9 +1197,9 @@ readelf 是一个用于分析 ELF 文件的命令行工具，可以查看各个�
 readelf -p .comment test.so
 ```
 
-### watch
+### watch 监测命令输出
 
-监测命令输出，每隔一定时间（默认2秒）自动执行命令并显示输出
+每隔一定时间（默认2秒）自动执行命令并显示输出
 
 ```sh
 watch ls -l
@@ -1207,6 +1211,25 @@ watch ls -l
 
 # 退出时执行命令
 watch -g "ls -l" && echo "exit"
+```
+
+### rename 批量重命名
+
+```sh
+# 原理相当于对所有 files 名称使用 s/expression/replacement/
+# 只有第一个匹配的 expression 会被替换
+rename [options] expression replacement files
+```
+
+```sh
+# 修改扩展名/后缀
+# 将扩展名为 .ht 的文件改为 .html
+rename .ht .html *.ht
+
+# 对齐编号
+# a1.txt ... a11.txt ... a111.txt -> a001.txt ... a011.txt ... a111.txt
+rename a a00 a?.txt       # 有一个数字的加两个 0
+rename a a0 a??.txt       # 有两个数字的加一个 0
 ```
 
 ### nslookup 查看域名ip
@@ -1291,6 +1314,45 @@ set nobeep=1
 # 查看键盘按键转换为ascii字符是什么
 # 输入任意单个/组合按键，会显示对应的ascii字符，按 Ctrl-D 退出
 showkey -a
+```
+
+### stat 文件元数据
+
+[stat](https://blog.csdn.net/qq_42759112/article/details/126249990)
+
+```sh
+stat <file>
+
+# 各项含义：
+Size    : 文件实际字节数
+Blocks  : 文件实际占用多少个 512 字节块
+IO Block: 
+Access  : 最后一次访问时间
+Modify  : 最后一次修改文件内容时间
+Change  : 最后一次修改文件元数据(权限等)时间
+Birth   : 创建时间(有的文件系统没有，显示为 -), 复制出的文件Birth为复制时的时间而不是源文件时间
+```
+
+### df
+
+```sh
+# 查看硬盘使用情况
+df -h
+
+# 查看指定目录挂载的硬盘使用情况
+df .
+
+-h: 易读方式显示大小(T, G, M等单位，默认为 K)
+```
+
+### mount 查看文件系统
+
+```sh
+# 先根据 df -h . 查看挂载目录，如 /home 挂载在某个卷上
+mount | fgrep /home         # 方式一
+findmnt -no FSTYPE /home    # 方式二
+
+nfs: Network File System，网络共享文件系统
 ```
 
 ### who

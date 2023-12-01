@@ -109,6 +109,17 @@ ctrl+w [n]<: 减小宽度
 ctrl+w =   : 子窗口均分主窗口
 ```
 
+## tab页
+
+```vim
+:tabe test.txt          " 打开tab页
+:tabc                   " 关闭当前tab页
+
+" 切换tab页
+nnoremap <leader>l :tabn<CR>
+nnoremap <leader>h :tabp<CR>
+```
+
 ## 文件跳转
 
 ```text
@@ -126,7 +137,7 @@ m A             创建名为A的标签(mark)
 :delmark A-Z    删除所有标签
 ```
 
-比较文件
+## 比较文件
 
 ```bash
 # ]c 跳转到下个不同的地方
@@ -173,7 +184,7 @@ set foldmarker={,}
 "     set foldexpr=getline(v:lnum)[0]==\"\\t\"   "按tab折叠
 "     set foldexpr=MyFoldLevel(v:lnum)           "调用自定义的折叠函数
 "     :set foldexpr=getline(v:lnum)=~'^\\s*$'&&getline(v:lnum+1)=~'\\S'?'<1':1    "按空行折叠
-" 在括号处创建到匹配括号的折叠: zf%(需要marker模式)
+" 在括号处创建到匹配括号的折叠: zf%(需要marker/manual模式)
 ```
 
 折叠快捷键
@@ -188,9 +199,16 @@ zc 非递归 折叠当前所在最近的作用域
 zo 非递归 折叠当前所在最近的作用域
 
 zMzv 近似实现递归折叠子节点，但是由于使用了zM，其他所有节点都会被折叠
+
+" zf/fo 在marker模式下会修改文件，因此不推荐使用，manual模式可以使用
+" 为visual行创建折叠
+{visual}zf 
+" 为指定行创建折叠
+:1,2fo
 ```
 
 [更多折叠快捷键](https://www.cnblogs.com/heartchord/p/4797996.html?ivk_sa=1024320u)
+[vscode按j自动打开折叠问题](../vscode/vscode.md#vim-foldopen)
 
 ## 字符串
 

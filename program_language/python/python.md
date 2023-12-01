@@ -11,6 +11,50 @@ python -c 'print("Hello World!")'   # 执行字符串中的代码
 python -m test                      
 ```
 
+## 关键字
+
+### with ... as ...
+
+```txt
+原理：
+    通过with调用函数/类时:
+        进入作用域调用 __enter__()
+        退出作用域调用 __exit__()，因此可以进行清理操作
+    as 后的对象即是 __enter__ 返回的对象
+```
+
+创建可以通过 with 调用的结构
+
+```python
+class Scope:
+    def __init__(self, num: int):
+        self.num = num
+        print('init:', self.num)
+
+    def show(self):
+        print('num:', self.num)
+
+    def __enter__(self):
+        print("enter:", self.num)
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        print("exit before clear:", hasattr(self, 'num'))
+        del self.num        # 清理数据
+        print("exit before clear:", hasattr(self, 'num'))
+
+def scope_wrapper(num: int):
+    print("scope wrapper")
+    return Scope(num)
+
+# 通过类对象直接调用
+with Scope(1) as s:
+    s.show()
+# 通过函数接口调用
+with scope_wrapper(2) as s:
+    s.show()
+```
+
 ## 类型
 
 [官方文档](https://docs.python.org/zh-cn/3/library/typing.html)
@@ -100,6 +144,16 @@ matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
 print([num for row in matrix for num in row])
 # 保持二维
 print([[num for num in row] for row in matrix])
+```
+
+切片
+
+```python
+line = [1, 2, 3, 4, 5]
+# m 不写表示从头开始，n 不写表示到末尾
+l2 = line[m:n]              # 创建新列表，元素为原list中 [m, n)
+line[m:n] = Iterable        # [m, n) 替换为新序列内元素
+line[m:n] = []              # 移除 [m, n) 元素
 ```
 
 sort (排序)
@@ -193,6 +247,17 @@ print(la)
 # 获取长度为1的dict中数据
 my_dict = {'key': 'value'}
 key, value = next(iter(my_dict.items()))
+```
+
+### 嵌套dict
+
+遇到不存在key时自动插入数据
+
+```python
+class NestedDict(dict):
+    def __missing__(self, key):
+        self[key] = NestedDict()
+        return self[key]
 ```
 
 ### 枚举
@@ -720,6 +785,60 @@ def decorated_func():
     pass
 ```
 
+#### 装饰器实现 override
+
+```python
+import functools
+
+def override(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs) -> object:
+        func_name = func.__name__
+        assert len(args) > 0 and hasattr(args[0], func_name), f'{func_name} is not class method'
+        self = args[0]
+        for _parent in self.__class__.__bases__:
+            if hasattr(_parent, func_name):
+                return func(*args, **kwargs)
+        raise ValueError(f"Method {func_name} is not overridden from parent class.")
+    return wrapper
+
+class P1:
+    def m1(self, num: int):
+        print("P1 m1:", num)
+
+    @classmethod
+    def c1(cls):
+        print("P1 c1")
+
+class P2:
+    def m2(self):
+        print("P2 m2")
+
+class Child(P1, P2):
+    @override
+    def m1(self, num: int):
+        print("Child m1:", num)
+
+    @override
+    def m2(self):
+        print("Child m2")
+
+    @classmethod
+    @override
+    def c1(cls):
+        print("Child c1")
+
+    @override
+    def m3(self):
+        pass
+
+obj = Child()
+obj.m1(1)       # 只能对成员方法使用 @override
+obj.m2()
+# obj.c1()
+# obj.m3()
+```
+
 ### 装饰器类
 
 ## 调用系统命令
@@ -758,6 +877,17 @@ def subprocessRun(cmd: str, cwd: str) -> str:
         raise Exception(sp.stderr.decode("utf-8"))
     # 如果subprocess.run中指定了encoding='utf-8'，则stdout是str
     return sp.stdout.decode("utf-8").strip()
+```
+
+设置超时退出
+
+```python
+import subprocess
+
+try:
+    subprocess.run('sleep 5', shell=True, timeout=1)
+except subprocess.TimeoutExpired:
+    print("subprocess timeout")
 ```
 
 tips
@@ -1049,4 +1179,30 @@ c += (a + b)    # 替代 c += a; c += b
 a = 2
 c = 0
 c += pow(a, 2)  # 替代 b = pow(a, 2); c += b
+```
+
+## 注意事项
+
+### 静态变量
+
+#### 使用 self 引用int/float 等不可变类型静态变量可能存在的问题
+
+对于不可变类型，改变其值时内存地址也会跟着改变，导致通过 self 操作的修改实际作用是创建了新的变量，而原静态变量地址不变，即静态变量值未被修改
+
+```python
+class T:
+    _i = 0
+
+    def __init__(self):
+        self.i = self._i
+        print('T', id(T._i))
+        self._i += 1                # 修改不可变类型，内存地址改变，相当与创建了成员变量(覆盖类变量)
+        print('T', id(T._i))        # 地址不变
+        print('S', id(self._i))     # 地址和 T 不一致
+        T._i += 1                   #
+        print('T', id(T._i))        # 地址改变，但是可能和 S 一致，因为内部复用了整型变量地址
+        T._i += 1                   # 修改不可变类型，内存地址改变，又将该地址绑定到了类变量
+        print('T', id(T._i))        # 地址改变
+
+t = T()
 ```

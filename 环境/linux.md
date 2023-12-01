@@ -109,3 +109,21 @@ make -j8
 # 如果报错std不包含numeric_limits，加上 #include <limits>
 # 导致这些错误的原因是 Qt 和 qtcreator 版本不匹配
 ```
+
+## pkg-config
+
+[源码](https://github.com/Distrotech/pkg-config)
+
+```sh
+./configure --prefix=/install/dir
+make && make install
+```
+
+## libevent
+
+[下载](https://github.com/libevent/libevent/releases/tag/release-2.1.12-stable)
+
+```sh
+./configure --prefix=/install/dir
+make && make install
+```

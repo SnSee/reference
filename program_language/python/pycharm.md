@@ -1,7 +1,17 @@
 
 # pycharm
 
-设置python解释器, 安装包, 添加包搜索路径
+## 启动失败
+
+解决 Address already in use: bind 问题
+
+```sh
+# 以管理员身份运行
+net stop winnat
+net start winnat
+```
+
+## 设置python解释器, 安装包, 添加包搜索路径
 
 ```text
 File -> settings -> Project: xxx -> Python Interpreter
@@ -13,7 +23,7 @@ File -> settings -> Project: xxx -> Python Interpreter
 
 ![包](./pics/pycharm_package.png)
 
-修改vim设置
+## 修改vim设置
 
 ```text
 ~/.ideavimrc
@@ -27,7 +37,7 @@ File -> settings -> Project: xxx -> Python Interpreter
 3. 选择 Editor->Vim，找到 Ctrl + I/O, handler 改为 IDE
 ```
 
-其他快捷键及名称
+## 其他快捷键及名称
 
 * **Alt + H**   : 切换到左侧tab页(Editor Tabs -> Select Previous Tab)
 * **Alt + L**   : 切换到右侧tab页(Editor Tabs -> Select Next Tab)

@@ -3,7 +3,24 @@
 
 [菜鸟教程](https://www.runoob.com/perl/perl-tutorial.html)
 
-数据类型
+## 安装
+
+### 通过 cpan 安装模块
+
+[cpan官网](https://www.cpan.org)
+
+[模块查找及下载](https://metacpan.org)
+
+```sh
+# 解压模块包后
+perl Makefile.PL PREFIX=/install/directory
+make && make install
+
+# 添加 perl 模块搜索路径
+export PERL5LIB=/path/to/your/module:$PERL5LIB
+```
+
+## 数据类型
 
 ```perl
 # 标量（数字，字符串等，以 $ 开头命名）
@@ -21,7 +38,7 @@ print '$a\n$b';      # 单引号会原样输出
 %hash=('a'=>1, 'b'=>2);
 ```
 
-变量
+### 变量
 
 ```perl
 sub test {
@@ -32,7 +49,7 @@ sub test {
 }
 ```
 
-数组
+### 数组
 
 ```perl
 @arr = (1, 2, 3)    # 创建数组
@@ -55,7 +72,7 @@ $new_byte = pop(@sites);
 $new_byte = shift(@sites);
 ```
 
-哈希
+### 哈希
 
 ```perl
 $hash{'a'}              # 访问元素
@@ -69,12 +86,14 @@ foreach $key (keys %hash) {}
 while(($key, $val) = each(%hash)) {}
 ```
 
-数学运算
+### 数学运算
 
 ```perl
 ```
 
-条件语句
+## 逻辑控制
+
+### if 条件语句
 
 ```perl
 $a = 100;
@@ -84,7 +103,7 @@ if( $a  ==  20 ){
 }
 ```
 
-switch
+### switch
 
 ```perl
 use Switch;
@@ -102,14 +121,14 @@ switch(argument){
 }
 ```
 
-三目运算符
+### 三目运算符
 
 ```perl
 # c 语法
 exp1 ? exp2 : exp3;
 ```
 
-循环
+### while/for/foreach 循环
 
 ```perl
 while() {}
@@ -120,13 +139,13 @@ next    # 相当于 continue
 last    # 相当于 break
 ```
 
-调用shell命令
+### 调用shell命令
 
 ```perl
 my @dirs = `ls ~`
 ```
 
-文件操作
+## 文件操作
 
 ```perl
 open(DATA, "<file.txt") or die "file.txt 文件无法打开, $!";
@@ -136,7 +155,11 @@ while(<DATA>){
 }
 ```
 
-split 拆分字符串
+## 函数
+
+### 字符串函数
+
+#### split 拆分字符串
 
 ```perl
 my $str = "a.b.c";
