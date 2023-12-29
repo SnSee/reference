@@ -37,6 +37,28 @@
 
 [sourceforge](https://sourceforge.net/)
 
+## Standard
+
+[IEEE官网](https://ieeexplore.ieee.org)
+
+[IEEE-Standard](https://standards.ieee.org)
+
+```text
+IEEE Standard 编号格式：number-year（如：1450.6.2-2014）
+    number表示编号，可能有 . 表示扩展说明(extension)
+    year表示年份
+```
+
+[sci-hub](https://tool.yovisun.com/scihub)
+
+```text
+使用方式:
+    1.在ieee上用关键字搜索，找到后点击pdf图标进入详情页
+    2.复制详情页的 DOI 码到 sci-hub 的搜索框并搜索
+    3.点击下载即可，可能要输入验证码
+    4.在 IEEE-Standard 搜索标准编号号并勾选Standard查看有哪些版本
+```
+
 ## Linux
 
 [Bash FAQ](http://mywiki.wooledge.org/BashFAQ/)

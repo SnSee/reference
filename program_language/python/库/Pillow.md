@@ -14,7 +14,7 @@ width = font.getlength('test')      # 像素
 print(width)
 ```
 
-合并图片
+合并(merge)图片
 
 ```python
 from PIL import Image
@@ -25,6 +25,6 @@ width = max([i.size[0] for i in images])
 heights = [i.size[1] for i in images]
 newImg = Image.new('RGB', (width, sum(heights)))
 for i, img in enumerate(images):
-    newImg.paste(img, (width, sum(heights[:i])))
+    newImg.paste(img, (0, sum(heights[:i])))
 newImg.save('merged.png')
 ```

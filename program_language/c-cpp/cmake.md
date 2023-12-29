@@ -33,6 +33,10 @@ cd build && cmake ..
 cmake --build . -j 10
 # linux下可以 make -j10
 
+-j       : 进程数
+--build  : 在指定目录编译
+--target : 编译指定目标
+
 # 安装
 cmake --build . --target install
 ```

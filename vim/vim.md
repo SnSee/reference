@@ -56,6 +56,12 @@ colorscheme default
 
 ## 快捷键
 
+通过 [showkey](../命令/linux.md#showkey) 命令查看组合键实际对应的 ascii 字符串
+
+```text
+insert模式退出到normal模式: <C-\><C-n>
+```
+
 ```vim
 " 按下该键后再按其他按键触发组合快捷键（不用同时按）
 let mapleader = "," 
@@ -82,6 +88,10 @@ nnoremap <C-l> <C-w>l
 " 切换tab页
 nnoremap <leader>l :tabn<CR>
 nnoremap <leader>h :tabp<CR>
+
+" 运行当前文件
+nnoremap <S-F10> :w<CR>:!./%<CR>
+inoremap <S-F10> <C-\><C-n>:w<CR>:!./%<CR>
 ```
 
 ## 分屏（多窗口）
@@ -304,8 +314,16 @@ if has("gui_running")
 ## tips
 
 ```vim
-# 删除所有匹配行
+" 删除所有匹配行
 :g/regex_pat/d
+
+" 删除空行
+:g/^\s*$/d
+
+" 压缩连续空行
+" vim中正则符号 { 需要转义，一些vim模拟器不需要
+:%s/^\s*$//g              " 先删除只有空白字符的行中的空白字符
+:%s/^\n\{2,}/\r/g         " 只保留第一个空的换行符，替换时需要使用 \r 而不是 \n
 ```
 
 ## 插件

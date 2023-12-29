@@ -52,6 +52,10 @@ nnoremap <C-j> <C-w>j
 nnoremap <C-k> <C-w>k
 nnoremap <C-l> <C-w>l
 
+" 运行当前文件
+nnoremap <S-F10> :w<CR>:!./%<CR>
+inoremap <S-F10> <C-\><C-n>:w<CR>:!./%<CR>
+
 " 设置自动补全括号
 inoremap { {<Enter>}<Esc>O
 inoremap { {}<Esc>i

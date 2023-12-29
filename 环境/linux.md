@@ -22,6 +22,9 @@ cd glibc-xxx
 mkdir build && cd build
 # 如果configure报错make版本过低，为最新的make创建一个名为gmake的软链接
 ../configure --prefix=/where/to/install
+
+# 如果出现-Werror=xxx错误可以通过添加编译选项 -Wno-error=xxx 忽略
+# 在 config.make 中查找 CFLAGS 进行添加
 make -j8 && make install
 ```
 
@@ -127,3 +130,9 @@ make && make install
 ./configure --prefix=/install/dir
 make && make install
 ```
+
+## openssl
+
+[下载](https://www.openssl.org/source/)
+
+安装参考 README.md 即可

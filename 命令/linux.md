@@ -207,6 +207,18 @@ locate <file_name> (支持wildcard)
 
 ### 7.2. find
 
+命令行选项
+
+```sh
+-name      : 指定文件名称，必须全部匹配，使用通配符需要双引号，如: -name "*.txt"
+-iname     : 忽略大小写
+-type      : 指定文件类型，常用: f-普通文件, d-文件夹
+-exec      : 找到文件后执行命令({}是文件名，\;表示结束)，如: -exec wc -l {} \;
+-executable: 只查找具有执行权限的文件或目录
+-L         : 跟随软链接，使用链接到的文件的属性，如 -type 时指定的文件类型。
+             对于目录的软链接，会对目录进行递归查找。
+```
+
 ```bash
 # 按名称查找
 find ./ -name "*.txt"
@@ -233,6 +245,7 @@ find ./ -type {type} -name {name} -exec rm -rf {} \;
 
 # 使用管道
 find . name "*.txt" -exec sh -c 'basename {} | fgrep test' \;
+# 对于 csh 可以使用 -cf 不 source ~/.cshrc 加快速度
 ```
 
 ### 7.3. ncdu
@@ -249,6 +262,14 @@ find . name "*.txt" -exec sh -c 'basename {} | fgrep test' \;
 ncdu xxx扫描指定目录
 扫描结果出来后按 ? 查看帮助
 jk上下选择目录，h回到上一级，l进入子目录
+```
+
+### lsof
+
+查看文件被哪个进程占用/使用
+
+```sh
+lsof test.txt
 ```
 
 ## 8. shell编程(bash)
@@ -935,6 +956,71 @@ echo -e "\033[32m 绿色字 \033[0m"
 
 ```bash
 printf "%s world" hello
+```
+
+### 列表/list/数组/array
+
+```sh
+list=(1 2 3)                        # 创建列表
+list+=(4)                           # 追加元素
+echo ${#list[@]}                    # 查看长度
+echo ${list[0]}                     # 单个元素
+echo ${list[@]}                     # 所有元素
+unset list[0]                       # 删除元素
+for num in ${list[@]}; do           # 遍历
+    echo $num
+done
+```
+
+### declare
+
+声明变量及其类型
+
+```sh
+declare var                         # 声明变量
+declare var = 10                    # 声明时初始化
+
+declare -A dic=([a]=1 [b]=2)        # 声明关联数组/字典/dict(无序)
+dic[a]=9                            # 修改元素
+dic[c]=3                            # 新增元素
+echo ${dic[a]}                      # 查看单个元素值
+echo ${!dic[@]}                     # 查看所有 key
+echo ${dic[@]}                      # 查看所有 value
+for key in ${!dic[@]}; do           # 遍历
+    echo "$key: ${dic[$key]}"
+done
+
+# 试图修改时会报错并保留原值
+declare -r con="Constant value"     # 声明只读变量
+```
+
+### mkdir
+
+```sh
+mkdir a
+mkdir -p a/b/c
+
+-p: 递归创建目录，目录已存在不报错
+```
+
+### xargs
+
+为不能通过管道获取参数的命令提供管道功能，如:
+
+```sh
+ls | xargs echo
+```
+
+命令行选项
+
+```sh
+-I  : 指定一个替换符号代表标准输入，如 {}，在后续命令中用 {} 代表标准输入内容
+```
+
+示例
+
+```sh
+ls | xargs -I {} echo {} {} {}  # 打印三次
 ```
 
 ### uniq

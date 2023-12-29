@@ -14,3 +14,5 @@ fastGithub(加速github)
 [f.lux屏幕亮度调节](https://justgetflux.com/)
 
 [potplayer](http://potplayer.tv/?lang=zh_CN)
+
+[qpdf破解加密pdf](https://github.com/qpdf/qpdf)
