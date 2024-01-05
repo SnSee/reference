@@ -90,6 +90,3 @@ IEEE Standard 编号格式：number-year（如：1450.6.2-2014）
 ## 其他
 
 购买国外虚拟电话号码: [Tiger-SMS](https://tiger-sms.com/)
-
-
-bsim更新了，支持使用table命令创建excel时不设置x2；支持x1/x2使用的变量只有一个值

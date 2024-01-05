@@ -98,6 +98,9 @@ foreach var (wordlist)
   continue
   break
 end
+
+foreach var (w1 w2 w3)
+end
 ```
 
 ### 数学运算
