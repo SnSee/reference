@@ -13,6 +13,9 @@ with open('example.html', 'r', encoding='utf-8') as f:
 # 解析HTML文件
 soup = BeautifulSoup(html_content, 'html.parser')
 
+# 转换为普通文本
+print(soup.get_text())
+
 # 可以使用下面的代码来查看解析结果
 print(soup.prettify())
 ```

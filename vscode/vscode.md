@@ -1,13 +1,13 @@
 
 # VS-Code
 
-> 制作插件
+## 制作插件
 
 ```text
 安装nodejs
 ```
 
-> 快捷键
+## 快捷键
 
 ```text
 1. 点击左下角齿轮，选择 Keyboard Shortcuts
@@ -20,7 +20,9 @@
 * **Alt + O**   : 回退(Go Back)
 * **Alt + I**   : 前进(Go Forward)
 
-> 针对某个文件类型设置
+## 针对某个文件类型设置
+
+用 vscode 打开文件时，右下角会显示文件类型，在 settings.json 中全小写即可，空格不需要。
 
 如设置markdown自动补全功能: crtl+shift+p, 搜索 settings，打开User Settings, 添加下面的json项
 

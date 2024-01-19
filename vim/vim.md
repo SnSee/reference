@@ -5,6 +5,8 @@
 
 查看帮助文档: vim内 :h <关键字>
 
+[关键字配置项简介](http://runxinzhi.com/fengchi-p-6902965.html)
+
 ## 发行版
 
 在vimrc中查看是否是gvim
@@ -253,6 +255,30 @@ linux vim 捕获时的括号需要转义 \( \), vscode下不需要转义
 2.使用 VISUAL 模式在要粘贴的位置选中同样行数，按 p 粘贴
 ```
 
+## 转义(magic/nomagic)
+
+:h magic 查看
+
+[知乎](https://zhuanlan.zhihu.com/p/143260180)
+
+特殊字符使用 \ 转义为普通字符
+普通字符使用 \ 转义为特殊字符
+
+|匹配前缀 | 特殊字符 | 普通字符|
+| -  | -      | -
+| \m | ^$.*[] | others
+| \M | ^$     | others
+| \v | others | a-zA-Z0-9_
+| \V | \      | others
+
+**\V** 中 **结束标记** 也是特殊字符，如 s 命令的 /
+
+```vim
+# 将 () 当做特殊字符
+/\v(1|2)                    " 搜索
+:%s/\v(1|2)/3/g             " 替换
+```
+
 ## 编码
 
 ```text
@@ -311,6 +337,19 @@ if has("gui_running")
 2.使用d/p修改
 ```
 
+## 兼容性设置
+
+cpo(cpoptions)
+
+letter 及对应含义通过 **:h cpo** 查看
+
+```vim
+# 添加设定
+set cpo+=<letter>
+# 减少设定
+set cpo-=<letter>
+```
+
 ## tips
 
 ```vim
@@ -321,9 +360,13 @@ if has("gui_running")
 :g/^\s*$/d
 
 " 压缩连续空行
-" vim中正则符号 { 需要转义，一些vim模拟器不需要
-:%s/^\s*$//g              " 先删除只有空白字符的行中的空白字符
-:%s/^\n\{2,}/\r/g         " 只保留第一个空的换行符，替换时需要使用 \r 而不是 \n
+:%s/^\s*$//g                " 先删除只有空白字符的行中的空白字符
+:%s/\v^\n{2,}/\r/g          " 只保留第一个空的换行符，替换时需要使用 \r 而不是 \n
+
+" 显示/打印当前文件绝对路径
+:echo expand('%:p')
+" 定义快捷命令
+:command! Pwd echo expand('%:p')
 ```
 
 ## 插件
@@ -359,7 +402,9 @@ Plug 'ervandew/supertab'
 call plug#end()
 ```
 
-> [nerdtree](https://github.com/preservim/nerdtree)
+### nerdtree
+
+[github](https://github.com/preservim/nerdtree)
 
 ```vim
 " 打开/关闭nerdtree
@@ -384,7 +429,9 @@ t: 打开文件(tab页方式并切换到新打开的tab)
 T: 打开文件(tab页方式但不切换)
 ```
 
-> [startify](https://github.com/mhinz/vim-startify)
+### startify
+
+[github](https://github.com/mhinz/vim-startify)
 
 ```sh
 # 直接vim即可
@@ -392,7 +439,9 @@ T: 打开文件(tab页方式但不切换)
 vim
 ```
 
-> [youcompleteme](https://github.com/ycm-core/YouCompleteMe)
+### youcompleteme
+
+[github](https://github.com/ycm-core/YouCompleteMe)
 
 需要编译
 

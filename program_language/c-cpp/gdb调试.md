@@ -192,3 +192,7 @@ ptype <变量或表达式>: 显示变量所有成员(不能是指针)
 继承到vscode：查看reference/vscode下的launch和task
 在调试控制台使用原生gdb命令：-exec <cmd>
 ```
+
+## 调试 python
+
+[教程](https://devguide.python.org/development-tools/gdb/index.html)

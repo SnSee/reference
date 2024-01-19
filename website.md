@@ -59,6 +59,13 @@ IEEE Standard 编号格式：number-year（如：1450.6.2-2014）
     4.在 IEEE-Standard 搜索标准编号号并勾选Standard查看有哪些版本
 ```
 
+[pdf reference(官方手册)](https://opensource.adobe.com/dc-acrobat-sdk-docs/pdflsdk/)
+
+```text
+1.打开链接，搜索: PDF Reference
+2.右键复制下载链接后使用 wget <link>
+```
+
 ## Linux
 
 [Bash FAQ](http://mywiki.wooledge.org/BashFAQ/)
