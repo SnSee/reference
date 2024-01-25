@@ -7,7 +7,7 @@
 
 [chatGPT](chat.openai.com)
 
-[chatGPT站点](https://cc.ai55.cc/)
+[codegeex](https://codegeex.cn/)
 
 ## 导航
 

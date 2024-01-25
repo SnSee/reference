@@ -30,8 +30,8 @@ lsearch ?option? list pattern: 查找列表是否包含指定pattern的元素，
 ### 脚本搜索路径
 
 ```tcl
-# 将当前目录添加到脚本搜索路径
-lappend auto_path [file dirname [info script]]
+# 将当前目录添加到自动搜索路径(只适用于 load 和 package require)
+lappend auto_path [file dirname [file normalize [info script]]]
 
 # 添加自定义目录到脚本搜索路径
 lappend auto_path "/path/to/custom/directory"

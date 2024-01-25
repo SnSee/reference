@@ -67,6 +67,20 @@ inoremap ) <c-r>=ClosePair(')')<CR>
 inoremap ] <c-r>=ClosePair(']')<CR>
 " inoremap <c-r>=ClosePair
 
+" 复制光标所在位置单词到系统粘贴板
+nnoremap <C-c> "+yiw
+inoremap <C-c> <C-\><C-n>"+yiw
+" 复制当前行到粘贴板
+nnoremap <C-L> :normal! "+yy<CR>
+" insert/command/search 使用系统粘贴板
+" normal 使用 "+p 即可
+cnoremap <C-S-v> <C-R>+
+inoremap <C-S-v> <C-R>+
+cnoremap <C-v> <C-R>+
+inoremap <C-v> <C-R>+
+nnoremap * "+yiw*
+nnoremap # "+yiw#
+
 " shortcut end
 
 " 设置快捷显示当前文件路径函数

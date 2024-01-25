@@ -60,7 +60,15 @@ colorscheme default
 
 通过 [showkey](../命令/linux.md#showkey) 命令查看组合键实际对应的 ascii 字符串
 
+|模式 |描述
+|- |- |
+|i |insert
+|n |normal
+|v |visual
+|c | command / search
+
 ```text
+Ctrl不能和Shift组合时没有Shift也能触发快捷键？如 <C-S-V> 按 Ctrl + v 一样触发
 insert模式退出到normal模式: <C-\><C-n>
 ```
 
@@ -90,6 +98,19 @@ nnoremap <C-l> <C-w>l
 " 切换tab页
 nnoremap <leader>l :tabn<CR>
 nnoremap <leader>h :tabp<CR>
+
+" insert/command/search 使用系统粘贴板
+" normal 使用 "+p 即可
+cnoremap <C-S-V> <C-R>+
+inoremap <C-S-V> <C-R>+
+cnoremap <C-v> <C-R>+
+inoremap <C-V> <C-R>+
+
+" 复制光标所在位置单词到系统粘贴板
+nnoremap <C-C> "+yiw
+inoremap <C-C> <C-\><C-n>"+yiw
+" 复制当前行到粘贴板
+nnoremap <C-L> :normal! "+yy<CR>
 
 " 运行当前文件
 nnoremap <S-F10> :w<CR>:!./%<CR>
@@ -137,6 +158,7 @@ nnoremap <leader>h :tabp<CR>
 ```text
 gf打开光标所在位置的文件
 ctrl + ^ 回到上一个文件
+<N>ctrl + ^ 跳转到编号为N的文件
 ctrl + o 回到上一个位置，反之 ctrl + i (只适用于使用了vim跳转命令的情况)
 :ls/buffers 查看打开的文件
 :b1 跳转到buffers列出的编号为1的文件
@@ -241,7 +263,7 @@ linux vim 捕获时的括号需要转义 \( \), vscode下不需要转义
         :%s/\(abc\)\(.*\)\(xyz\)/\3\2\1/g   替换后的部分使用捕获的内容
 ```
 
-## 粘贴
+## 复制/粘贴
 
 ```vim
 :set paste 粘贴时使用原有格式
@@ -253,6 +275,14 @@ linux vim 捕获时的括号需要转义 \( \), vscode下不需要转义
 ```text
 1.使用 VISUAL 模式选中要复制的多行数据，按 y 复制
 2.使用 VISUAL 模式在要粘贴的位置选中同样行数，按 p 粘贴
+```
+
+系统粘贴板
+
+```text
+"+y  : visual模式下复制选中内容到系统粘贴板
+"+yw : normal模式下复制单词到系统粘贴板
+"+p  : normal模式下从系统粘贴板粘贴
 ```
 
 ## 转义(magic/nomagic)
@@ -314,10 +344,38 @@ if has("gui_running")
 :reg a
 ```
 
-```vim
-最后一次复制的值会被存储到0寄存器中，通过"0p可以引用，删除操作不影响该寄存器
+下面的示例用 x 表示寄存器名称
+
+|模式 |操作 |描述
+|- |- | -
+|normal |qx<宏内容>q | 创建宏
+|normal |@x         | 应用宏
+|normal |"xyy       | 复制当前行到寄存器
+|normal |"xp        | 从寄存器中粘贴
+|insert | ctrl+R x  | 从寄存器粘贴
+
+寄存器分类(:h registers)
+
+|寄存器名称 |寄存器作用
+|-  | -
+|"  | 默认寄存器，记录最后一次删除/复制内容
+|0  | 默认寄存器，记录最后一次复制内容
+|1  | 默认寄存器，记录最后一次删除内容(有换行符)
+|2-9| 每新增删除内容，删除内容在寄存器间移动，如 1->2, 2->3
+|-  | 默认寄存器，记录最后一次删除内容(无换行符)
+|+  | 系统粘贴板
+|*  | visual 模式粘贴板，记录选中内容
+|a-z| 自定义寄存器，如果用 A-Z 表示追加内容到寄存器而不是替换
+|.  | readonly，记录最后一次插入内容(从进入 insert 模式到退出输入内容)
+|%  | readonly，记录当前文件名
+|:  | readonly，记录最后一次执行命令
+|=  | 表达式寄存器
+|#  | 记录 ctrl-^ 跳转文件名
+|/  | 记录通过 /?* 等方式搜索内容
+|_  | 黑洞寄存器，不记录任何内容
+
+最后一次复制的值会被存储到 **0寄存器** 中，通过 **"0p** 可以引用，删除操作不影响该寄存器
 最新的复制和删除操作的值都会存储到1寄存器, 1寄存器中的值会存储的2寄存器中，以此类推，最多到9寄存器
-```
 
 ## 重复操作
 
@@ -335,6 +393,7 @@ if has("gui_running")
 重复上次修改操作:
 1.从Normal到Insert再回到Normal算一次修改
 2.使用d/p修改
+3.缩进
 ```
 
 ## 兼容性设置

@@ -1181,6 +1181,72 @@ c = 0
 c += pow(a, 2)  # 替代 b = pow(a, 2); c += b
 ```
 
+### 内存优化
+
+[知乎](https://zhuanlan.zhihu.com/p/678036511)
+
+查看内存占用
+
+```python
+# 查看对象实际占用字节数
+print(sys.getsizeof(1))
+
+# 查看进程当前占用内存字节数
+print(psutil.Process().memory_info().rss)
+```
+
+#### 使用 slots 明确规定类成员变量名
+
+类成员属性必须是 \_\_slots\_\_ 中包含的字符串，方法名称可以是其他的。
+
+```python
+class Person:
+    __slots__ = ('name', 'age')
+
+    def __init__(self):
+        self.name = ''
+
+    def job(self): pass
+
+p = Person()
+p.age = 10          # 允许
+# setattr(p, 'age', 10)
+# p.height = ''       # 不允许, 无法插入不在 slots 中的属性
+```
+
+#### 使用生成器(Generator)
+
+```python
+def gen() -> typing.Generator:
+    for i in range(10):
+        yield i
+for n in gen():
+    print(n)
+```
+
+将列表推到的 [] 换成 () 即是生成器
+
+```python
+for n in (i for i in range(10)):
+    print(n)
+```
+
+#### 内存映射(mmap)
+
+测试发现当文件过小(<1k?)或过大(>500M?)时速度区别不明显
+
+```python
+import mmap
+
+with open('a', 'r') as fp:
+    with mmap.mmap(fp.fileno(), 0, access=mmap.ACCESS_READ) as mm:
+        while True:
+            line = mm.readline()
+            if not line:
+                break
+            print(line.decode('utf-8'), end='')
+```
+
 ## 注意事项
 
 ### 静态变量

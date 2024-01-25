@@ -38,6 +38,10 @@ vim ~/.logout
 ## 光标
 
 ```csh
+bindkey                     # 查看已绑定快捷键
+bindkey -l                  # 查看支持的操作
+bindkey "<key>" <option>    # 绑定操作到快捷键
+
 # 绑定 ctrl + 右方向键 到移动光标到单词尾下个字符
 bindkey "^[[1;5D" backward-word
 # 绑定 ctrl + 左方向键 到移动光标到单词头

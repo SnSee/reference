@@ -43,11 +43,6 @@ bind -P                     # 查看已绑定快捷键
 bind -l                     # 查看支持的操作
 # \C: ctrl, \e: alt/escape?
 bind '"<key>":<option>'     # 绑定操作到快捷键
-
-# csh
-bindkey                     # 查看已绑定快捷键
-bindkey -l                  # 查看支持的操作
-bindkey "<key>" <option>    # 绑定操作到快捷键
 ```
 
 历史命令
@@ -120,6 +115,28 @@ cat /proc/cpuinfo | grep "core id" | wc -l
     pid: 进程id，可通过 `ps aux | grep app_name` 查找
     lstart: 启动时间
     etime: 运行时间
+```
+
+进程状态(man ps：搜索 STATE)
+
+```sh
+R: running or runnable
+S: interruptible sleep (wait for an event to complete)
+D: uninterruptible sleep (usually IO)
+T: stopped by job control signal
+t: stopped by debugger during the tracing
+W: paging (not valid since the 2.6.xx kernel)
+X: dead (should never be seen)
+Z: defunct (zombie) process, terminated but not reaped by its parent
+```
+
+```sh
+<: high-priority (not nice to other users)
+N: low-priority (nice to other users)
+L: has pages locked into memory (for real-time and custom IO)
+s: is a session leader
+l: is multi-thread (using CLONE_THREAD, line NPTL pthreads do)
++: is in the foreground process group
 ```
 
 ### 4.2. 脚本
@@ -266,10 +283,24 @@ jk上下选择目录，h回到上一级，l进入子目录
 
 ### lsof
 
-查看文件被哪个进程占用/使用
+List Open Files
 
 ```sh
+lsof [options] <names>
+
+<names>: 文件名，PID，用户名，IPv4，IPv6等
+-i: 查看网络连接信息
+-r: 每隔指定秒数刷新一次
+```
+
+```sh
+# 查看文件被哪个进程占用/使用
 lsof test.txt
+
+# 查看网络连接信息
+lsof -i
+# 监听特定端口号，每 3 秒刷新一次
+lsof -i:443 -r3
 ```
 
 ## 8. shell编程(bash)
