@@ -94,7 +94,7 @@ revert
 # 不指定 stash@{n} 的默认为最近一次缓存
 git stash                       # 暂存当前分支下改动
 git stash list stash@{n}        # 查看缓存列表
-git stash pop stash@{n}         # 恢复最后一次缓存, 并删除该缓存
+git stash pop stash@{n}         # 恢复指定编号的缓存, 并删除该缓存
 git stash apply stash@{n}       # 恢复指定编号的缓存，但不删除缓存
 git stash drop stash@{n}        # 丢弃指定缓存
 git stash push <path1> <path2>  # 缓存指定文件

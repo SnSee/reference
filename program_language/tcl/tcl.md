@@ -84,6 +84,9 @@ if {[lsearch $myList $element] == -1} {}    # 判断元素不存在
 
 # 合并/拼接列表
 set new_list [concat $my_list $my_list]
+
+# 切片
+set slice [lrange $my_list 2 5]
 ```
 
 排序
@@ -113,7 +116,7 @@ dict set myDict key2 value2
 
 set value [dict get $myDict key1]   # 访问
 
-if {[dict exists $myDict key1]} {
+if {[dict exists $myDict key1]} {   # 存在性检查
     puts "has key1"
 }
 
@@ -352,6 +355,9 @@ expr min(1, 2, 3, 4.2, 5)       # 1
 ### try语法
 
 ```tcl
+# 抛出异常
+error "error message"
+
 try {
     return [expr 1/$num]
 } on error {code options} {
@@ -403,6 +409,7 @@ if {[string match "*hello*" $str]} {
 ```
 
 string first命令：在一个字符串中查找另一个字符串，并返回第一次出现的位置。
+可以用来判断字符串中是否包含某个子串
 
 ```tcl
 set pos [string first "world" $str]
@@ -514,4 +521,34 @@ proc compareByLength {a b} {
 
 set list {abc aa b}
 puts [lsort -command compareByLength $list]     # 输出：b aa abc
+```
+
+## packages
+
+### json
+
+导出 json 字符串
+
+```tcl
+package require json
+
+set dic [dict create]
+dict set dic name "Tom"
+dict set dic age 18
+set json_str [json::dict2json $dic]
+puts $json_str
+```
+
+解析 json 字符串
+
+```tcl
+package require json
+
+# 第一个花括号是 tcl 中纯字符串标识
+# 第二个花括号才是json的花括号
+set json_str {{"name": "Tom", "age": 18}}
+set dic [json::json2dict $json_str]
+foreach key [dict keys $dic] val [dict values $dic] {
+    puts "$key: $val"
+}
 ```

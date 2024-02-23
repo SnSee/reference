@@ -48,7 +48,7 @@ plt.close()
 plt.figure(figsize=(10,10), dpi=72)
 
 # 绘制折线图
-plt.plot(list, list, color='r', linestyle='-', marker='o', label='test')
+plt.plot(list, list, color='r', linestyle='-', marker='o', markersize=8, label='test')
 # plot可选参数
 # color, linestyle(线样式), marker(点样式), label(标签, 调用legend才会显示)
 

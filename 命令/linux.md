@@ -1,5 +1,7 @@
 # Linux
 
+<!-- markdownlint-disable no-emphasis-as-heading table-pipe-style-->
+
 ```bash
 # 下载部分命令源码
 git clone git://git.savannah.gnu.org/coreutils.git
@@ -153,6 +155,8 @@ ls按时间排序:
 
 [知乎](https://zhuanlan.zhihu.com/p/458010111)
 
+[进程状态](#41-ps)
+
 ```text
 PID USER PR NI VIRT RES SHR S %CPU %MEM TIME+ COMMAND
 PID : 进程号
@@ -230,20 +234,34 @@ locate <file_name> (支持wildcard)
 -name      : 指定文件名称，必须全部匹配，使用通配符需要双引号，如: -name "*.txt"
 -iname     : 忽略大小写
 -type      : 指定文件类型，常用: f-普通文件, d-文件夹
+-mmin      : 最近指定分钟内修改过的文件
+-atime     : 最近访问的文件，单位 *24 小时，+N 表示 [N+1, )，-N 表示 [0, N)，N 表示 [N,N+1)
+-mtime     : 最近修改的文件(内容)
+-ctime     : 最近修改的文件(元数据)
+-amin      : 同 atime，单位是分钟
+-mmin      : 同 mtime，单位是分钟
+-cmin      : 同 ctime，单位是分钟
 -exec      : 找到文件后执行命令({}是文件名，\;表示结束)，如: -exec wc -l {} \;
 -executable: 只查找具有执行权限的文件或目录
 -L         : 跟随软链接，使用链接到的文件的属性，如 -type 时指定的文件类型。
              对于目录的软链接，会对目录进行递归查找。
+-not -path : 忽略指定名称，需要全比配，可使用通配符
 ```
 
 ```bash
 # 按名称查找
 find ./ -name "*.txt"
 
+# 按时间查找
+find . -mtime -2        # 48 小时内修改的文件
+find . -mtime 2         # 48-72 小时内修改的文件
+find . -mtime +2        # 72 小时外修改的文件
+
 # 查找可执行文件
 find . -type f -executable
 
 # 忽略指定目录
+find . -not -path "./tmp*"
 find . -name "*.txt" -prune -o -path "./tmp" -prune
 
 # 忽略多个目录
@@ -402,18 +420,7 @@ let index*=2
 let index/=2        # 小数位会被舍弃
 ```
 
-expr 数学运算(只能计算整数，操作符两边必须有空格)
-
-```bash
-expr 3 + 5              # 8
-expr 10 - 6             # 4
-expr 3 \* 5             # 15
-expr 10 / 2             # 5
-expr 10 % 3             # 1
-expr 3 \< 5             # 1
-expr 3 \> 5             # 0
-expr "abc" \< "def"     # 1
-```
+[expr 数学运算](#expr)
 
 浮点数运算
 
@@ -710,7 +717,9 @@ awk '{print} /pat/{print}' file
 命令行参数
 
 ```bash
--F: 指定分隔符
+-F: 指定分隔符，
+    可以是字符串，如 -F'=='
+    可以是正则表达式，如 -F'[,;:]'，相当于 -F'(,|;|:)'
 ```
 
 语法
@@ -1003,6 +1012,32 @@ for num in ${list[@]}; do           # 遍历
 done
 ```
 
+### expr
+
+#### 数学运算
+
+expr 数学运算(只能计算整数，操作符两边必须有空格)
+
+```bash
+expr 3 + 5              # 8
+expr 10 - 6             # 4
+expr 3 \* 5             # 15
+expr 10 / 2             # 5
+expr 10 % 3             # 1
+expr 3 \< 5             # 1
+expr 3 \> 5             # 0
+expr "abc" \< "def"     # 1
+```
+
+#### 截取字符串
+
+```sh
+# 使用正则表达式匹配，需要放在 \(\) 内捕获
+# 不支持 +
+expr "Hello World" : "\(H.*\)\s"    # Hello
+echo "Hello World" | xargs -I {} expr {} : "\(H.*\)\s"
+```
+
 ### declare
 
 声明变量及其类型
@@ -1158,6 +1193,8 @@ echo 'example' | rev | cut -c 4- | rev      # exam
 echo '1 2 3 4' | cut -d ' ' -f 2,4
 # 提取第2到4个part
 echo '1 2 3 4' | cut -d ' ' -f 2-4
+# 提取2-最后part
+echo '1 2 3 4' | cut -d ' ' -f 2-
 ```
 
 ### seq
@@ -1317,6 +1354,53 @@ readelf 是一个用于分析 ELF 文件的命令行工具，可以查看各个�
 # 查看 .comment 节
 # 当 test.so 依赖于多个库且编译这些库由GCC版本不同时，可能会显示多个版本 GCC
 readelf -p .comment test.so
+```
+
+### X11
+
+检查是否安装了 X11
+
+```sh
+which X
+which Xorg
+echo $DISPLAY
+```
+
+检查 X11 环境是否启用
+
+```sh
+xdpyinfo            # 不响应表示没启动
+ps aux | grep X     # 检查是否有相应进程
+```
+
+### xclip
+
+[安装](../环境/linux.md#xclip)
+
+### xsel
+
+[安装](../环境/linux.md#xsel)
+
+[检查 X11 环境](#x11)
+
+xsel 默认针对的是 **X selection**(一般通过光标选中复制，按下鼠标中键进行粘贴)
+通过 --clipboard 选项使用系统粘贴板(右键复制/粘贴)
+
+```sh
+# 移除换行符并复制到粘贴板，搭配管道使用，如 pwd | c
+alias c 'tr -d "\n" | xsel -b'
+```
+
+```sh
+echo 'test' | xsel -i   # 复制标准输出内容到缓冲区
+xsel < file             # 将内容复制到缓冲区
+xsel > file             # 将缓冲去内容保存到文件
+
+xsel -a < file          # 追加到缓冲区
+
+xsel -s < file          # 使用第二缓冲区
+xsel -b < file          # 使用系统粘贴板
+xsel --keep
 ```
 
 ### watch 监测命令输出

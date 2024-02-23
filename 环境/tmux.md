@@ -84,6 +84,12 @@ bind -T copy-mode-vi v send-keys -X begin-selection
 # 复制模式下按v开始选择文本(vi visual模式)
 bind -T copy-mode-vi y send-keys -X copy-selection-and-cancel
 
+# 鼠标支持 - 如果你想使用的话把 off 改为 on
+set -g mouse on
+set -g mouse-select-pane on
+set -g mouse-resize-pane on
+set -g mouse-select-window on
+
 # 在相同目录下使用 tmux-panes 脚本开启面板
 # unbind v
 # unbind n
@@ -115,6 +121,8 @@ x           # 关闭当前窗口
 d           # 退出 tmux
 ?           # 列出所有快捷键，q 退出
 [           # 进入复制模式，操作同 vi
+v           # 进入复制模式，操作同 vi
+=           # 在单独的窗口列出粘贴板缓冲区所有内容，使用jk移动，Enter选择后粘贴
 ```
 
 vim 颜色过深问题，在 ~/.vimrc 中添加
@@ -145,5 +153,5 @@ tmux list-keys -T <key>
 
 ```sh
 # 设置使用的shell类型
-tmux set-option -g default-command "/bin/bash"
+tmux set-option -g default-shell "/bin/bash"
 ```

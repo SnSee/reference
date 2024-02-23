@@ -116,7 +116,7 @@ set num = 0
 
 ### 字符串
 
-判断是否是空字符串/字符串为空
+#### 判断是否是空字符串/字符串为空
 
 ```csh
 set str=""
@@ -135,7 +135,7 @@ else
 endif
 ```
 
-字符串替换
+#### 字符串替换
 
 ```csh
 # 借助sed
@@ -144,7 +144,7 @@ set str=`echo $str | sed 's/foo/bar/g'`
 echo $str
 ```
 
-判断字符串是否相同/字符串比较
+#### 判断字符串是否相同/字符串比较
 
 ```csh
 if ("$str1" == "$str2") then
@@ -153,7 +153,7 @@ if ("$str1" != "$str2") then
 endif
 ```
 
-模糊比较
+#### 模糊比较
 
 ```csh
 # 模糊项必须在后边
@@ -172,6 +172,8 @@ if (!("$str2" =~ "*$str1*")) then
   echo "no"
 endif
 ```
+
+#### 截取字符串([借助expr](./linux.md#expr))
 
 ## 命令
 

@@ -35,6 +35,8 @@ make -j8 && make install
 
 <https://blog.csdn.net/banyu0052/article/details/101946349>
 
+[ftp下载地址](ftp://gcc.gnu.org/pub/gcc/infrastructure)
+
 ```bash
 # 如果GMP没安装在系统路径，安装 MPFR 和 MPC 时指定GMP路径
 ./configure --prefix=/test --with-gmp-include=/test/include --with-gmp-lib=/test/lib

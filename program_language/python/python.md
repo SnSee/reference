@@ -716,6 +716,8 @@ args.age = 20
 
 #### 装饰器无额外参数
 
+**functools.wraps** 能够保留被装饰后函数的元信息，如 函数名称(__name__) 等
+
 ```python
 from functools import wraps
 
@@ -759,18 +761,39 @@ def test_my_test():
 
 #### 装饰器有额外参数
 
+核心原理：在定义的最外层装饰器函数中添加参数，该参数会将调用装饰器时指定的参数拿走，而后python会自动将函数对象传递给装饰器返回的函数，从而完成调用。
+
+不使用 functools.wraps
+
+```python
+def decorator(arg):
+    def real_decorator(func):
+        def wrapper(*args, **kwargs):
+            print(f"Decorator argument: {arg}")
+            return func(*args, **kwargs)
+        return wrapper
+    return real_decorator
+
+
+@decorator("test")
+def decorated_func():
+    print(f"in decorated_func")
+```
+
+使用 functools.wraps
+
 ```python
 from functools import wraps
 
 
 # 装饰器函数
-def decorator(arg1, arg2="test"):
+def decorator(arg1):    # 如果有多个参数直接添加
     def real_decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
             # 调用函数前做一些操作
             # ...
-            print(func.__name__, arg1, arg2)
+            print(func.__name__, arg1)
             ret = func(*args, **kwargs)
             # 调用函数后做一些操作
             # ...

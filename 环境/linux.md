@@ -136,3 +136,60 @@ make && make install
 [下载](https://www.openssl.org/source/)
 
 安装参考 README.md 即可
+
+## xclip
+
+[用法](../命令/linux.md#xclip)
+
+[github](https://github.com/astrand/xclip)
+
+如果已经安装了X11环境，可以直接使用gcc编译，如果系统头文件缺失需要自己下载然后通过 -I 指定，动态库名称不对可以通过软链接改名，如 libXmu.so.6.2.0 -> libXmu.so
+
+```sh
+gcc xclib.c xclip.c xcprint.c -lXmu -lX11 -o xclip
+```
+
+以下是自己安装 X11 方式(不推荐)
+
+**注意**: 自己安装 X11 可能会导致系统 X11 库混乱而导致很多软件不可用或卡顿
+
+[X11 pacakge 下载地址](https://www.x.org/releases/X11R7.7/src/everything/)
+
+* 安装 xclip 时如果没有 Xmu 环境需要先安装(搜索libXmu)
+* 安装 Xmu 时如果没有 xorg-macros 环境需要先安装(搜索macro)
+* 安装 Xmu 时如果没有以下package需要先安装(直接搜索)
+
+需要的包（按顺序安装）
+
+* xtrans
+* xproto
+* xextproto
+* ice
+* sm
+* xcb-proto
+* xau
+* pthread-stubs
+* xcb
+* kbproto
+* inputproto
+* x11
+
+```sh
+# 安装 package
+./configure --prefix=/where/to/install
+make -j8 && make install
+
+# 安装 libXmu
+./autogen.sh
+./configure --prefix=/where/to/install
+```
+
+## xsel
+
+[用法](../命令/linux.md#xsel)
+
+[github](https://github.com/kfish/xsel)
+
+```sh
+gcc xsel.c -lX11 -o xsel
+```
