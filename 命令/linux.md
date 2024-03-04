@@ -605,9 +605,14 @@ echo '1-2-3-4' | fgrep -o '-' | wc -l       # 结果: 3
 
 [在线查看](https://www.lzltool.com/LinuxCommand/sed)
 
-如果要使用变量，使用eval调用sed
+* 如果要使用变量，使用双引号或者eval调用sed
+* 如果变量中存在 /，需要将 / 转义为 \/ 后才能带入 sed
 
 ```bash
+s="/a/b/c"
+s=$(echo "$s" | sed 's/\//\\\//g')
+echo "path" | sed "s/path/${s}/g"
+
 eval sed -i 's/${old}/${new}/g' test.txt
 # 或
 cmd="sed -i 's/${old}/${new}/g' test.txt"
@@ -1271,6 +1276,14 @@ head -n -1 <file>
 head -n 3 <file> | tail -n 1
 ```
 
+### reaklink
+
+```sh
+# 相对路径转换为绝对路径
+readlink -f ./test.txt
+获取当前脚本绝对路径: $(dirname `readlink -f $0`)   # source时无效
+```
+
 ### crontab
 
 ```sh
@@ -1401,6 +1414,20 @@ xsel -a < file          # 追加到缓冲区
 xsel -s < file          # 使用第二缓冲区
 xsel -b < file          # 使用系统粘贴板
 xsel --keep
+```
+
+### curl/wget
+
+```sh
+# 发送 http GET 请求
+curl https://www.example.com
+# 发送 http POST 请求
+curl -X POST -d @data.json https://www.example.com
+
+# 下载文件
+wget https://www.example.com/file.zip
+# 递归下载整个网站
+wget --mirror --no-parent https://www.example.com
 ```
 
 ### watch 监测命令输出

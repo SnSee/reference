@@ -132,6 +132,8 @@ dict unset myDict key1              # 删除元素
 
 ### 文件
 
+#### 路径
+
 ```tcl
 # 查看文件是否存在
 set file_path "/path/to/*/file.txt"
@@ -140,8 +142,19 @@ if {[file exists $file_path]} {
 } else {
     puts "The file does not exist"
 }
+```
 
+```tcl
+set tf "/tmp/test.txt"
+set dirname     [file dirname $tf]          # /tmp
+set basename    [file tail $tf]             # test.txt
+set extension   [file "/tmp/a.b.txt]        # txt
+set rootname    [file rootname $basename]   # test
+```
 
+#### glob 搜索
+
+```tcl
 # 使用glob命令查找所有匹配文件
 set file_pattern "/path/to/*/file.txt"
 

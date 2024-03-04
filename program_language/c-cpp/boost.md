@@ -5,11 +5,16 @@
 
 ## 编译
 
+[CSDN](https://blog.csdn.net/NarutoInspire/article/details/116306260)
+
+[编译流程](../../环境/cpp.md#安装boost)
+
 windows下使用 git-bash + msys2 编译
 
 ```text
 --toolset=msvc-11.0: 指编译器为vc110的
 --with-python: 只编译python库了
+--stagedir=<directory>：指定编译结果输出的目录
 link: 静态链接库(=static), 动态链接库(=shared)
 runtime-link: 动态/静态链接C++运行库，有shared和static两种方式
 threading=multi: 单/多线程编译，一般写多线程，直接指定为multi
@@ -19,8 +24,6 @@ threading=multi: 单/多线程编译，一般写多线程，直接指定为multi
 ### 编译python
 
 如果提示找不到pyconfig.sh: export CPLUS_INCLUDE_PATH=/test/msys64/mingw64/include/python3.9
-
-[编译python](https://blog.csdn.net/NarutoInspire/article/details/116306260)
 
 ## 使用boost::python
 

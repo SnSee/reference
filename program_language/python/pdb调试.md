@@ -1,13 +1,13 @@
 
 # pdb
 
-启动
+## 启动
 
 ```python
 python3 -m pdb test.py -- arg1 arg2
 ```
 
-调试命令
+## 调试命令
 
 <!-- markdownlint-disable-next-line no-emphasis-as-heading -->
 **h: 查看帮助**
@@ -30,4 +30,27 @@ d               # 下一级堆栈
 q               # 退出
 设置变量         # 直接使用python语法即可，变量不要和命令重名
 调用函数         # 直接使用python语法即可
+source <file>   # 批量加载命令
+```
+
+### break(b)
+
+```txt
+b(reak) [ ([filename:]lineno | function) [, condition] ]
+```
+
+```sh
+# 显示所有断点
+b
+
+# 为函数设置断点
+b func_name
+b module_name.func_name
+
+# 指定具体文件的断点(加不加 .py 都行)
+b module_name:<line>
+b module_name.py:<line>
+
+# 指定条件
+b func_name, i > 1
 ```

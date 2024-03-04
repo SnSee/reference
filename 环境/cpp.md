@@ -167,6 +167,8 @@ make -j8 && make install
 
 [下载地址](https://www.boost.org/users/download/)
 
+[更多编译选项](../program_language/c-cpp/boost.md#编译)
+
 ```sh
 # 解压
 ./bootstrap.sh              # 编译 b2

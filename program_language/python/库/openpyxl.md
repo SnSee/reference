@@ -172,7 +172,7 @@ for row in worksheet.rows:
 
 # 方式二
 for i in range(1, worksheet.max_row + 1):
-    for j in range(1, worksheet.max_col + 1):
+    for j in range(1, worksheet.max_column + 1):
         worksheet.cell(i, j)
 
 # 方式三

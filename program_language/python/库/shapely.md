@@ -1,11 +1,13 @@
 
 # shapely
 
+[官网](https://shapely.readthedocs.io/en/stable/)
+
 注意
 
 * Polygon使用的是浮点数，判断坐标是否相同时使用的是 == 而不是math.isclose，存在浮点数不精准的问题.
 
-Polygon
+## Polygon
 
 ```python
 from shapely import Polygon
@@ -24,7 +26,7 @@ print('max y:', max([y for x, y in polygon.exterior.coords]))
 
 ```
 
-展示polygon图形
+### 展示polygon图形
 
 ```python
 import typing
@@ -51,7 +53,7 @@ def plot_polygons(polygons: list, title: str = 'untitled'):
     plt.show()
 ```
 
-将polygon对象转换为点列表
+### 将polygon对象转换为点列表
 
 ```python
 def polygon_to_list(polygon: typing.Union[Polygon, MultiPolygon]) -> list[list[tuple[float, float]]]:
@@ -66,7 +68,7 @@ def polygon_to_list(polygon: typing.Union[Polygon, MultiPolygon]) -> list[list[t
     return parts
 ```
 
-判断点是否在polygon内或边缘
+### 判断点是否在polygon内或边缘
 
 ```python
 # 如果在边界上不会出现浮点数不精确导致的问题
@@ -91,7 +93,28 @@ print(p1.contains(Point(b, 0)))
 print(p1.touches(Point(b, 0)))
 ```
 
-判断多边形是否相同
+### 判断两个多边形是否有一条边重合（长度可以不一样）
+
+```python
+from shapely.geometry import Polygon
+
+a = 0.3
+b = 1 - 0.7
+
+p1 = Polygon([(0, 0), (0, a), (2, a), (2, 0)])
+p2 = Polygon([(0, a), (0, 4), (2, 4), (2, a)])      # 有一条边重合且长度一致
+
+assert p1.touches(p2)
+
+pm1 = p1.union(p2)
+print('merged1:', pm1)
+print('bounds:', pm1.bounds)
+pm2 = Polygon.from_bounds(*pm1.bounds)
+print('merged2:', pm2)
+assert pm1.equals(pm2)
+```
+
+### 判断多边形是否相同
 
 ```python
 def is_polygon_same(p1: Polygon, p2: Polygon) -> bool:
@@ -99,8 +122,8 @@ def is_polygon_same(p1: Polygon, p2: Polygon) -> bool:
     l2 = polygon_to_list(p2)[0]
     if len(l1) != len(l2):
         return False
-    l1.sort()
-    l2.sort()
+    l1 = sorted(list(set(l1)))
+    l2 = sorted(list(set(l2)))
     for point1, point2 in zip(l1, l2):
         x1, y1 = point1
         x2, y2 = point2
@@ -114,14 +137,18 @@ b = 1 - 0.7
 c = 1 - 0.8
 
 p1 = Polygon([(10, 10), (10, 0), (a, 0), (a, 10)])
-p2 = Polygon([(b, 0), (b, 10), (10, 10), (10, 0)])
+p11 = Polygon([(10, 10), (10, 0), (b, 0), (b, 10)])
+p12 = Polygon([(b, 0), (b, 10), (10, 10), (10, 0)])
 p3 = Polygon([(c, 0), (c, 10), (10, 10), (10, 0)])
 
-print(p1 == p2, is_polygon_same(p1, p2))
-print(p1 == p3, is_polygon_same(p1, p3))
+# equals 点的顺序必须完全一致，不能处理浮点数不准问题
+# equals_equals 点的顺序必须完全一致，但能处理浮点数不准问题
+print(p1.equals(p11), p1.equals_exact(p11, tolerance=1e-9), is_polygon_same(p1, p11))    # F T T
+print(p1.equals(p12), p1.equals_exact(p12, tolerance=1e-9), is_polygon_same(p1, p12))    # F F T
+print(is_polygon_same(p1, p3))  # F
 ```
 
-剪切及分割多边形测试
+### 剪切及分割多边形测试
 
 ```python
 # 从a中减去b部分，剩下的多边形可能有多个
@@ -145,7 +172,7 @@ def cut_test():
     plot_polygons(polygon_to_list(two_cut), "cut to two parts")
 ```
 
-多边形交集测试
+### 多边形交集测试
 
 ```python
 def intersect_test1():
@@ -171,7 +198,7 @@ def intersect_test():
     plot_polygons(polygon_to_list(has_inter), "has intersection")
 ```
 
-多边形并集测试
+### 多边形并集测试(merge)
 
 ```python
 def union_test():
@@ -190,7 +217,7 @@ def union_test():
     plot_polygons(polygon_to_list(one_part), "one part")
 ```
 
-多边形异或测试（并集减去交集）
+### 多边形异或测试（并集减去交集）
 
 ```python
 def xor_test():

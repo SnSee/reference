@@ -118,7 +118,7 @@ taskkill /pid <PID> /f
 ```dos
 找到程序所在位置
 修改程序名称，如加个 .a
-命令行执行 Taskkill/im 程序名.exe /f
+命令行执行 Taskkill/im 程序名.exe /f 或者 管理员身份使用 git-bash 删除
 删除程序
 删除动态库
 ```
