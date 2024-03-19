@@ -142,14 +142,17 @@ if {[file exists $file_path]} {
 } else {
     puts "The file does not exist"
 }
+
+# 创建目录
+file mkdir "dir_name"
 ```
 
 ```tcl
 set tf "/tmp/test.txt"
-set dirname     [file dirname $tf]          # /tmp
-set basename    [file tail $tf]             # test.txt
-set extension   [file "/tmp/a.b.txt]        # txt
-set rootname    [file rootname $basename]   # test
+set dirname     [file dirname $tf]              # /tmp
+set basename    [file tail $tf]                 # test.txt
+set extension   [file extension "/tmp/a.b.txt"] # txt
+set rootname    [file rootname "/tmp/a.b.txt"]  # /tmp/a.b
 ```
 
 #### glob 搜索
@@ -169,6 +172,27 @@ if {[llength $file_list] > 0} {
 } else {
     puts "The file does not exist"
 }
+```
+
+#### 读取文件(写入文件)/读写
+
+```tcl
+# 读取文件
+set fp [open "example.txt" r]
+# 全部读取
+set content [read $fp]
+# 按行读取
+while {[gets $fp line] != -1} {
+    puts $line
+}
+
+close $fp
+puts $content
+
+# 写入文件
+set file [open "file.txt" "w"]
+puts $file "Hello, World!"
+close $file
 ```
 
 ### 调用shell命令
@@ -223,6 +247,13 @@ puts [subst {$name}]    # 输出：Tom
 [lsearch options](https://blog.csdn.net/asty9000/article/details/89693505)
 
 ### 布尔运算
+
+表示真假
+
+```tcl
+set true 1
+set false 0
+```
 
 在Tcl中，布尔运算符用于比较两个表达式的值，以生成布尔结果（真或假）。
 
@@ -391,21 +422,26 @@ puts "return code: $return_code"
 
 ### string命令
 
-字符串替换
+#### 字符串替换
 
 ```tcl
 string map {old new} string
 ```
 
-string equal命令：检查两个字符串是否完全相等。
+#### string equal命令：检查两个字符串是否完全相等。
 
 ```tcl
 if {[string equal $str1 $str2]} {
     puts "The two strings are the same."
 }
+if {![string equal $str1 $str2]} {
+    puts "The two strings are different."
+}
 ```
 
-string compare命令：比较两个字符串并返回其字符顺序的差异。
+#### string compare
+
+比较两个字符串并返回其字符顺序的差异
 
 ```tcl
 if {[string compare $str1 $str2] > 0} {
@@ -413,7 +449,9 @@ if {[string compare $str1 $str2] > 0} {
 }
 ```
 
-string match命令：使用通配符模式匹配来测试一个字符串是否与另一个字符串匹配。
+#### string match
+
+使用通配符模式匹配来测试一个字符串是否与另一个字符串匹配
 
 ```tcl
 if {[string match "*hello*" $str]} {
@@ -421,7 +459,9 @@ if {[string match "*hello*" $str]} {
 }
 ```
 
-string first命令：在一个字符串中查找另一个字符串，并返回第一次出现的位置。
+#### string first
+
+在一个字符串中查找另一个字符串，并返回第一次出现的位置。
 可以用来判断字符串中是否包含某个子串
 
 ```tcl
@@ -431,7 +471,7 @@ if {$pos >= 0} {
 }
 ```
 
-判断字符串是否为空字符串
+#### 判断字符串是否为空字符串
 
 ```tcl
 set s ''
@@ -480,21 +520,6 @@ proc func {x {y 10}} {
 }
 func 5          # x = 5, y = 10
 func 5 20       # x = 5, y = 20
-```
-
-### 读取文件(写入文件)/读写
-
-```tcl
-# 读取文件
-set fp [open "example.txt" r]
-set content [read $fp]
-close $fp
-puts $content
-
-# 写入文件
-set file [open "file.txt" "w"]
-puts $file "Hello, World!"
-close $file
 ```
 
 ### 正则表达式

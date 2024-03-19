@@ -3,6 +3,8 @@
 
 [官方文档](https://openpyxl.readthedocs.io/en/stable/)
 
+[字体,列宽,对齐,边框,填充](https://blog.csdn.net/qq_39147299/article/details/123378749)
+
 ## 注意事项
 
 ```text
@@ -18,7 +20,7 @@ import openpyxl
 print(openpyxl.__version__)
 ```
 
-读取 xlsx 文档
+### 读取 xlsx 文档
 
 ```python
 import openpyxl
@@ -31,6 +33,8 @@ def print_excel_data(file_path):
     wb: Workbook = openpyxl.load_workbook(file_path)
     # 选择第一个工作表
     ws: Worksheet = wb.active
+    # 根据名称选择指定 sheet 页
+    ws: Worksheet = wb.get_sheet_by_name('Sheet1')
 
     # 按行遍历
     # min_row可以指定起始行号，最小为 1
@@ -44,7 +48,7 @@ def print_excel_data(file_path):
         print(" | ".join(cols))
 ```
 
-写入 xlsx 文档
+### 写入 xlsx 文档
 
 ```python
 import openpyxl
@@ -57,14 +61,19 @@ for row in data:
 wb.save("test.xlsx")
 ```
 
-sheet页
+### sheet页
 
 ```python
 ws = wb.create_sheet('sheet_name')      # 创建sheet页
 ws.title = 'new_name'                   # 重命名sheet页
+
+# 选择第一个工作表
+ws: Worksheet = wb.active
+# 根据名称选择指定 sheet 页
+ws: Worksheet = wb.get_sheet_by_name('Sheet1')
 ```
 
-合并单元格
+### 合并单元格
 
 ```python
 # 合并 A1 到 C3 的单元格
@@ -72,7 +81,7 @@ ws.merge_cells('A1:C3')
 ws.merge_cells(start_row=1, start_column=1, end_row=3, end_column=3)
 ```
 
-从指定行列位置插入数据
+### 从指定行列位置插入数据
 
 ```python
 data = ['Data 1', 'Data 2', 'Data 3']
@@ -82,7 +91,29 @@ for index, value in enumerate(data, start=2):
     ws.cell(row=1, column=index, value=value)
 ```
 
-获取cell坐标
+### 获取cell/访问cell
+
+```python
+# 方式一
+for row in worksheet.rows:
+    for cell in row:
+        print(cell.value)
+
+# 方式二
+for i in range(1, worksheet.max_row + 1):
+    for j in range(1, worksheet.max_column + 1):
+        cell = worksheet.cell(i, j)
+
+# 方式三
+cell = worksheet["A1"]
+
+# 方式四
+for row in worksheet["A1:A3"]:  # 获取多个cell，tuple类型
+    for cell in row:
+        pass
+```
+
+### 获取cell坐标
 
 ```python
 cell.row
@@ -90,7 +121,7 @@ cell.column
 cell.column_letter
 ```
 
-设置数字格式
+### 设置数字格式
 
 ```python
 from openpyxl.styles import numbers
@@ -104,13 +135,15 @@ cell.number_format = numbers.FORMAT_NUMBER_00
 cell.number_format = '0.' + '0' * 10
 ```
 
-设置边框
+### 设置边框
 
 ```python
 from openpyxl.styles import Border, Side
 style = Side(style="thin", color="000000")
 cell.border = Border(top=style, right=style, bottom=style, left=style)
 ```
+
+### 设置条件格式
 
 [设置条件格式(Conditional Formatting)](https://openpyxl.readthedocs.io/en/stable/formatting.html)
 
@@ -141,7 +174,7 @@ ws.conditional_formatting.add('A1:B3', rule3)
 wb.save('test.xlsx')
 ```
 
-根据坐标获取表格范围
+### 根据坐标获取表格范围
 
 ```python
 def getCellRange(startRow: int, startCol: int, endRow: int, endCol: int) -> str:
@@ -152,37 +185,13 @@ def getCellRange(startRow: int, startCol: int, endRow: int, endCol: int) -> str:
     return f'{startColStr}{startRow}:{endColStr}{endRow}'
 ```
 
-## tips
-
-[字体,列宽,对齐,边框,填充](https://blog.csdn.net/qq_39147299/article/details/123378749)
-
-将单元格的值设为表达式
+### 将单元格的值设为表达式
 
 ```python
 ws['C2'] = '=A2+B2'
 ```
 
-获取cell/访问cell
-
-```python
-# 方式一
-for row in worksheet.rows:
-    for cell in row:
-        print(cell.value)
-
-# 方式二
-for i in range(1, worksheet.max_row + 1):
-    for j in range(1, worksheet.max_column + 1):
-        worksheet.cell(i, j)
-
-# 方式三
-worksheet["A1"]
-
-# 方式四
-worksheet["A1:A3"]  # 获取多个cell，tuple类型
-```
-
-判断cell是否被 merge
+### 判断cell是否被 merge
 
 ```python
 def cell_merged(cell, worksheet):
@@ -202,7 +211,8 @@ def print_excel_data(file_path):
                 print(cell.coordinate)      # A1, A2这种形式
 ```
 
-自动适配单元格宽度及高度
+### 自动适配单元格宽度及高度
+
 如果字体在tkinter字体库中，可以使用 [tkinter](../%E5%B8%B8%E7%94%A8%E6%A8%A1%E5%9D%97.md#tkinter) 中的方法获取字符串宽度
 如果有 **ttf** 字体文件，可以使用 [pillow](./PIL.md#get_text_width) 库获取字符串宽度
 
@@ -233,7 +243,7 @@ def adjust_width(ws: Worksheet):
         ws.row_dimensions[row[0].row].height = CELL_HEIGHT_MULTIPLE * lineCnt
 ```
 
-单元格格式
+### 单元格格式
 
 ```python
 # 加粗字体

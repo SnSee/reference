@@ -43,6 +43,9 @@ b(reak) [ ([filename:]lineno | function) [, condition] ]
 # 显示所有断点
 b
 
+# 删除指定编号断点
+cl 1
+
 # 为函数设置断点
 b func_name
 b module_name.func_name

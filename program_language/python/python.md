@@ -3,6 +3,8 @@
 
 官方文档: <https://docs.python.org/zh-cn/3/>
 
+[库函数文档](https://docs.python.org/3.9/library/index.html)
+
 [命令行参数](https://docs.python.org/3/using/cmdline.html#using-on-general)
 
 ```sh
@@ -653,6 +655,8 @@ parser.add_argument("--gf_age", type=int, default=18)
 
 # 指定为True，不指定为False
 parser.add_argument("--all", action="store_true")
+# 指定为False，不指定为True
+parser.add_argument("--all", action="store_false")
 
 # 指定可选值
 parser.add_argument("--gender", choices=["male", "female"])
@@ -678,6 +682,9 @@ parser.add_argument('--with-space', type=str)
 group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument('-r', '--rule')
 group.add_argument('-c', '--config')
+
+# 指定存储的变量名称
+group.add_argument('-v', dest='var_name')   # args.var_name 获取参数值
 
 # 参数不显示在help中(对group无效)
 parser.add_argument('--hide', help=argparse.SUPPRESS)

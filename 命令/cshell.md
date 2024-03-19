@@ -197,3 +197,11 @@ time sleep 2
 |0pf+0w | 页面错误(page faults)和交换活动(swaps)数量<br>page faults: 是指程序访问的页不在内存中，需要从磁盘上获取
 
 page faults: 是指程序访问的页不在内存中，需要从磁盘上获取
+
+## 脚本
+
+### 命令返回非 0 值自动退出
+
+```sh
+#!/bin/csh -e
+```
