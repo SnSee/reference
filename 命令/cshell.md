@@ -205,3 +205,30 @@ page faults: 是指程序访问的页不在内存中，需要从磁盘上获取
 ```sh
 #!/bin/csh -e
 ```
+
+### EOF
+
+创建一个名为 show 的脚本持续获取输入
+
+```csh
+#!/bin/csh -f
+while(1)
+  set input = $<
+  if ("$input" == "exit") then
+    exit
+  endif
+  echo $input
+end
+```
+
+使用 EOF 自动输入
+
+```csh
+#!/bin/csh -f
+
+./show << EOF
+abc
+123
+exit
+EOF
+```
