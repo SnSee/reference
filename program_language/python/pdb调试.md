@@ -57,3 +57,10 @@ b module_name.py:<line>
 # 指定条件
 b func_name, i > 1
 ```
+
+### up/down
+
+```sh
+u 3         # 向上跳转 3 级函数栈
+d 3         # 向下跳转 3 级函数栈
+```
