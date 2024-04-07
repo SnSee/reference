@@ -2,8 +2,22 @@
     // 使用 IntelliSense 了解相关属性。 
     // 悬停以查看现有属性的描述。
     // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    // 变量替换: https://code.visualstudio.com/docs/editor/variables-reference
     "version": "0.2.0",
     "configurations": [
+        {
+            "name": "gdb-cpp调试",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceRoot}/${fileBasenameNoExtension}",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "preLaunchTask": "g++",
+            "miDebuggerPath": "/usr/local/bin/gdb"
+        },
         {
             "name": "cmake-调试",
             "type": "cppdbg",

@@ -245,7 +245,7 @@ df.to_string()
 
 ## Excel(xlsx)
 
-读取xlsx表格(依赖 openpyxl)
+### 读取xlsx表格(依赖 openpyxl)
 
 ```python
 import pandas as pd
@@ -275,7 +275,7 @@ index_col   : 指定行名所在列索引，默认为 None
 > 1. 单元格内容如果能转换为数字( **int / float** )会自动转换
 > 2. 空白单元格和被合并单元格为 float('nan')，显示为 NaN
 
-to_excel
+### to_excel
 
 ```python
 df.to_excel('test.xlsx')

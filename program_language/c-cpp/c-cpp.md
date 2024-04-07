@@ -72,3 +72,22 @@ uint16_t ntohs(uint16_t netshort);
 %.nf：将浮点数输出为小数点后保留n位的形式。
 %-ns: 左对齐输出（默认右对齐）
 ```
+
+## 头文件
+
+### climits
+
+定义最小/最大值的宏
+
+* SHRT_MIN
+* SHRT_MAX
+* USHRT_MAX
+* INT_MIN
+* INT_MAX
+* UINT_MAX
+* LONG_MIN
+* LONG_MAX
+* ULONG_MAX
+* LLONG_MIN
+* LLONG_MAX
+* ULLONG_MAX

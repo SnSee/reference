@@ -1002,6 +1002,8 @@ signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 类似于c++的, bind1st
 
+partial 用于绑定普通函数，partialmethod 用于绑定类方法
+
 ```python
 from functools import partial
 
@@ -1010,6 +1012,10 @@ def print_three(a, b, c):
 
 # 3 被绑定给了print_three的第一个参数，即 a
 print_bound = partial(print_three, 3)
+print_bound(1, 2)
+
+# 绑定给指定形参
+print_bound = partial(print_three, c=3)
 print_bound(1, 2)
 ```
 
