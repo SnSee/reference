@@ -1,6 +1,7 @@
-" vim下鼠标左键不进入visual模式,gvim下进入
-if !has("gui_running")
-	set mouse-=a
+if has("gui_running")
+	set guifont=Monospace\ 14	" gvim 设置字体
+else
+	set mouse-=a 				" vim下鼠标左键不进入visual模式,gvim下进入
 endif
 set number
 set autoindent

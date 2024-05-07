@@ -1216,7 +1216,7 @@ alias d='function _mycd(){ [ -d $1 ] && cd $1 || cd `dirname $1`; ls; };_mycd'
 
 # 但是在csh中可以获取
 # 如果命令行参数是目录则进入，否则进入文件所在目录
-alias d 'test -d \!* && cd \!* || cd `dirname \!*`'
+alias d 'test -d \!* && cd \!* || cd `dirname \!*`; ls'
 ```
 
 ### cut

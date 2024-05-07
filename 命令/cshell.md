@@ -236,3 +236,25 @@ abc
 exit
 EOF
 ```
+
+## tcsh
+
+csh 增强版
+
+### 命令行提示符
+
+[设置终端提示符](https://www.cnblogs.com/Alfred-HOO/articles/16387607.html)
+
+```csh
+set prompt="[%n@%m %c]$ "
+```
+
+### 增强变量操作
+
+可以使用类似 bash 对变量操作的功能
+
+```csh
+set var = "123"
+# 替换字符串
+echo ${var:s/23/ab/}
+```

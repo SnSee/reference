@@ -13,6 +13,14 @@
 
 [显示指定文件为文本文件](https://blog.csdn.net/qijingpei/article/details/110402054)
 
+## 配置(config)
+
+```sh
+# 查看所有配置
+git config --list
+git config --global --list
+```
+
 ## 编码
 
 ```bash
