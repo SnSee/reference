@@ -3,6 +3,9 @@ if has("gui_running")
 else
 	set mouse-=a 				" vim下鼠标左键不进入visual模式,gvim下进入
 endif
+
+set encoding=UTF-8
+set fileencoding=UTF-8
 set number
 set autoindent
 set smartindent
@@ -32,7 +35,25 @@ set expandtab
 set shiftwidth=4
 set softtabstop=4
 "set cursorline		 	"高亮显示当前行背景色
-set hlsearch			"高亮显示搜索结果	set nolhsearch
+
+"set hlsearch			"高亮显示搜索结果	set nolhsearch
+set incsearch 			"显示查找匹配过程
+
+" 快速按 jj 进入normal模式
+cnoremap jj <Esc>
+inoremap jj <Esc>
+
+" 当光标一段时间保持不动了，就禁用高亮
+" autocmd cursorhold * set nohlsearch
+
+" 当打开文件时仍高亮之前的搜索结果时使用下面的方式
+" 默认关闭高亮，当输入查找命令时，再启用高亮
+set nohlsearch
+nnoremap n :set hlsearch<cr>n
+nnoremap N :set hlsearch<cr>N
+nnoremap / :set hlsearch<cr>/
+nnoremap ? :set hlsearch<cr>?
+nnoremap * :set hlsearch<cr>*
 
 " 互换visual快捷键
 nnoremap <C-v> v
@@ -43,15 +64,17 @@ nnoremap v <C-v>
 let mapleader = "," 
 
 " 组合键改为Alt
-nnoremap <M-]> <C-]>
+" 如果不行，在insert模式下先按 Ctrl+V, 再按 Alt + key
 nnoremap <M-o> <C-o>
 nnoremap <M-i> <C-i>
+" 不能设置 ]
+" nnoremap <M-]> <C-]>
 
 " 窗口跳转
-nnoremap <C-h> <C-w>h
-nnoremap <C-j> <C-w>j
-nnoremap <C-k> <C-w>k
-nnoremap <C-l> <C-w>l
+noremap <C-h> <C-w>h
+noremap <C-j> <C-w>j
+noremap <C-k> <C-w>k
+noremap <C-l> <C-w>l
 
 " 运行当前文件
 nnoremap <S-F10> :w<CR>:!./%<CR>

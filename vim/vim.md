@@ -89,7 +89,7 @@ nnoremap <M-o> <C-o>
 nnoremap ^[] <C-]>
 nnoremap ^[o <C-o>
 " 不能设置 ]
-" nnoremap ^[i <C-]>
+" nnoremap ^[] <C-]>
 
 " 切换分屏
 nnoremap <C-h> <C-w>h
@@ -157,7 +157,7 @@ nnoremap <leader>l :tabn<CR>
 nnoremap <leader>h :tabp<CR>
 ```
 
-## 查找
+## 查找/搜索
 
 [pattern转义](#转义magicnomagic)
 
@@ -170,6 +170,14 @@ g*            向后查找光标处单词，等同于 /{word}
 g#            向前查找光标处单词，等同于 ?{word}
 n             查找后按 n 查找下一个
 N             查找后按 N 查找上一个
+```
+
+### 高亮
+
+```vim
+:set hlsearch         " 高亮显示搜索结果, nolhsearch
+:set incsearch        " 显示查找匹配过程, noincsearch
+:nohl                 " 取消当前高亮
 ```
 
 ## 跳转
@@ -385,6 +393,13 @@ linux vim 捕获时的括号需要转义 \( \), vscode下不需要转义
 ```
 
 ## 编码
+
+设置编码格式
+
+```vim
+set encoding=UTF-8
+set fileencoding=UTF-8
+```
 
 ```text
 按十六进制显示

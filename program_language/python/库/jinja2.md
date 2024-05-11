@@ -7,6 +7,8 @@
 
 ## 用法
 
+### 加载模板
+
 加载模板方式一
 
 ```python
@@ -33,14 +35,14 @@ with open('test.txt') as fp:
 template.render(name='Tom')
 ```
 
-传递变量
+### 传递变量
 
 ```python
 # var_name 是模板中使用的变量名称
 template.render(var_name=var_value)
 ```
 
-添加函数
+### 添加函数
 
 ```python
 fileLoader = FileSystemLoader('templates')
@@ -50,7 +52,7 @@ env.globals.update(isinstance=isinstance)
 env.globals["isinstance"] = isinstance
 ```
 
-使用字典及自定义变量
+### 使用字典及自定义变量
 
 ```python
 from jinja2 import Template
@@ -99,12 +101,29 @@ print(output)
 {{ s | join('-') }}             {# 结果为: a-b-c #}
 ```
 
+#### 自定义 filter
+
+```python
+def custom_filter(value, arg1, arg2):
+    # 在这里编写自定义filter的逻辑
+    return result
+
+env = Environment()
+env.filters['custom_filter'] = custom_filter
+```
+
+```text
+{{ value | custom_filter(arg1, arg2) }}
+```
+
 ### 宏(类似于c的宏)
 
 * 宏可以写在一行或多行
 * 宏可以嵌套及递归
 * 宏参数可以设置默认值
 * 宏内的语句除第一行外其他行默认不会跟随调用位置缩进，可以使用indent设置
+
+#### 定义及引用
 
 ```text
 {# 定义宏 #}
@@ -125,7 +144,7 @@ COLOR: {{ getColor(colorName) }}; something.
 COLOR: color:{{ "#ff0000" if colorName == "red" else "invalid" }}; something.
 ```
 
-换行及缩进
+#### 换行及缩进
 
 ```text
 {# 宏内第一行不换行，跟随前方字符, 如何要换行，将 -%} 改为 %} #}
@@ -139,6 +158,14 @@ ABCDE: {{ test(myVar) }}
 {# 对新行使用4个空格缩进 #}
 ABCDE: {{ test(myVar)|indent(4) }}
 AFTER
+```
+
+#### 跨模板调用
+
+```txt
+{% import "a.txt" as a %}
+
+{{ a.test(value1, value2) }}
 ```
 
 ### block 继承模板

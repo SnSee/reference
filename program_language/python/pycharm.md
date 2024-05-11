@@ -1,6 +1,8 @@
 
 # pycharm
 
+[插件官网](https://plugins.jetbrains.com)
+
 ## 启动失败
 
 解决 Address already in use: bind 问题
@@ -19,6 +21,14 @@ File -> settings -> Project: xxx -> Python Interpreter
 点击 + 添加解释器
     一般选择System Interpreter就可以 -> 选择python可执行文件路径
     (选择Virtualenv Environment可以分离不同项目使用的包)
+```
+
+新版本添加 pip 搜索路径方式变为
+
+```txt
+状态栏 Python Packages
+点击 Add Package 前仿设置图标
+添加 pip 源，并选择 Basic HTTP
 ```
 
 ![包](./pics/pycharm_package.png)
@@ -45,3 +55,10 @@ File -> settings -> Project: xxx -> Python Interpreter
 * **Alt + ]**   : 跳转到声明或引用(Go to Declaration or Usages)
 * **Alt + O**   : 回退(Navigate -> Back)
 * **Alt + I**   : 前进(Navigate -> Forward)
+* **Ctrl + P**  : Go to File
+
+## 显示内容
+
+### 显示层级
+
+设置中搜索 breadcrumbs 并勾选

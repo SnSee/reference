@@ -197,9 +197,12 @@ flowchart TB
 
 ## 转pdf
 
-[下载princexml](https://www.princexml.com/download/)
+* 借助 Chrome -> PDF
+* [下载princexml](https://www.princexml.com/download/), 安装后将 engine/bin 添加到 Path
 
-安装后将 engine/bin 添加到 Path
+### 强制换页
+
+<div style="page-break-before: always;"></div>
 
 ## mass
 

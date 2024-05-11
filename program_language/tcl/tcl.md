@@ -524,6 +524,8 @@ func 5 20       # x = 5, y = 20
 
 ### 正则表达式
 
+等同于 python re.search
+
 ```tcl
 set test_pat {^([a-z]+)(\d+)_(\d+)(\w+)$}
 set test_str "abc123_456def"
