@@ -172,6 +172,13 @@ n             查找后按 n 查找下一个
 N             查找后按 N 查找上一个
 ```
 
+查看历史记录
+
+```vim
+; jk浏览即可
+:history /
+```
+
 ### 高亮
 
 ```vim
@@ -425,6 +432,15 @@ endif
 if has("gui_running")
 ```
 
+## shell终端交互
+
+### 读取 shell 命令输出内容并插入到下一行
+
+```vim
+" vim 不支持系统粘贴板时借助 xsel 获取系统粘贴板并插入
+nnoremap <C-P> :set paste<CR>:read !xsel --output --clipboard<CR>:set nopaste<CR>
+```
+
 ## 寄存器
 
 ```vim
@@ -469,7 +485,7 @@ if has("gui_running")
 
 ## 重复操作
 
-宏
+### 宏
 
 ```vim
 1.宏会记录用户所有按键操作
@@ -477,13 +493,20 @@ if has("gui_running")
 3.重复宏: @ + a-z, 如 @a 将会执行宏录制的所有按键操作, 使用 <n>@a 将会重复 n 次
 ```
 
-.
+### 点(.)
 
 ```vim
 重复上次修改操作:
 1.从Normal到Insert再回到Normal算一次修改
 2.使用d/p修改
 3.缩进
+```
+
+### @
+
+```vim
+" 重复执行上一条命令
+@:
 ```
 
 ## 兼容性设置
@@ -634,3 +657,5 @@ git submodule update --init --recursive
 # 打包上传到无网环境后解压
 # 编译
 ```
+
+### vim-autoformat

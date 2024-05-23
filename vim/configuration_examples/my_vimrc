@@ -39,9 +39,9 @@ set softtabstop=4
 "set hlsearch			"高亮显示搜索结果	set nolhsearch
 set incsearch 			"显示查找匹配过程
 
-" 快速按 jj 进入normal模式
-cnoremap jj <Esc>
-inoremap jj <Esc>
+" 快速按 Alt-j 进入normal模式
+cnoremap <M-j> <Esc>
+inoremap <M-j> <Esc>
 
 " 当光标一段时间保持不动了，就禁用高亮
 " autocmd cursorhold * set nohlsearch
@@ -54,6 +54,9 @@ nnoremap N :set hlsearch<cr>N
 nnoremap / :set hlsearch<cr>/
 nnoremap ? :set hlsearch<cr>?
 nnoremap * :set hlsearch<cr>*
+
+" vim 不支持系统粘贴板时借助 xsel 获取系统粘贴板并插入
+nnoremap <C-P> :set paste<CR>:read !xsel --output --clipboard<CR>:set nopaste<CR>
 
 " 互换visual快捷键
 nnoremap <C-v> v
@@ -69,6 +72,16 @@ nnoremap <M-o> <C-o>
 nnoremap <M-i> <C-i>
 " 不能设置 ]
 " nnoremap <M-]> <C-]>
+
+" 切换分屏
+nnoremap <C-h> <C-w>h
+nnoremap <C-j> <C-w>j
+nnoremap <C-k> <C-w>k
+nnoremap <C-l> <C-w>l
+
+" 切换tab页
+nnoremap <leader>l :tabn<CR>
+nnoremap <leader>h :tabp<CR>
 
 " 窗口跳转
 noremap <C-h> <C-w>h

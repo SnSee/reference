@@ -970,6 +970,50 @@ datetime.datetime.now()
 time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
 ```
 
+## 继承
+
+```python
+class A:
+    def __init__(self):
+        print('init A')
+
+    def name(self):
+        print('A')
+
+class B(A):
+    def __init__(self):
+        super().__init__()
+        print('init B')
+
+    def name(self):
+        print('B')
+
+class C(A):
+    def __init__(self):
+        super().__init__()
+        print('init C')
+
+    def name(self):
+        print('C')
+
+class D(B, C):
+    def __init__(self):
+        super().__init__()
+        print('init D')
+
+    def name(self):
+        super().name()          # B
+        super(B, self).name()   # C
+        super(C, self).name()   # A
+
+        # 推荐使用这种方式调用
+        A.name(self)            # A
+        B.name(self)            # B
+        C.name(self)            # C
+
+D().name()
+```
+
 ## 监听 Ctrl-C
 
 ```text

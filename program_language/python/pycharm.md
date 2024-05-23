@@ -39,6 +39,16 @@ File -> settings -> Project: xxx -> Python Interpreter
 ~/.ideavimrc
 ```
 
+```vimrc
+set hlsearch
+set incsearch
+
+nnoremap <C-v> v
+nnoremap v <C-v>
+cnoremap <A-j> <Esc>
+inoremap <A-j> <Esc>
+```
+
 覆盖vim代码跳转快捷键
 
 ```text
@@ -62,3 +72,21 @@ File -> settings -> Project: xxx -> Python Interpreter
 ### 显示层级
 
 设置中搜索 breadcrumbs 并勾选
+
+### 自定义文件类型
+
+Editor -> File Types -> 点击左上角加号
+
+Keywords每个占一行，会有简单的高亮显示，如 [jinja 关键字](./库/jinja2.md#关键字)
+
+## 插件
+
+### Idea-Vim
+
+Ctrl 组合键查看: Editor -> Vim
+
+### python security
+
+[检查描述](https://pycharm-security.readthedocs.io/en/latest/checks/index.html)
+
+忽略指定类型检查: Alt + Enter -> Inspection -> Edit -> 取消勾选

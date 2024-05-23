@@ -7,6 +7,8 @@
 
 [wiki](https://wiki.tcl-lang.org/welcome)
 
+[ZetCode教程](https://static.kancloud.cn/apachecn/zetcode-zh/1950620)
+
 * tcl 中所有数据结构的本质都是字符串，具体是什么数据类型取决于如何解析
 
 ## 命令
@@ -71,6 +73,7 @@ set my_list {}              # 创建空列表
 set my_list {1 2 3}         # 创建列表
 set my_list [list 1 2 3]    # 创建列表
 
+llength $my_list                            # 长度
 lindex $my_list 1                           # 访问列表，通过索引获取元素
 lset my_list 1 5                            # 修改元素值 my_list[1] = 5
 lappend my_list 4                           # 追加元素(修改当前list)
@@ -86,7 +89,8 @@ if {[lsearch $myList $element] == -1} {}    # 判断元素不存在
 set new_list [concat $my_list $my_list]
 
 # 切片
-set slice [lrange $my_list 2 5]
+set slice [lrange $my_list 2 5]             # 包括 5
+set slice [lrange $my_list 2 end]           # 包括最后一位
 ```
 
 排序
@@ -422,13 +426,26 @@ puts "return code: $return_code"
 
 ### string命令
 
+```tcl
+# 移除首尾空白字符
+string trim $test
+# 长度
+string length $test
+```
+
 #### 字符串替换
 
 ```tcl
 string map {old new} string
 ```
 
-#### string equal命令：检查两个字符串是否完全相等。
+#### 字符串截取
+
+```tcl
+string range "012345" 1 4    # 包括 4
+```
+
+#### string equal命令：检查两个字符串是否完全相等
 
 ```tcl
 if {[string equal $str1 $str2]} {
@@ -563,6 +580,12 @@ set list {abc aa b}
 puts [lsort -command compareByLength $list]     # 输出：b aa abc
 ```
 
+### info
+
+### frame
+
+[打印堆栈信息: print_frame](./proc.tcl)
+
 ## packages
 
 ### json
@@ -592,3 +615,5 @@ foreach key [dict keys $dic] val [dict values $dic] {
     puts "$key: $val"
 }
 ```
+
+## 调试

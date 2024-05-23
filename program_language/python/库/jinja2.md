@@ -7,16 +7,43 @@
 
 ## 用法
 
+### 关键字
+
+```txt
+{%
+%}
+{{
+}}
+if
+elif
+else
+endif
+for
+endfor
+macro
+endmacro
+block
+endblock
+extends
+set
+include
+and
+or
+from
+import
+as
+```
+
 ### 加载模板
 
 加载模板方式一
 
 ```python
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
 def getTemplate():
-    fileLoader = FileSystemLoader('templates')
-    env = Environment(loader=fileLoader)
+    fileLoader = FileSystemLoader('templates', searchpath='sub_dir')
+    env = Environment(loader=fileLoader, undefined=StrictUndefined)
     template = env.get_template('test.txt')
     content = template.render(myvar=123)
 ```
@@ -26,8 +53,8 @@ def getTemplate():
 加载模板方式二
 
 ```python
-from jinja2 import Template
-template = Template('Hello {{ name }}!')
+from jinja2 import Template, StrictUndefined
+template = Template('Hello {{ name }}!', undefined=StrictUndefined)
 template.render(name='John Doe')
 
 with open('test.txt') as fp:
@@ -82,8 +109,10 @@ print(output)
 
 ```text
 {% for person in persons %}
-    {% if person.age < 18 %}
+    {% if person.age < 18 and person.age > 10 %}
         {{- person.name }}
+    {% elif person.age < 0 %}
+        {{- Invalid age }}
     {% else %}
         {{- person.age }}
     {% endif %}
@@ -100,6 +129,27 @@ print(output)
 {% set s = ['a', 'b', 'c'] -%}
 {{ s | join('-') }}             {# 结果为: a-b-c #}
 ```
+
+|name | desc
+|- | -
+|safe       | 将字符串标记为安全，不会被转义。
+|capitalize | 将字符串的首字母转换为大写。
+|lower      | 将字符串转换为小写。
+|upper      | 将字符串转换为大写。
+|title      | 将字符串中每个单词的首字母转换为大写。
+|trim       | 移除字符串两端的空白字符。
+|truncate   | 截断字符串到指定长度，并在末尾添加省略号。
+|length     | 返回字符串的长度。
+|default    | 如果变量为假值，则使用指定的默认值。
+|join       | 将列表或其他可迭代对象中的元素连接成一个字符串。
+|first      | 返回列表的第一个元素。
+|last       | 返回列表的最后一个元素。
+|random     | 返回列表中的随机元素。
+|dictsort   | 对字典按键或值进行排序。
+|reverse    | 对列表或字符串进行反转。
+|urlencode  | 对字符串进行URL编码。
+|wordcount  | 返回字符串中包含的单词数量。
+|replace    | 替换字符串中的子串
 
 #### 自定义 filter
 

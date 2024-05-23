@@ -1357,6 +1357,11 @@ crontab -e          # 删除要取消的任务后保存退出
 
 ### diff
 
+|option | desc
+|-  |-
+|-w | 忽略所有空白字符
+|-B | 忽略空行
+
 ```bash
 # 比较两个文件
 diff a.txt b.txt

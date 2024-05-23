@@ -53,6 +53,13 @@
 4. 点击 README 查看帮助网页
 ```
 
+```txt
+# 使用 <Alt-J> 映射到 <Esc>
+1. 点击左下角齿轮，选中Keyboard Shortcuts
+2. 搜索 escape
+3. 在 Source 是 Vim 的快捷键上右键添加
+```
+
 互换快捷键
 
 ```json
