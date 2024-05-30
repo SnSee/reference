@@ -657,7 +657,7 @@ sed '[range][option][i]' <file>
 单行          ：5 表示第5行
 连续多行      : 5,$ 表示5到最后一行
 指定模式单行   : /pat/ 表示符合正则表达式pat的行，采用search的方式
-指定模式多行   : /start/,/end/ 表示从符合start的行到符合end的行，包含start和end所在行
+指定模式多行   : /start/,/end/ 表示从符合start的行到符合end的行，包含start和end所在行，如果有多个start，end则从第一个start到最后一个end
 行号和模式混用 ：5,/end/ 表示从第5行到符合end的行
               : /start/,10 表示从符合start的行到第10行
 
@@ -668,13 +668,18 @@ d: 删除, 'd' 或 '/pat/d'
 s: 替换, 's/pat/new/g', g表示替换一行中所有old，否则只替换第一个
 i: 当前行位置插入新行, 'i' 或 '/pat/i'
 a: 当前行下一行插入新行, 'a' 或 '/pat/a'
+q: 退出
+
+# 指定多种操作
+'{option1;option2}'
 
 # 示例
-'5p'                # 第5行
-'5,$p'              # 5到最后一行
-'/start/,/end/p'    # [start,end]
-'5,/end/p'          # [5,end]
-'5,/end/{/pat/p}'   # [5,end]符合pat的行
+'5p'                        # 第5行
+'5,$p'                      # 5到最后一行
+'/start/,/end/p'            # [start,end](第一个start到最后一个end)
+'/start/,/end/{p;/end/q}'   # [start,end](第一个start到第一个end)
+'5,/end/p'                  # [5,end]
+'5,/end/{/pat/p}'           # [5,end]符合pat的行
 ```
 
 <a id='sed-regexp'></a>
@@ -1289,16 +1294,16 @@ wc -c test.txt          # 统计文件字符数(包含空白字符)
 
 ```bash
 # 将冒号替换为分号
-echo 'a::b:c' | tr ':' ';'      # output: a;;b;c
+echo 'a::b:c' | tr : ;          # output: a;;b;c
 
 # 将冒号替换为分号，并且压缩相邻的字符
-echo 'a::b:c' | tr -s ':' ';'   # output：a;b;c
+echo 'a::b:c' | tr -s : ;       # output：a;b;c
 
 # 按冒号分割为多行
-echo "data1:data2:data3" | tr ':' '\n'
+echo "data1:data2:data3" | tr : '\n'
 
 # 删除指定字符
-echo "a:b:c" | tr -d ":"
+echo "a:b:c" | tr -d :
 ```
 
 ### head/tail
@@ -1689,4 +1694,14 @@ man 7 signal
 ```text
 通过mount命令查看挂载的文件系统
 查看挂载的目录是否有noexec标志，如果有这个标志即使加了执行权限仍然不可执行
+```
+
+```tcl
+set la [list 0 1 2 3 4]
+puts [lrange $la 0 2]       # 0 1 2
+```
+
+```python
+la = [0, 1, 2, 3, 4]
+print(la[0:2])              # 0 1
 ```

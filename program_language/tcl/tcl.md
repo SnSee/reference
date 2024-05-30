@@ -5,6 +5,8 @@
 
 [官网](https://core.tcl-lang.org/index.html)
 
+[w3school 文档](https://www.w3cschool.cn/doc_tcl_tk/)
+
 [wiki](https://wiki.tcl-lang.org/welcome)
 
 [ZetCode教程](https://static.kancloud.cn/apachecn/zetcode-zh/1950620)

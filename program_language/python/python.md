@@ -262,6 +262,43 @@ class NestedDict(dict):
         return self[key]
 ```
 
+### set
+
+#### 交集
+
+```python
+s1 = {1, 2}
+s2 = {1, 3}
+
+# 不修改源 set
+s3 = s1.intersection(s2)    # {1}
+```
+
+#### 并集
+
+```python
+s1 = {1}
+s2 = {2}
+
+s3 = s2
+# 修改源 set
+s3.update(s1)       # {1, 2}
+
+# 不修改源 set
+s4 = s1.union(s2)   # {1, 2}
+```
+
+#### 差集
+
+```python
+s1 = {1, 2}
+s2 = {1, 3}
+
+# 不修改源 set
+s3 = s1.difference(s2)      # {2}
+s4 = s1 - s2                # {2}
+```
+
 ### 枚举
 
 ```python

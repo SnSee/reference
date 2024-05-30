@@ -524,6 +524,17 @@ set cpo-=<letter>
 
 ## 命令
 
+### his/history
+
+```vim
+history <类型>
+```
+
+|类型 | desc
+|- |-
+|c :  | 命令
+|s / ?| 搜索记录
+
 ### g/global
 
 #### normal 模式

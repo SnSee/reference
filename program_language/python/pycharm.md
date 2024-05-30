@@ -66,6 +66,8 @@ inoremap <A-j> <Esc>
 * **Alt + O**   : 回退(Navigate -> Back)
 * **Alt + I**   : 前进(Navigate -> Forward)
 * **Ctrl + P**  : Go to File
+* **Ctrl + H**  : 最近访问窗口切换(Other -> Switcher -> Switcher)
+* **Ctrl + L**  : 最近访问窗口切换(Other -> Switcher -> Switcher)
 
 ## 显示内容
 
