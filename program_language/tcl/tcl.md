@@ -433,6 +433,9 @@ puts "return code: $return_code"
 string trim $test
 # 长度
 string length $test
+
+# 重复字符
+string repeat 'X' $size
 ```
 
 #### 字符串替换

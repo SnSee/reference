@@ -398,6 +398,8 @@ print(val1 / val2)
 
 ## pip
 
+[pip源](../../website.md#编程)
+
 ```python
 # 此命令将显示一些关于你的Python环境的详细信息，
 # 包括操作系统、Python版本、CPU架构和编译器等信息，以及与之对应的PEP 425标识符。
@@ -572,6 +574,7 @@ logging.basicConfig(level=logging.DEBUG, format="%(levelname)s %(message)s", dat
 
 # 日记记录到文件
 logPath = "./log"
+open(logPath, 'w').close()
 formatter = logging.Formatter('%(asctime)s-%(levelname)s: %(message)s')
 fh = logging.FileHandler(filename=logPath, encoding='utf-8', mode='a')
 fh.setLevel(logging.INFO)
@@ -1388,4 +1391,64 @@ class T:
         print('T', id(T._i))        # 地址改变
 
 t = T()
+```
+
+## coverage
+
+[coverage文档](https://coverage.readthedocs.io)
+
+### 文件覆盖率
+
+#### 测试命令
+
+```sh
+# 覆盖旧覆盖率
+coverage run test.py
+-a/--append : 重新运行时保留原有覆盖率
+--branch    : 分支覆盖率
+--source=SRC1,SRC2,...      指定要计算覆盖率的源码路径
+
+# pattern 匹配方式: 文件名(basename) match 或 完整路径 match
+--include=PAT1,PAT2,...     只计算指定pattern文件路径(使用通配符需要放在双引号内)
+--omit=PAT1,PAT2,...        忽略指定pattern文件路径(使用通配符需要放在双引号内)
+--rcfile=RCFILE             配置文件(搜索 configuration file 查看用法，sample file 查看示例)
+
+
+# 增量式(在旧覆盖率基础上新增覆盖率)
+coverage run --append test.py 1
+coverage run --append test.py 2
+coverage run --append test.py 3
+
+# 生成测试报告
+coverage html
+--skip_covered              不显示覆盖率 100% 的文件
+
+# 合并测试报告
+coverage combine --keep -a dir1/.coverage dir2/.coverage dir3/.coverage ...
+```
+
+使用 pytest
+
+```sh
+coverage run [options...] -m pytest [args...]
+```
+
+测试文件
+
+```py
+# test.py
+import sys
+
+def test():
+    if len(sys.argv) < 2:
+        print('no arg')
+    elif sys.argv[1] == '1':
+        print(1)
+    elif sys.argv[1] == '2':
+        print(2)
+    else:
+        print('other')
+
+if __name__ == '__main__':
+    test()
 ```

@@ -95,13 +95,19 @@ add_opts = -s
 
 ## 插件
 
+### 自定义插件
+
 [自定义插件(conftest.py)](https://zhuanlan.zhihu.com/p/157468224)
+
+### html
 
 生成html结果(pytest-html)
 
 ```python
 pytest --html=./test.html
 ```
+
+### xdist(多进程)
 
 多进程(pytest-xdist)
 
@@ -114,6 +120,8 @@ pytest -n 进程数
 # pytest.ini
 addopts = -n 2      # 设置默认进程数
 ```
+
+### rerunfailures(重跑)
 
 重跑失败用例(pytest-rerunfailures)
 
@@ -134,6 +142,8 @@ def test_rerun():
     pass
 ```
 
+### capturelog(日志)
+
 捕获日志(pytest-capturelog)
 
 ```python
@@ -141,6 +151,10 @@ def test_my_function(caplog):
     my_function()
     assert "Expected log message" in caplog.text
 ```
+
+### cov(覆盖率)
+
+[coverage命令测试代码覆盖率](../python.md#coverage)
 
 覆盖率(pytest-cov)
 

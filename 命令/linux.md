@@ -749,7 +749,13 @@ action:  具体操作，如调用函数，一般是print，通过 ; 分隔多个
 awk '{print} /pat/{print}' file
 ```
 
-命令行参数
+#### 注意
+
+```txt
+print 变量时不能加 $，除了 $0 这种
+```
+
+#### 命令行参数
 
 ```bash
 -F: 指定分隔符，
@@ -757,7 +763,7 @@ awk '{print} /pat/{print}' file
     可以是正则表达式，如 -F'[,;:]'，相当于 -F'(,|;|:)'
 ```
 
-语法
+#### 语法
 
 ```text
 通过定义在 '{ }' 中的内容定义行为
@@ -767,7 +773,7 @@ $0 表示原始数据，$1 分割后第一个部分(行首空格会自动忽略)
 $NF最后一列(注意：如果各行列数不同，则输出列为当前行最后y)，$(NF-1)倒数第二列
 ```
 
-特殊变量
+#### 特殊变量/普通变量
 
 ```text
 NR    : 行号，从1开始
@@ -778,6 +784,14 @@ END   : 在编辑最后一行后执行操作
 ||    : 或
 !     : 非（可能需要转义 \!）
 ```
+
+普通变量直接赋值
+
+```sh
+echo "1 2" | awk '{tmp=$1; print tmp}
+```
+
+#### 正则表达式
 
 [正则表达式(未列出的参考sed)](#sed-regexp)
 
@@ -791,7 +805,7 @@ END   : 在编辑最后一行后执行操作
 ?   : 匹配前面到模式 0 或 1 次
 ```
 
-函数
+#### 函数
 
 ```sh
 exit                        # 退出编辑
@@ -824,7 +838,7 @@ echo '### number: ### 123' | awk '{match($0,/.+(number):[^0-9]+([0-9]+)/,arr);pr
 awk '{if(match($0,/.+(number):[^0-9]+([0-9]+)/,arr)){printf("%s: %d\n", arr[1], arr[2])}}' test.txt
 ```
 
-操作区间
+#### 操作区间
 
 ```sh
 awk 'NR>=5&&NR<=10 {print}' file                # 指定行区间 [5,10]
@@ -848,7 +862,7 @@ awk 'BEGIN {print "Start processing file"}
      END {print "Finished processing file"}' file
 ```
 
-格式化输出
+#### 格式化输出
 
 参考[c-printf](../program_language/c-cpp/c-cpp.md#printf-format)
 
@@ -860,7 +874,7 @@ awk '{ printf("%-10s %-10s %-10s\n", $1, $2, $3) }' file.txt
 awk '{print $1"splitter"$2} file
 ```
 
-循环及条件语句
+#### 循环及条件语句
 
 ```sh
 echo "1 2 3" | awk '{
@@ -876,7 +890,7 @@ echo "1 2 3" | awk '{
 }'
 ```
 
-数学运算
+#### 数学运算
 
 ```bash
 # 变量无需声明，默认值为 0
@@ -897,7 +911,7 @@ awk '{arr[i++]=$1} END {for (i in arr) print arr[i]}' test.txt
 awk '{arr[NR]=$1} END {for(i=1;i<=length(arr);++i) print i, arr[i]}' test.txt
 ```
 
-示例
+#### 示例
 
 ```bash
 # 打印每行第二个单词
@@ -1112,6 +1126,15 @@ declare -r con="Constant value"     # 声明只读变量
 ```sh
 -S : 按文件大小降序
 -r : 倒序
+```
+
+### yes
+
+在中断之前不停打印字符串
+
+```sh
+# 生成 1024 行 1
+yes 1 | head -n 1024
 ```
 
 ### mkdir
