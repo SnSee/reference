@@ -1310,7 +1310,11 @@ ls | tee -a a.txt b.txt
 ```bash
 wc -l test.txt          # 统计文件行数
 wc -w test.txt          # 统计文件单词数(空格分割)
-wc -c test.txt          # 统计文件字符数(包含空白字符)
+wc -c test.txt          # 统计文件字节数
+wc -m test.txt          # 统计文件字符数(包含空白字符)
+
+# 查看字符串长度
+echo -n ssssssss | wc -c
 ```
 
 ### tr
@@ -1524,6 +1528,14 @@ watch ls -l
 watch -g "ls -l" && echo "exit"
 ```
 
+### dos2unix
+
+将 CRLF 换行符文件转换为 LF
+
+```sh
+dos2unix file.txt
+```
+
 ### rename 批量重命名
 
 ```sh
@@ -1692,6 +1704,16 @@ apropos wh
 
 # 使用正则表达式查找
 apropos . | egrep 'wh.*'
+```
+
+### uname
+
+查看系统架构
+
+```sh
+uname -m
+# 或
+arch
 ```
 
 ## tips

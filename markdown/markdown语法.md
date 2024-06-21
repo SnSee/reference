@@ -2,6 +2,8 @@
 
 [官方文档](https://markdown.com.cn/)
 
+[数学公式](https://www.cnblogs.com/xiaostudy/p/16351659.html)
+
 ## markdownlint
 
 [github](https://github.com/DavidAnson/markdownlint/tree/v0.28.2)
@@ -32,6 +34,21 @@
 <a id="html-jump-mark"></a>
 
 [跳转到html链接](#html-jump-mark)
+
+## 数学公式
+
+[数学公式](https://www.cnblogs.com/xiaostudy/p/16351659.html)
+
+使用 $$ 将数学公式括起来
+
+|type | sample
+|- |-
+|加     | $a + b$
+|减     | $a - b$
+|乘     | $a * b$
+|除     | $a / b$
+|指数   | $a ^ b$
+|分数   | $\frac{a}{b}$
 
 ## 表格
 
