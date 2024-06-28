@@ -1452,3 +1452,53 @@ def test():
 if __name__ == '__main__':
     test()
 ```
+
+rcfile 示例
+
+[文档](https://coverage.readthedocs.io/en/7.5.4/config.html#configuration-reference)
+
+```txt
+[run]
+branch = False
+; 指定测试覆盖率路径
+source = 
+    /tmp/src1
+    /tmp/src2
+
+; 指定只测试哪些文件
+include = 
+    /tmp/*/*.py
+
+; 忽略的文件
+omit =
+    # omit anything in a .local directory anywhere
+    */.local/*
+    # omit everything in /usr
+    /usr/*
+    # omit this single file
+    utils/tirefire.py
+
+[report]
+; Regexes for lines to exclude from consideration
+exclude_also =
+    ; Don't complain about missing debug-only code:
+    def __repr__
+    if self\.debug
+
+    ; Don't complain if tests don't hit defensive assertion code:
+    raise AssertionError
+    raise NotImplementedError
+
+    ; Don't complain if non-runnable code isn't run:
+    if 0:
+    if __name__ == .__main__.:
+
+    ; Don't complain about abstract methods, they aren't run:
+    @(abc\.)?abstractmethod
+
+ignore_errors = True
+
+[html]
+directory = coverage_html_report
+skil_covered = False
+```
