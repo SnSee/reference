@@ -193,3 +193,9 @@ make -j8 && make install
 ```sh
 gcc xsel.c -lX11 -o xsel
 ```
+
+## 终端类型
+
+settings -> Preferred Applications -> utilities -> Terminal Emulator
+
+选择 GNOME Terminal

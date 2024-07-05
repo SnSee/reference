@@ -34,7 +34,9 @@ set tabstop=4
 set expandtab
 set shiftwidth=4
 set softtabstop=4
+"highlight CursorLine ctermbg=black guibg=black		" 设置背景色颜色
 "set cursorline		 	"高亮显示当前行背景色
+"set cursorcolumn		"高亮显示当前列背景色
 
 "set hlsearch			"高亮显示搜索结果	set nolhsearch
 set incsearch 			"显示查找匹配过程

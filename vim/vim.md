@@ -49,6 +49,13 @@ colorscheme
 colorscheme default
 ```
 
+查看当前颜色配置
+
+```vim
+:hi
+:hightligth
+```
+
 ## 模式
 
 ```vim
@@ -291,6 +298,10 @@ set foldlevelstart=99           " 设置打开文件时默认不折叠
 " 根据 {} 折叠
 set foldmethod=marker
 set foldmarker={,}
+
+" 手动设置折叠范围
+set fdm=manual
+:<start_line>,<end_line>fold
 
 " indent: 根据缩进折叠，每级缩进所需空格数由shiftwidth决定
 " syntax: 根据语法进行折叠，如c/c++，但能识别的语法较少
