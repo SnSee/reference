@@ -41,6 +41,22 @@ lappend auto_path [file dirname [file normalize [info script]]]
 lappend auto_path "/path/to/custom/directory"
 ```
 
+### source
+
+执行指定文件中的命令
+
+```tcl
+source test.tcl
+```
+
+### exit
+
+在任意位置退出程序
+
+```tcl
+exit
+```
+
 ### 命令行参数
 
 ```tcl
@@ -66,6 +82,106 @@ set d [expr double(1)]
 
 # float -> int
 set i [expr int(1.2)]
+```
+
+### namespace
+
+命令空间
+
+```tcl
+set v_global "global var"
+
+# 在命令空间内执行
+namespace eval my_name {
+    # namespace 中注释必须单独一行，不能行后注释
+    # 命令空间内通过 set 定义的变量无法在 proc 中引用
+    # 使用 variable 定义 namespace 变量
+    set abc 123
+    puts $abc
+    proc func_not_export {} {
+        puts "func NOT export in my_name"
+
+        # 可以引用在 namespace 外定义的全局变量
+        global v_global
+        puts "v_global: $v_global"
+
+        global abc      # 无效
+        #puts $abc       # 报错：未定义
+    }
+
+    proc func_export {} {
+        puts "func export in my_name"
+    }
+    # export 后的命令可被 import
+    namespace export func_export
+}
+
+# 调用命令空间内函数
+# 方式一
+puts "------- 1 ---------"
+::my_name::func_not_export
+::my_name::func_export
+puts ""
+
+# 方式二
+puts "------- 2 ---------"
+namespace eval my_name {
+    func_not_export
+    func_export
+}
+puts ""
+
+# 方式三
+puts "------- 3 ---------"
+namespace import my_name::func_not_export
+namespace import my_name::func_export
+# func_not_export       # 报错: 未定义
+func_export
+puts ""
+
+# 方式四
+puts "------- 4 ---------"
+namespace path ::my_name
+func_not_export
+func_export
+puts ""
+
+# 在其他 namespace 中调用
+namespace eval my_name2 {
+    puts "******* my_name2 *******"
+    namespace path ::my_name
+    func_export
+    func_not_export
+}
+```
+
+### 变量
+
+#### variable
+
+创建只在命名空间内通用的变量
+
+```tcl
+namespace eval namespace1 {
+    variable v_namespace 123
+    puts "init v_namespace: $v_namespace"
+    proc np1_func1 {} {
+        variable v_namespace
+        # output: 123
+        puts "np1_func1 v_namespace: $v_namespace"
+        set v_namespace 456
+    }
+    proc np1_func2 {} {
+        variable v_namespace
+        # output: 456
+        puts "np1_func2 v_namespace: $v_namespace"
+    }
+
+    np1_func1
+    np1_func2
+}
+
+puts "out of namespace: $v_namespace"       # 报错：未定义
 ```
 
 ### 列表(list)
@@ -136,21 +252,70 @@ set values [dict values $myDict]
 dict unset myDict key1              # 删除元素
 ```
 
+### array
+
+不支持直接追加元素，需要重新创建整个 array
+
+|子命令 |功能
+|- |-
+|set    | 创建
+|get    | 获取键值对
+|names  | 获取所有keys
+
+创建及遍历
+
+```tcl
+array set myArray {
+    key1 value1
+    key2 value2
+    key3 value3
+}
+
+# 方式一
+foreach {key value} [array get myArray] {
+    puts "Key: $key, Value: $value"
+}
+
+# 方式二
+foreach key [array names myArray] {
+    set value $myArray($key)
+    puts "Key: $key, Value: $value"
+}
+```
+
+### 时间
+
+#### clock
+
+```tcl
+# 1970秒数
+clock seconds
+# 默认格式
+clock format [clock seconds]    # Wed Jul 10 09:28:33 CST 2024
+# 指定格式
+clock format [clock seconds] -format "%Y/%m/%d %H:%M:%S"
+```
+
 ### 文件
 
 #### 路径
 
+##### pwd 当前路径
+
+```tcl
+pwd
+```
+
+##### file
+
 ```tcl
 # 查看文件是否存在
 set file_path "/path/to/*/file.txt"
-if {[file exists $file_path]} {
-    puts "The file exists"
-} else {
-    puts "The file does not exist"
-}
-
+puts [file exists $file_path]
 # 创建目录
 file mkdir "dir_name"
+# 删除文件
+file delete test.txt
 ```
 
 ```tcl
@@ -159,6 +324,9 @@ set dirname     [file dirname $tf]              # /tmp
 set basename    [file tail $tf]                 # test.txt
 set extension   [file extension "/tmp/a.b.txt"] # txt
 set rootname    [file rootname "/tmp/a.b.txt"]  # /tmp/a.b
+
+# 拼接路径
+set file_path   [file join "/tmp" "a" "b"]  # /tmp/a.b
 ```
 
 #### glob 搜索
@@ -426,6 +594,18 @@ puts "return info: $code_info"
 puts "return code: $return_code"
 ```
 
+### puts
+
+```tcl
+puts -nonewline "test"          # 不换行输出
+```
+
+### format 格式化字符串
+
+```tcl
+format "%.2f" 1.34567           # 1.35
+```
+
 ### string命令
 
 ```tcl
@@ -438,19 +618,41 @@ string length $test
 string repeat 'X' $size
 ```
 
-#### 字符串替换
+#### split 拆分字符串
+
+```tcl
+# 语法
+# splitChars 中所有字符都会当作分隔符，默认为空格
+split string ?splitChars?
+```
+
+```tcl
+set var "1-2-3-4"
+foreach sp [split $var '-'] {
+    puts $sp
+}
+```
+
+#### map 字符串替换
 
 ```tcl
 string map {old new} string
 ```
 
-#### 字符串截取
+#### range 字符串截取
 
 ```tcl
 string range "012345" 1 4    # 包括 4
 ```
 
-#### string equal命令：检查两个字符串是否完全相等
+#### index 单个字符
+
+```tcl
+# 负数表示从后往前
+string index "012345" -1
+```
+
+#### equal 字符串比较
 
 ```tcl
 if {[string equal $str1 $str2]} {
@@ -461,7 +663,7 @@ if {![string equal $str1 $str2]} {
 }
 ```
 
-#### string compare
+#### compare
 
 比较两个字符串并返回其字符顺序的差异
 
@@ -471,7 +673,7 @@ if {[string compare $str1 $str2] > 0} {
 }
 ```
 
-#### string match
+#### match
 
 使用通配符模式匹配来测试一个字符串是否与另一个字符串匹配
 
@@ -481,7 +683,7 @@ if {[string match "*hello*" $str]} {
 }
 ```
 
-#### string first
+#### first
 
 在一个字符串中查找另一个字符串，并返回第一次出现的位置。
 可以用来判断字符串中是否包含某个子串
@@ -587,11 +789,30 @@ puts [lsort -command compareByLength $list]     # 输出：b aa abc
 
 ### info
 
-### frame
+#### locals
+
+```tcl
+# 查看局部变量
+info locals
+```
+
+#### frame
 
 [打印堆栈信息: print_frame](./proc.tcl)
 
 ## packages
+
+### TCLLIBPATH
+
+设置 tcl package 搜索路径
+
+```sh
+export TCLLIBPATH="/path/to/your/packages"
+```
+
+```tcl
+lappend auto_path "/path/to/your/packages"
+```
 
 ### json
 
@@ -622,3 +843,10 @@ foreach key [dict keys $dic] val [dict values $dic] {
 ```
 
 ## 调试
+
+[参考 breakpoint](./proc.tcl)
+
+```tcl
+# 查看局部变量
+info locals
+```

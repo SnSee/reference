@@ -22,3 +22,18 @@ proc print_frame {} {
         puts "Frame $i: $fi"
     }
 }
+
+# 设置断点，可输入 tcl 命令，q/exit 退出
+proc breakpoint {msg} {
+    puts "breakpoint: $msg"
+    while {1} {
+        puts -nonewline "tdb > "
+        flush stdout
+        gets stdin user_input
+        if {$user_input eq "q" || $user_input eq "exit"} {
+            break
+        }
+        catch {uplevel 1 $user_input} result
+        puts -nonewline $result
+    }
+}

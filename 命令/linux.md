@@ -336,6 +336,10 @@ lsof -i:443 -r3
 cat /dev/null > text
 ```
 
+### rehash
+
+更新 shell 命令哈希表，即重新加载 PATH 中的可执行文件，在增删命令后执行
+
 ## 8. shell编程(bash)
 
 睡眠
@@ -928,6 +932,10 @@ echo "a.b.c" | awk -F. '{for(i=1;i<NF;++i){printf("%s", $i);if(i<NF-1){printf(".
 
 # 从start_pattern到end_pattern的多行数据替换为new_str
 awk '/start_pattern/,/end_pattern/ {sub(/.*/, "hello");print}' test.txt
+
+# 统计指定扩展名文件总行数
+find . -name "*.txt" -exec wc -l {} +
+find . -name "*.txt" -exec wc -l {} \; | awk '{sum+=$1}END{print sum}'
 ```
 
 <a id='awk-tips'></a>
@@ -1126,6 +1134,18 @@ declare -r con="Constant value"     # 声明只读变量
 ```sh
 -S : 按文件大小降序
 -r : 倒序
+```
+
+### find
+
+```sh
+find path [options ...]
+
+-name "*.txt"               : 指定查找的文件名称
+-type f/d                   : 指定查找的文件类型，f 普通文件，d 目录
+-exec linux_cmd {} \;       : 执行指定命令，{} 代表文件，\; 表示命令结尾
+-exec linux_cmd {} +        : 执行指定命令，但是会将多个文件同时作为命令的参数，可以减少命令执行次数
+-execdir linux_cmd {} \;    : 在文件所在目录执行命令
 ```
 
 ### yes

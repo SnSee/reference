@@ -185,10 +185,11 @@ ws['C2'] = '=A2+B2'
 #### 单元格格式
 
 ```python
+from openpyxl.styles import Font, PatternFill
 # 加粗字体
 ws['B3'].font = Font(bold=True)
-# 设置背景色
-ws['B3'].fill = Font("solid", fgColor="00ffff")
+# 设置背景颜色
+ws['B3'].fill = PatternFill(start_color='FF0000', end_color='FF0000', fill_type='solid')
 
 # 修改行高
 ws.row_dimensions[2].height = 20

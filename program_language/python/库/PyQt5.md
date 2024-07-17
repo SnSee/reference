@@ -7,7 +7,7 @@
 
 ## 代码示例
 
-创建主窗口
+### 创建主窗口
 
 ```python
 import sys
@@ -38,7 +38,7 @@ if __name__ == '__main__':
     sys.exit(app.exec_())
 ```
 
-使用信号槽(pyqtSignal)
+### 使用信号槽(pyqtSignal)
 
 ```python
 from PyQt5.QtCore import pyqtSignal, QObject
@@ -63,15 +63,14 @@ if __name__ == "__main__":
     sigObj.show()
 ```
 
+### QTreeView
+
 [QTreeView](https://blog.csdn.net/zyhse/article/details/105893656)
+
+### QDirModel
 
 [QDirModel + QTreeView](https://www.w3cschool.cn/learnroadqt/emq31j4k.html)
 
+### QAbstractItemModel
+
 [QAbstractItemModel](https://blog.csdn.net/kenfan1647/article/details/119268945)
-
-设置凹陷效果
-
-```python
-frame = QFrame()
-frame.setFrameStyle(QFrame.Panel | QFrame.Sunken)
-```

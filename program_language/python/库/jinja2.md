@@ -62,6 +62,18 @@ with open('test.txt') as fp:
 template.render(name='Tom')
 ```
 
+### 模版格式设置
+
+|形参 |含义 |推荐值
+|- |- |-
+|undefined              |模板中有未定义变量时行为 |StrictUndefined
+|block_start_string     |block 起始标记 |默认的 {%
+|block_end_string       |block 结束标记 |默认的 }
+|variable_start_string  |变量起始标记   |默认的 {{
+|variable_end_string    |变量结束标记   |默认的 }}
+|trim_blocks            |是否移除block后首个空行 |无
+|keep_trailing_newline  |是否保留模板末尾空行     | True
+
 ### 传递变量
 
 ```python

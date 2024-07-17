@@ -158,52 +158,23 @@ it = item(row, col); it.setFlags(it.flags() & ~Qt.ItemIsEditable)
 
 ### QComboBox(下拉框)
 
-添加下拉选项
-
 ```cpp
+// 添加下拉选项
 addItems(const QStringList &)
-```
-
-获取选项个数
-
-```cpp
+// 获取选项个数
 count()
-```
-
-当前显示序号
-
-```cpp
+// 当前显示序号
 currentIndex()
-```
-
-当前显示内容
-
-```cpp
+// 当前显示内容
 currentText()
-```
-
-设置当前内容
-
-```cpp
+// 设置当前内容
 setCurrentText(const QString &)
-```
-
-插入选项
-
-```cpp
+// 插入选项
 insertItem(int index, const QString &, const QVariant &data=QVariant())
 insertItem(int index, const QStringList &)
-```
-
-插入分割线
-
-```cpp
+// 插入分割线
 insertSeparator(int index)
-```
-
-改变序号内容
-
-```cpp
+// 改变序号内容
 setItemText(int index, const QString &)
 ```
 
@@ -262,6 +233,78 @@ def _setLineEditReadOnly(edit: QLineEdit):
     palette = edit.palette()
     palette.setBrush(QPalette.Base, palette.brush(QPalette.Disabled, QPalette.Base))
     edit.setPalette(palette)
+```
+
+### QTabWidget
+
+#### 设置tab页方向
+
+```python
+tab = QTabWidget()
+tab.setTabPosition(QTabWidget.West)     # tab 页在左侧
+tab.addTab(QWidget(), '')
+# 设置第一个tab页文字
+tab.tabBar().setTabButton(0, QTabBar.ButtonPosition.RightSide, QLabel('line1\nline2', tab))
+```
+
+### QRadioButton单选框
+
+[参考](https://zhuanlan.zhihu.com/p/680675691)
+
+```py
+btn_0 = QRadioButton('off')
+btn_1 = QRadioButton('on')
+btn_0.setChecked(True)
+btn_0.toggled.connect(callback)
+btn_1.toggled.connect(callback)
+
+# group 可以让指定RadioButton为一组，防止和其他RadioButton混在一起
+group = QButtonGroup()
+group.addButton(btn_0)
+group.addButton(btn_1)
+
+lay = QHBoxLayout()
+lay.addWidget(btn_0)
+lay.addWidget(btn_1)
+```
+
+### QFrame
+
+#### 凸起/凹陷效果
+
+```python
+frame = QFrame()
+frame.setFrameStyle(QFrame.Panel | QFrame.Sunken)
+```
+
+#### 分隔线
+
+水平分隔线
+
+```python
+h_line = QFrame()
+h_line.setFrameShape(QFrame.HLine)
+h_line.setFrameShadow(QFrame.Sunken)
+```
+
+竖直分隔线
+
+```py
+v_line = QFrame()
+v_line.setFrameShape(QFrame.VLine)
+v_line.setFrameShadow(QFrame.Sunken)
+```
+
+## 布局
+
+### QBoxLayout
+
+```py
+# 使控件不要填充到整个 widget
+lay = QVBoxLayout()
+lay.addWidget(QPushButton('test'))
+lay.addStretch()        # 添加自动伸缩空白区域，使其他控件布局合理
+lay.addSpacing(20)      # 添加高度为 20 像素的空白区域
 ```
 
 ## 数据模型

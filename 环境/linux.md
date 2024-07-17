@@ -78,6 +78,8 @@ make -j8 && make install
 
 [下载地址](http://mirrors.ustc.edu.cn/qtproject/archive/qt/)
 
+[安装包镜像](https://download.qt.io/official_releases/online_installers/)
+
 源码安装
 
 ```bash
