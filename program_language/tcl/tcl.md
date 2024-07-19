@@ -706,6 +706,39 @@ if {[string length $s] == 0} {}
 
 此外，还可以使用其他命令，如string length（获取字符串长度）、string tolower（将字符串转换为小写）和string toupper（将字符串转换为大写）等。这些命令可以帮助您处理字符串并执行各种操作。
 
+### upvar
+
+在当前作用域引用其他作用域内的变量，并且可以修改，类似于c++引用传递
+
+```tcl
+upvar ?level? ref_var cur_var
+
+level   : #0 指全局变量作用域，#1 指上一级作用域，以此类推，默认：1
+ref_var : level 作用域内的变量名
+cur_var : 当前作用域变量名
+```
+
+```tcl
+proc level2 {var} {
+    upvar #1 v_level1 ref_level1
+    upvar #0 v_global ref_global
+    set ref_level1 11
+    set ref_global 99
+}
+
+proc level1 {var} {
+    set v_level1 1
+    puts "level1 BE: $v_level1 == 1"
+    level2 $v_level1
+    puts "level1 AF: $v_level1 == 11"
+}
+
+set v_global 9
+puts "global BE: $v_global == 9"
+level1 $v_global
+puts "global AF: $v_global == 99"
+```
+
 ### proc定义函数
 
 ```tcl

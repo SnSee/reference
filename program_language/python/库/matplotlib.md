@@ -21,7 +21,11 @@
 
 [maker形状](https://matplotlib.org/stable/gallery/lines_bars_and_markers/marker_reference.html)
 
-## 基本
+## 注意
+
+* ```plg.show()``` 之后会自动将当前 Figure 对象设置为一个空 Figure，此时保存图片是空白的，通过 show 前后 ```print(id(plt.gcf()))``` 可以验证
+
+## 基本(折线图为例)
 
 [更详细画布中元素展示](https://matplotlib.org/stable/users/explain/quick_start.html)
 
@@ -118,6 +122,67 @@ ax.bar_label(columns, padding=3)    # 柱状图上显示数值
 # x, y: 和坐标轴单位相同
 ax.text(x, y, text, fontSize=fs, ha="center", va="center")    # 单个位置显示text
 ```
+
+## 3D
+
+[3D图形展示](https://matplotlib.org/stable/users/explain/toolkits/mplot3d.html)
+
+### plot_surface 平面图
+
+```python
+import matplotlib.pyplot as plt
+import numpy as np
+import math
+
+# 创建一个 3D 图形窗口
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+
+SIZE_X = 10
+SIZE_Y = 5
+# 创建网格数据
+X = [i for i in range(SIZE_X)]
+Y = [i for i in range(SIZE_Y)]
+# 将两个一维数组组合成两个二维数组
+# X Y 都变成 SIZE_Y 行 SIZE_X 列
+X, Y = np.meshgrid(X, Y)
+# z 轴数组长度需要和 x, y 轴对应
+# Z = np.array([[3] * SIZE_X] * SIZE_Y)
+Z = [[]] * SIZE_Y
+for row in range(SIZE_Y):
+    for col in range(SIZE_X):
+        Z[-1].append(math.sqrt(X[col] ** 2 + Y[row] ** 2))
+Z = np.array(Z)
+
+# 绘制曲面图
+surf = ax.plot_surface(X, Y, Z, cmap='viridis')
+
+ax.set_xlabel('X Label')
+ax.set_ylabel('Y Label')
+ax.set_zlabel('Z Label')
+# 显示颜色条
+fig.colorbar(surf)
+plt.show()
+```
+
+#### cmap 颜色映射选项
+
+[颜色示例](https://matplotlib.org/stable/users/explain/colors/colormaps.html#colormaps)
+
+|option | desc
+|- |-
+|viridis    | 从黄色到蓝色的颜色映射，适合用于连续数据
+|plasma     | 从粉红色到紫色的颜色映射，适合用于连续数据
+|inferno    | 从黄色到黑色的颜色映射，适合用于连续数据
+|magma      | 从粉红色到黑色的颜色映射，适合用于连续数据
+|cividis    | 从黄色到紫色的颜色映射，适合用于连续数据
+|Greys      | 灰度颜色映射，从黑色到白色
+|Blues      | 蓝色调颜色映射，从深蓝到浅蓝
+|Reds       | 红色调颜色映射，从深红到浅红
+|jet        | 经典的彩虹颜色映射，从蓝色到绿色到红色
+|rainbow    | 彩虹颜色映射，从红色到黄色到蓝色
+|coolwarm   | 冷暖颜色映射，从蓝色到白色到红色
+|...        | 更多选项
 
 ## 坐标
 

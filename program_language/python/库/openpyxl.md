@@ -188,6 +188,7 @@ ws['C2'] = '=A2+B2'
 from openpyxl.styles import Font, PatternFill
 # 加粗字体
 ws['B3'].font = Font(bold=True)
+new_font = Font(name=font.name, size=font.size + 2, bold=font.bold, italic=font.italic, color=colors.RED)
 # 设置背景颜色
 ws['B3'].fill = PatternFill(start_color='FF0000', end_color='FF0000', fill_type='solid')
 

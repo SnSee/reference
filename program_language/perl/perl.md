@@ -1,9 +1,15 @@
 
 # perl
 
+[CPAN](https://www.cpan.org)
+
 [菜鸟教程](https://www.runoob.com/perl/perl-tutorial.html)
 
 ## 安装
+
+### windows 安装 perl
+
+[strawberryperl](https://strawberryperl.com)
 
 ### 通过 cpan 安装模块
 

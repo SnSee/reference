@@ -5,6 +5,10 @@
 
 [下载模块](https://download.qt.io/archive/qt/5.15/5.15.0/submodules/)
 
+[官网用户手册](https://doc.qt.io/qtforpython/modules.html)
+
+[api查询](https://www.riverbankcomputing.com/static/Docs/PyQt5/sip-classes.html)
+
 以PyQt5或c++为例
 
 PyQt5模块路径
@@ -28,9 +32,36 @@ QMAKE_CC = /usr/bin/gcc         # 设置 gcc 路径
 QMAKE_CXX = /usr/bin/g++        # 设置 g++ 路径
 ```
 
+## QtCore
+
+### QThread
+
+```py
+from PyQt5.QtCore import QThread
+
+class MyThread(QThread):
+    def __init__(self, parent):
+        super().__init__(parent)
+    
+    def run():
+        print("run")
+
+def on_finished():
+    print("finished")
+
+th = MyThread()
+th.finished.connect(on_finished)
+th.start()
+```
+
 ## 控件
 
 ### QWidget
+
+|function | desc
+|- |-
+|setDisabled    | 设置不可交互
+|setStyleSheet  | 设置 style
 
 设备背景色
 
@@ -279,12 +310,23 @@ frame.setFrameStyle(QFrame.Panel | QFrame.Sunken)
 
 #### 分隔线
 
-水平分隔线
+水平分隔线/分割线
 
 ```python
-h_line = QFrame()
-h_line.setFrameShape(QFrame.HLine)
-h_line.setFrameShadow(QFrame.Sunken)
+from PyQt5.QtWidgets import QWidget, QFrame, QVBoxLayout, QSizePolicy
+
+class HLine(QWidget):
+    def __init__(self, parent):
+        super().__init__(parent)
+        frame = QFrame(self)
+        frame.setFrameShape(QFrame.HLine)
+        frame.setFrameShadow(QFrame.Sunken)
+        frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        frame_lay = QVBoxLayout()
+        frame_lay.addWidget(frame)
+        # 左右贴边，上下各 5
+        frame_lay.setContentsMargins(0, 5, 0, 5)
+        self.setLayout(frame_lay)
 ```
 
 竖直分隔线
@@ -293,6 +335,39 @@ h_line.setFrameShadow(QFrame.Sunken)
 v_line = QFrame()
 v_line.setFrameShape(QFrame.VLine)
 v_line.setFrameShadow(QFrame.Sunken)
+```
+
+### QFileDialog 文件浏览框
+
+选择文件
+
+```py
+from PyQt5.QtWidgets import QFileDialog
+
+options = QFileDialog.Options()
+fileName, _ = QFileDialog.getOpenFileName(self, "选择文件", "", "All Files (*);;Python Files (*.py)", options=options)
+if fileName:
+    print("选择的文件路径:", fileName)
+```
+
+选择文件夹
+
+```py
+folderName = QFileDialog.getExistingDirectory(self, "选择文件夹", options=QFileDialog.ShowDirsOnly)
+if folderName:
+    print("选择的文件夹路径:", folderName)
+```
+
+### QSplitter 滑动窗口
+
+```py
+from PyQt5.QtWidgets import Splitter
+
+sp = QSplitter(PyQt5.QtCore.Qt.Vertical)
+sp.addWidget(QTextEdit())
+sp.addWidget(QTextEdit())
+lay = QVBoxLayout()
+lay.addWidget(sp)
 ```
 
 ## 布局
@@ -305,6 +380,34 @@ lay = QVBoxLayout()
 lay.addWidget(QPushButton('test'))
 lay.addStretch()        # 添加自动伸缩空白区域，使其他控件布局合理
 lay.addSpacing(20)      # 添加高度为 20 像素的空白区域
+```
+
+## style
+
+Qt帮助文档搜索：**Qt Style Sheets**
+
+```py
+wid = QWidget()
+wid.setStyleSheet('color: red')
+```
+
+批量设置多种控件
+
+```txt
+QPushButton, QLineEdit, QComboBox { color: red }
+```
+
+设置控件子属性
+
+```txt
+QComboBox::drop-down { image: url(dropdown.png) }
+
+QComboBox {
+    margin-right: 20px;
+}
+QComboBox::drop-down {
+    subcontrol-origin: margin;
+}
 ```
 
 ## 数据模型
@@ -381,13 +484,13 @@ closeEvent: 只有最顶层窗口关闭时才会触发
 
 ## 其他
 
-使用自带图标
+### 使用自带图标
 
 ```cpp
 QIcon: QApplication.style().standardIcon(QStyle.SP_TrashIcon)
 ```
 
-自定义信号槽
+### 自定义信号槽
 
 ```cpp
 from PyQt5.QtCore import pyqtSignal
@@ -396,8 +499,168 @@ sig.connect(func)
 sig.emit([args...])
 ```
 
-设置默认字体
+### 设置默认字体
 
 ```text
 QApplication::setFont()
 ```
+
+### 窗口置灰不可操作
+
+```py
+wid = QWidget()
+wid.setDisabled(True)
+wid.setStyleSheet('color: grey')
+# 恢复
+wid.setDisabled(False)
+wid.setStyleSheet('')
+```
+
+## 代码示例
+
+### 创建主窗口
+
+```python
+import sys
+from PyQt5.QtWidgets import QMainWindow, QApplication
+from PyQt5.QtGui import QIcon
+
+
+class FirstMainWin(QMainWindow):
+    def __init__(self):
+        super(FirstMainWin, self).__init__()
+        # 设置主窗口的标题
+        self.setWindowTitle('第一个窗口应用')
+        # 设置窗口的尺寸
+        self.setGeometry(300, 600, 400, 200)
+        self.resize(400, 300)
+        # 这里的图标无法显示，个人问题
+        # 在QApplication方法中设置的图标可以应用与应用程序和主窗口图标，但在QMainWindow中的图标设置就只能在窗口中使用了
+        self.setWindowIcon(QIcon(r'.images\3.ico'))
+        self.setWindowIcon(QIcon(r'.images\2.jpg'))
+        self.status = self.statusBar()
+        self.status.showMessage('只存在5秒的消息', 5000)
+
+    def closeEvent(self, event):
+        print('FirstMainWin close event')
+
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    main = FirstMainWin()
+    main.show()
+    sys.exit(app.exec_())
+```
+
+### logging 日志窗口
+
+```py
+import logging
+from PyQt5.QtCore import pyqtSignal, QObject
+from PyQt5.QtWidgets import QApplication, QFrame, QPushButton, QTextEdit, QVBoxLayout, QHBoxLayout
+
+
+class GuiLogHandler(QObject, logging.Handler):
+    on_msg = pyqtSignal(int, str)
+
+    def __init__(self, parent):
+        super(QObject, self).__init__(parent)
+        super(logging.Handler, self).__init__()
+
+    def emit(self, record):
+        msg = self.format(record)
+        self.on_msg.emit(record.levelno, msg)
+
+
+class LogWidget(QFrame):
+    _COLOR_MAP = {logging.WARNING: 'blue', logging.ERROR: 'red'}
+    _DEF_COLOR = 'black'
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        handler = GuiLogHandler(self)
+        handler.on_msg.connect(self._append)
+        logging.getLogger().addHandler(handler)
+        self._init_ui()
+
+    def _init_ui(self):
+        btn_clear = QPushButton('clear', self)
+        btn_clear.clicked.connect(self._clear)
+        btn_lay = QHBoxLayout()
+        btn_lay.addStretch()
+        btn_lay.addWidget(btn_clear)
+
+        self._text = QTextEdit(self)
+        self._text.setReadOnly(True)
+
+        lay = QVBoxLayout()
+        lay.addLayout(btn_lay)
+        lay.addWidget(self._text)
+        self.setLayout(lay)
+        self.setFrameStyle(QFrame.StyledPanel | QFrame.Sunken)
+
+    def _clear(self):
+        self._text.clear()
+
+    def _append(self, level: int, text: str):
+        color = self._COLOR_MAP.get(level, self._DEF_COLOR)
+        self._text.append(f'<font color={color}>{text}')
+
+
+def show_log():
+    logging.info('info')
+    logging.warning('warning')
+    logging.error('error')
+
+
+def main():
+    logging.getLogger().setLevel(logging.INFO)
+    app = QApplication([])
+    mw = QFrame()
+    lay = QVBoxLayout()
+    btn = QPushButton('show log', mw)
+    btn.clicked.connect(show_log)
+    lay.addWidget(btn)
+    lay.addWidget(LogWidget(mw))
+
+    mw.setLayout(lay)
+    mw.show()
+    app.exec_()
+```
+
+### 使用信号槽(pyqtSignal)
+
+```python
+from PyQt5.QtCore import pyqtSignal, QObject
+
+# 自定义类型必须继承QObject
+class SignalTest(QObject):
+    # 定义信号，和槽函数参数数量与类型必须一致
+    sigShow = pyqtSignal(str) # 发送/接收一个字符串类型参数
+    def show(self):
+        # 发送信号
+        self.sigShow.emit("message from SignalTest")
+
+class SlotTest(QObject):
+    def slotShow(self, msg: str):
+        print("SlotTest:", msg)
+
+if __name__ == "__main__":
+    sigObj = SignalTest()
+    slotObj = SlotTest()
+    # 连接信号槽
+    sigObj.sigShow.connect(slotObj.slotShow)
+    sigObj.show()
+```
+
+### QTreeView demo
+
+[QTreeView](https://blog.csdn.net/zyhse/article/details/105893656)
+
+### QDirModel demo
+
+[QDirModel + QTreeView](https://www.w3cschool.cn/learnroadqt/emq31j4k.html)
+
+### QAbstractItemModel demo
+
+[QAbstractItemModel](https://blog.csdn.net/kenfan1647/article/details/119268945)
