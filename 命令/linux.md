@@ -10,7 +10,7 @@ git clone git://git.savannah.gnu.org/coreutils.git
 [Bash FAQ](http://mywiki.wooledge.org/BashFAQ/)
 [命令在线查询](https://www.lzltool.com/LinuxCommand)
 
-## 1. 快捷键
+## 快捷键
 
 终端
 
@@ -63,14 +63,14 @@ Ctrl + n：历史中的下一条命令(下方向键)
 Alt + .：使用上一条命令的最后一个参数
 ```
 
-## 2. 用户
+## 用户
 
 ```text
 根据 uid 查询用户名: getent passwd uid
 根据用户名查询 uid: id user_name
 ```
 
-## 3. 文件
+## 文件
 
 ```bash
 # 查看文件
@@ -100,7 +100,7 @@ tar czvf test.tar.gz [--exclude ..] ./*
     --exclude test/*.txt
 ```
 
-## 4. 进程
+## 进程
 
 查看cpu核数
 
@@ -110,7 +110,7 @@ lscpu | grep 'CPU(s)'
 cat /proc/cpuinfo | grep "core id" | wc -l
 ```
 
-### 4.1. ps
+### ps
 
 ```text
 查看进程启动及运行时间: ps -eo pid,lstart,etime | grep 进程id
@@ -141,7 +141,7 @@ l: is multi-thread (using CLONE_THREAD, line NPTL pthreads do)
 +: is in the foreground process group
 ```
 
-### 4.2. 脚本
+### 脚本
 
 ```text
 查看当前进程 id: echo $$
@@ -158,7 +158,7 @@ ls按时间排序:
 set -e
 ```
 
-### 4.3. top
+### top
 
 [知乎](https://zhuanlan.zhihu.com/p/458010111)
 
@@ -202,7 +202,7 @@ O: 基于表达式过滤
 top -p <PID>    # PID 可通过ps获取
 ```
 
-## 5. 版本
+## 版本
 
 ```text
 查看发行版信息
@@ -210,7 +210,7 @@ top -p <PID>    # PID 可通过ps获取
     cent-os: cat /etc/centos-release
 ```
 
-## 6. 编程
+## 编程
 
 ```bash
 # 查看程序运行时动态库搜索路径
@@ -225,15 +225,15 @@ readelf -V app_or_so
 strings test.so
 ```
 
-## 7. 文件
+## 文件
 
-### 7.1. locate
+### locate
 
 ```text
 locate <file_name> (支持wildcard)
 ```
 
-### 7.2. find
+### find
 
 命令行选项
 
@@ -290,7 +290,7 @@ find . name "*.txt" -exec sh -c 'basename {} | fgrep test' \;
 # 对于 csh 可以使用 -cf 不 source ~/.cshrc 加快速度
 ```
 
-### 7.3. ncdu
+### ncdu
 
 [下载地址](https://dev.yorhel.nl/ncdu)
 
@@ -340,7 +340,7 @@ cat /dev/null > text
 
 更新 shell 命令哈希表，即重新加载 PATH 中的可执行文件，在增删命令后执行
 
-## 8. shell编程(bash)
+## shell编程(bash)
 
 睡眠
 
@@ -526,7 +526,7 @@ echo "${error}ERROR${reset}: This is an ${underline}error${reset} message"
 echo "${warn}WARN${reset}: This is a ${italic}warning${reset} message"
 ```
 
-## 9. 时间
+## 时间
 
 ```bash
 # 显示当前时间
@@ -539,7 +539,7 @@ date +"%Y%m%d_%H%M"
 time ./a.out
 ```
 
-## 10. 环境变量
+## 环境变量
 
 ```bash
 $SHELL                  # 当前shell类型
@@ -552,7 +552,7 @@ $PYTHONHOME             # python 家目录(默认lib及 site-package 路径)
 $PYTHONPATH             # python 库搜索路径
 ```
 
-## 11. 三剑客
+## 三剑客
 
 ### grep
 
@@ -1759,14 +1759,4 @@ man 7 signal
 ```text
 通过mount命令查看挂载的文件系统
 查看挂载的目录是否有noexec标志，如果有这个标志即使加了执行权限仍然不可执行
-```
-
-```tcl
-set la [list 0 1 2 3 4]
-puts [lrange $la 0 2]       # 0 1 2
-```
-
-```python
-la = [0, 1, 2, 3, 4]
-print(la[0:2])              # 0 1
 ```

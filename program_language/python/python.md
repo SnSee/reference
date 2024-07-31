@@ -328,6 +328,27 @@ my_object = MyConcreteClass()
 my_object.my_abstract_method()
 ```
 
+## 序列操作
+
+### 切片
+
+基本语法: **seq[start:stop:step]**
+**start:** 默认为 0，负数表示从后往前数索引，如 -1 表示最后一位
+**stop:** 默认为序列尾部，不可取到，负数同 start
+**step:** 默认为 1，索引递增值，可以为负数，表示从后往前遍历
+
+```py
+seq = [0, 1, 2, 3, 4]
+
+print('1:', seq[:])           # 0, 1, 2, 3, 4
+print('2:', seq[::-1])        # 4, 3, 2, 1, 0
+print('3:', seq[1:3])         # 1, 2
+print('4:', seq[1:3:-1])      # 空
+print('5:', seq[-3:-1])       # 2, 3
+print('6:', seq[-3:-1:-1])    # 空
+print('7:', seq[-1:-3:-1])    # 4, 3
+```
+
 ## 格式化字符串
 
 ```python
@@ -570,12 +591,12 @@ logging.debug(), logging.info(), logging.warning(), logging.error(), logging.cri
 # 设置日志等级
 logging.getLogger().setLevel(logging.DEBUG)
 # 一次性设置
-logging.basicConfig(level=logging.DEBUG, format="%(levelname)s %(message)s", datefmt="%H:%M:%S", filename="/tmp/test.log", filemode="w")
+logging.basicConfig(level=logging.DEBUG, format="%(levelname)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S", filename="/tmp/test.log", filemode="w")
 
 # 日记记录到文件
 logPath = "./log"
 open(logPath, 'w').close()
-formatter = logging.Formatter('%(asctime)s-%(levelname)s: %(message)s')
+formatter = logging.Formatter('%(asctime)s-%(levelname)s: %(message)s', datefmt="%Y-%m-%d %H:%M:%S")
 fh = logging.FileHandler(filename=logPath, encoding='utf-8', mode='a')
 fh.setLevel(logging.INFO)
 fh.setFormatter(formatter)
@@ -928,13 +949,11 @@ output = sp.stdout  # 字符串
 #sp = subprocess.call()
 ```
 
-## 子进程
+## 子进程 subprocess
 
 [官网](https://docs.python.org/3/library/subprocess.html?highlight=subprocess#module-subprocess)
 
 [run,call,Popen介绍](https://www.cnblogs.com/hanfe1/p/12885200.html)
-
-### subprocess
 
 [subprocess.Popen和os.popen区别](https://blog.csdn.net/Ls4034/article/details/89386857)
 
@@ -949,7 +968,15 @@ def subprocessRun(cmd: str, cwd: str) -> str:
     return sp.stdout.decode("utf-8").strip()
 ```
 
-设置超时退出
+### 不等待命令结束
+
+```python
+print('before')
+subprocess.Popen([command], shell=True, start_new_session=True)
+print('after')
+```
+
+### 超时退出
 
 ```python
 import subprocess
@@ -960,7 +987,7 @@ except subprocess.TimeoutExpired:
     print("subprocess timeout")
 ```
 
-tips
+### 子进程 tips
 
 ```python
 # 以下两个写法等效
@@ -973,7 +1000,7 @@ outptu = sp.stdout.read()
 error = sp.stderr.read()
 ```
 
-实时显示子进程日志
+### 实时显示子进程日志
 
 ```python
 # 方式一: 需要子进程刷新缓冲后才能输出: 1. 缓冲区满刷新；2.使用 sys.stdout.flush() 手动刷新；3.子进程退出刷新
@@ -997,18 +1024,6 @@ with open('tmp', 'w') as fp:
 ## 调用c++
 
 [用法示例](./cpython/cpython.md)
-
-## 常用函数
-
-[当前时间(time/datetime)](https://blog.csdn.net/qq_34321590/article/details/119601285)
-
-```python
-# 获取当前时间
-datetime.datetime.now()
-
-# 格式化时间戳
-time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
-```
 
 ## 继承
 
@@ -1501,4 +1516,57 @@ ignore_errors = True
 [html]
 directory = coverage_html_report
 skil_covered = False
+```
+
+## 设计模式
+
+### 单例模式
+
+```py
+def singleton(cls):
+    instances = {}
+
+    def get_instance(*args, **kwargs):
+        if cls not in instances:
+            instances[cls] = cls(*args, **kwargs)
+        return instances[cls]
+
+    return get_instance
+
+
+@singleton
+class Test1:
+    def __init__(self, val: int):
+        self.val = val
+        print('Test1 init:', val)
+
+
+@singleton
+class Test2:
+    def __init__(self, val: int):
+        self.val = val
+        print('Test2 init:', val)
+
+
+t11 = Test1(11)
+t12 = Test1(12)     # 不会创建新对象
+t2 = Test2(2)
+print(t11 is t12)
+print(t11 is t2)
+```
+
+## 调用 tcl
+
+```py
+import tkinter
+
+tcl = tkinter.Tcl()
+tcl.eval("puts {Hello, Tcl!}")
+result = tcl.eval("set abc 123")
+print("abc1 =", result)
+print("abc2 =", tcl.eval("set abc"))
+try:
+    print(tcl.eval("set not_exist"))
+except tkinter.TclError as e:
+    print('Error:', str(e))
 ```

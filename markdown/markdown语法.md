@@ -13,9 +13,11 @@
 <!-- markdownlint-disable-next-line no-emphasis-as-heading -->
 **禁用rule**
 
-## 特殊字符
+## 特殊字体
 
 **加粗**效果
+
+~~删除线~~
 
 ## 标题 {id="测试id"}
 

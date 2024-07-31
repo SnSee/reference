@@ -34,6 +34,18 @@ QMAKE_CXX = /usr/bin/g++        # 设置 g++ 路径
 
 ## QtCore
 
+### QApplication
+
+#### 屏幕尺寸
+
+```py
+app = QApplication(sys.argv)
+screen = app.primaryScreen()
+size = screen.size()
+width = size.width()
+height = size.height()
+```
+
 ### QThread
 
 ```py
@@ -54,14 +66,31 @@ th.finished.connect(on_finished)
 th.start()
 ```
 
+### QProcess
+
+```py
+from PyQt5.QtCore import QProcess
+
+p = QProcess()
+p.start('ls', ['/tmp', '/tmp2'])
+p.waitForFinished()
+print('stdout:', p.readAllStandardOutput())
+if p.error() != QProcess.ProcessError.UnknownError:
+    # 程序执行出错，如无效命令，程序崩溃等
+    print('exec error:', p.errorString())
+if p.exitCode() != 0:
+    print('stderr:', p.readAllStandardError())
+```
+
 ## 控件
 
 ### QWidget
 
 |function | desc
 |- |-
-|setDisabled    | 设置不可交互
-|setStyleSheet  | 设置 style
+|setDisabled            | 设置不可交互
+|setStyleSheet          | 设置 style
+|setContentsMargins     | 设置到子控件边缘到自身边缘距离
 
 设备背景色
 
@@ -116,6 +145,8 @@ setContextMenuPolicy(Qt::ContextMenuPolicy::NoContextMenu)
 ```cpp
 self.setAcceptRichText(true)
 // 富文本
+// 转义 <
+escaped_text = text.replace('<', '&lt;')
 self.append("<font style='font-size:14px' color=red>message to show</font>")
 ```
 
@@ -185,6 +216,20 @@ setCellWidget(row, column, QCombBox)
 
 ```cpp
 it = item(row, col); it.setFlags(it.flags() & ~Qt.ItemIsEditable)
+```
+
+### QCheckBox(勾选框)
+
+```py
+from PyQt5.QtWidgets import QCheckBox
+
+box = QCheckBox('name', parent)
+box.setChecked(True)                # 是否勾选
+box.clicked.connect(_on_clicked)    # 点击时回调
+
+def _on_clicked():
+    if box.isChecked():             # 自动取消勾选
+        box.setChecked(False)
 ```
 
 ### QComboBox(下拉框)
@@ -278,6 +323,65 @@ tab.addTab(QWidget(), '')
 tab.tabBar().setTabButton(0, QTabBar.ButtonPosition.RightSide, QLabel('line1\nline2', tab))
 ```
 
+#### 添加与关闭按钮
+
+```py
+import sys
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QTabBar, QLabel
+from PyQt5.QtCore import Qt
+
+class TabWid(QTabWidget):
+    def __init__(self):
+        super().__init__()
+        self._idx = 1
+        self._last_current_idx = 0
+
+        # 设置 tab 可关闭
+        self.tab_bar = QTabBar()
+        self.tab_bar.setTabsClosable(True)
+        self.tab_bar.tabCloseRequested.connect(self._close_tab)
+        self.setTabBar(self.tab_bar)
+
+        # 创建添加按钮
+        add_lbl = QLabel('+')
+        add_lbl.setFixedSize(20, 20)
+        add_lbl.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        add_lbl.setStyleSheet('font: normal bold 20px "Times New Roman"; border: none; align: center')
+
+        self.addTab(QWidget(), '')
+        self.tab_bar.setTabButton(0, QTabBar.RightSide, add_lbl)
+        self.tab_bar.currentChanged.connect(self._on_click_tab)
+
+        self._new_tab()
+        self._new_tab()
+
+    def _new_tab(self):
+        insert_pos = self.count() - 1
+        self.insertTab(insert_pos, QWidget(), f'tab {self._idx}')         # 在 + 前方插入
+        self.setCurrentIndex(insert_pos)
+        self._idx += 1
+
+    def _close_tab(self, index: int):
+        cur_idx = self.currentIndex()
+        self.tab_bar.removeTab(index)
+        if cur_idx == index:
+            self.setCurrentIndex(index - 1)
+
+    def _on_click_tab(self, index: int):
+        if index == self.count() - 1:
+            self._new_tab()
+        else:
+            self._last_current_idx = index
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    win = QMainWindow()
+    win.setCentralWidget(TabWid())
+    win.setGeometry(100, 100, 800, 600)
+    win.show()
+    sys.exit(app.exec_())
+```
+
 ### QRadioButton单选框
 
 [参考](https://zhuanlan.zhihu.com/p/680675691)
@@ -358,7 +462,36 @@ if folderName:
     print("选择的文件夹路径:", folderName)
 ```
 
+自定义打开文件/文件夹
+
+```py
+import os
+from PyQt5.QtWidgets import QFileDialog
+
+class FileDialog(QFileDialog):
+    def __init__(self, cwd: str = None):
+        super().__init__()
+        self._cwd = cwd if cwd else os.getcwd()
+
+    def open(self, only_dir: bool = False, title='', cwd='', name_filter=''):
+        if not cwd:
+            cwd = self._cwd
+        self.setWindowTitle(title)
+        self.setDirectory(cwd)
+        self.setNameFilter(name_filter)
+        self.setFileMode(QFileDialog.Directory if only_dir else QFileDialog.FileMode.ExistingFile)
+        self.setOptions(QFileDialog.DontResolveSymlinks)
+
+        if self.exec_() == QFileDialog.Accepted:
+            sel_file = self.selectedFiles()[0]
+            self._cwd = sel_file if only_dir else os.path.dirname(sel_file)
+            return sel_file
+        return ''
+```
+
 ### QSplitter 滑动窗口
+
+遇到拖不动的情况使用 [QScrollArea](#qscrollarea--qsplitter)
 
 ```py
 from PyQt5.QtWidgets import Splitter
@@ -368,6 +501,42 @@ sp.addWidget(QTextEdit())
 sp.addWidget(QTextEdit())
 lay = QVBoxLayout()
 lay.addWidget(sp)
+```
+
+### QScrollArea 滚动窗口
+
+#### QScrollArea + QSplitter
+
+```py
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QScrollArea, QLabel, QSplitter, QPushButton
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        tabs = QTabWidget()
+        for i in range(3):
+            layout = QVBoxLayout()
+            for j in range(20):
+                layout.addWidget(QLabel(f"Item {i}-{j}"))
+            tab_widget = QWidget()
+            tab_widget.setLayout(layout)
+            sa = QScrollArea()
+            sa.setWidget(tab_widget)
+            sa.setWidgetResizable(True)
+            tabs.addTab(sa, f"Tab {i}")
+
+        sp = QSplitter(Qt.Vertical)
+        sp.addWidget(tabs)
+        sp.addWidget(QPushButton('TEST'))
+        self.setCentralWidget(sp)
+
+if __name__ == "__main__":
+    app = QApplication([])
+    win = MainWindow()
+    win.show()
+    app.exec_()
 ```
 
 ## 布局
@@ -391,17 +560,31 @@ wid = QWidget()
 wid.setStyleSheet('color: red')
 ```
 
-批量设置多种控件
+### Qt Style Sheets Reference
 
-```txt
-QPushButton, QLineEdit, QComboBox { color: red }
-```
+帮助文档搜索标题查看所有格式
 
-设置控件子属性
+|name | desc
+|- |-
+|color              |颜色
+|background-color   |背景颜色
+|font               |字体，如: 'font: bold italic 20px "Times New Roman"
+|text-align         |文字对齐方式
+|border             |边框，none 为无边框
 
-```txt
+### Style Rules & Selector Types
+
+```py
+# 批量设置多种控件
+wid.setStyleSheet('QPushButton,QLineEdit{color: red; background-color: white} QComboBox{color: black}')
+
+# 根据objectName 设置筛分同类型控件
+wid.setObjectName('my_obj_name')
+print(wid.objectName())
+wid.setStyleSheet('QPushButton#my_obj_name {color: red}')
+
+# 设置控件子属性
 QComboBox::drop-down { image: url(dropdown.png) }
-
 QComboBox {
     margin-right: 20px;
 }
@@ -488,6 +671,50 @@ closeEvent: 只有最顶层窗口关闭时才会触发
 
 ```cpp
 QIcon: QApplication.style().standardIcon(QStyle.SP_TrashIcon)
+```
+
+[图标展示](https://zhuanlan.zhihu.com/p/654246600)
+
+查看图标和枚举值对应关系
+
+```py
+from PyQt5.QtWidgets import QApplication, QMainWindow, QStyle, QLabel, QVBoxLayout, QHBoxLayout, QWidget
+from PyQt5.QtCore import QSize
+
+class IconViewer(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        layout = QVBoxLayout()
+        central_widget = QWidget()
+        central_widget.setLayout(layout)
+        self.setCentralWidget(central_widget)
+
+        enums = [attr for attr in dir(QStyle) if attr.startswith('SP_')]
+        style = QApplication.style()
+        step = 5
+        width = 32
+        for i in range(0, len(enums), step):
+            row_lay = QHBoxLayout()
+            for j in range(step):
+                if i + j >= len(enums):
+                    continue
+                name = enums[i + j]
+                pixmap = style.standardPixmap(getattr(QStyle, name))
+                pic_label = QLabel()
+                txt_lbl = QLabel(name)
+                pic_label.setPixmap(pixmap.scaled(QSize(width, width)))
+                pic_label.setFixedWidth(width)
+                txt_lbl.setFixedWidth(width * 5)
+                row_lay.addWidget(pic_label)
+                row_lay.addWidget(txt_lbl)
+                row_lay.addStretch()
+            layout.addLayout(row_lay)
+
+if __name__ == "__main__":
+    app = QApplication([])
+    icon_viewer = IconViewer()
+    icon_viewer.show()
+    app.exec_()
 ```
 
 ### 自定义信号槽
@@ -604,6 +831,7 @@ class LogWidget(QFrame):
 
     def _append(self, level: int, text: str):
         color = self._COLOR_MAP.get(level, self._DEF_COLOR)
+        text = text.replace('<', '&lt;')
         self._text.append(f'<font color={color}>{text}')
 
 

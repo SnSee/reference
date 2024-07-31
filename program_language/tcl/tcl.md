@@ -254,23 +254,26 @@ dict unset myDict key1              # 删除元素
 
 ### array
 
-不支持直接追加元素，需要重新创建整个 array
-
 |子命令 |功能
 |- |-
 |set    | 创建
 |get    | 获取键值对
 |names  | 获取所有keys
 
-创建及遍历
-
 ```tcl
+# 创建
 array set myArray {
     key1 value1
     key2 value2
     key3 value3
 }
 
+# 修改
+set myArray(key1) NEW_VALUE
+# 添加
+set myArray(key4) value4
+
+# 遍历
 # 方式一
 foreach {key value} [array get myArray] {
     puts "Key: $key, Value: $value"
