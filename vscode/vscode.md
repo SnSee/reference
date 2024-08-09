@@ -19,6 +19,8 @@
 * **Alt + ]**   : 跳转到声明或引用(使用vim默认即可：extension.vim_ctrl+])
 * **Alt + O**   : 回退(Go Back)
 * **Alt + I**   : 前进(Go Forward)
+* **Shift + F10**: 运行(Run Code)
+* **Shift + F9**: 调试(Start Debugging)
 
 ## 针对某个文件类型设置
 
@@ -95,3 +97,35 @@ ctrl + shift + p: QtConfigure: New Project 根据提示配置项目后就会在�
 ### WSL
 
 [WSL + vscode](https://zhuanlan.zhihu.com/p/409547049)
+
+## Debug
+
+### C/C++
+
+1. 配置好 launch.json 和 tasks.json
+2. 点击左侧 Run and Debug 打开 debug 界面
+3. 打断点
+4. 点击 Start Debugging 按钮
+5. VARIABLES 窗口查看变量
+6. TERMINAL 位置点击 DEBUG CONSOLE，可以输入表达式
+
+#### 优化显示效果
+
+STL 容器显示值而不是地址信息
+
+```gdb
+# 打开 gdb 后查看是否支持，显示 global pretty-printers 即支持
+info pretty-print
+```
+
+可能会遇到缺少 pretty-print 相关 python 包的情况，使用 everything 搜索 libstdcxx，并将其路径添加到 gdbinit 中
+
+```python
+# gdbinit 内容
+python
+import sys
+sys.path.insert(0, '/python/package/path/of/libstdcxx')
+from libstdcxx.v6.printers import register_libstdcxx_printers
+register_libstdcxx_printers (None)
+end
+```

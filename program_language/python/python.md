@@ -778,6 +778,60 @@ args.age = 20
 ```python
 ```
 
+## 闭包
+
+* 闭包内变量(count)是绑定在outer返回的对象上的，而不是绑定在outer函数上的
+* 闭包方式实现的装饰器内部变量可以看作是绑定在被outer装饰的函数上的
+
+简单示例
+
+```py
+def outer():
+    count = 0
+    def inner():
+        nonlocal count
+        count += 1
+        print('call count:', count)
+
+    return inner
+
+if __name__ == '__main__':
+    func1 = outer()
+    func1()          # count: 1
+    func1()          # count: 2
+    func2 = outer()
+    func2()          # count: 1
+    func2()          # count: 2
+```
+
+装饰器
+
+```py
+def outer(func):
+    count = 0
+    def inner(*args, **kwargs):
+        nonlocal count
+        count += 1
+        print(f'{func.__name__} call count:', count)
+        return func(*args, **kwargs)
+
+    return inner
+
+@outer
+def tmp1():
+    pass
+
+@outer
+def tmp2():
+    pass
+
+if __name__ == '__main__':
+    tmp1()       # count: 1
+    tmp1()       # count: 2
+    tmp2()       # count: 1
+    tmp2()       # count: 2
+```
+
 ## 装饰器
 
 ### 装饰器函数

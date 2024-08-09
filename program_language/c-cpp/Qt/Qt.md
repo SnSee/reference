@@ -152,70 +152,52 @@ self.append("<font style='font-size:14px' color=red>message to show</font>")
 
 ### QTableWidget
 
-设置行数
+```py
+setRowCount(int)                        # 设置行数
+setColumnCount(int)                     # 设置列数
+insertRow(row)                          # 指定位置新增行
+rowCount()                              # 总行数
+columnCount()                           # 总列数
 
-```cpp
-setRowCount(int)
-```
+setItem(row, column, QTableWidgetItem(str))         # 插入数据
+setItem(row, column, QTableWidgetItem(QIcon, str))  # 插入图片
 
-设置列数
+setColumnCount()                                    # 需要先设置列数才能设置表头
+setHorizontalHeader(QHeaderView)                    # 设置表头
+setHorizontalHeaderLabels(QStringList)              # 设置表头内容
+horizontalHeader().hide()                           # 隐藏表头
+horizontalHeader().setFixedHeight(20)               # 设置表头高度
+horizontalHeader().setFont(QFont)                   # 设置表头字体
 
-```cpp
-setColumnCount(int)
-```
+setColumnWidth(index, width)                        # 设置列宽
+horizontalHeader().setStretchLastSection(True)      # 设置最后一列宽度自适应
+setCellWidget(row, column, QCombBox)                # 设置下拉列表
 
-指定位置新增行
-
-```cpp
-insertRow(row)
-```
-
-设置表头
-
-```cpp
-setHorizontalHeader(QHeaderView)
-```
-
-设置表头内容
-
-```cpp
-setHorizontalHeaderLabels(QStringList)
-```
-
-隐藏表头
-
-```cpp
-horizontalHeader().hide()
-```
-
-设置列宽
-
-```cpp
-setColumnWidth(index, width)
-```
-
-设置最后一列宽度自适应
-
-```cpp
-horizontalHeader().setStretchLastSection(True)
-```
-
-插入数据
-
-```cpp
-setItem(row, column, QTableWidgetItem)
-```
-
-设置下拉列表
-
-```cpp
-setCellWidget(row, column, QCombBox)
-```
-
-设置单元格不可编辑
-
-```cpp
+# 设置单元格不可编辑
+# 方式一
 it = item(row, col); it.setFlags(it.flags() & ~Qt.ItemIsEditable)
+# 方式二
+self.table.setEditTriggers(QTableWidget.NoEditTriggers)
+
+clear()             # 清空所有内容、行、列和标题
+clearContents()     # 仅清空内容
+```
+
+tips
+
+```py
+# 设置单元格为其他控件
+setCellWidget(row, col, QPushButton(''))
+# 设置图片对齐方式
+label = QLabel()
+label.setPixmap(QPixmap)
+label.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+table.setCellWidget(label)
+
+# 设置点击回调函数
+def on_click(row: int, col: int):
+    pass
+table.cellClicked.connect(on_click)
 ```
 
 ### QCheckBox(勾选框)
@@ -313,6 +295,15 @@ def _setLineEditReadOnly(edit: QLineEdit):
 
 ### QTabWidget
 
+```py
+tab = QTabWidget()
+tab.addTab(QWidget(), '')           # 添加 tab 页
+tab.removeTab(0)                    # 删除 tab 页
+tab.tabText(0)                      # 获取 tab 页名称
+tab.widget(0)                       # 获取 tab 页窗口
+tab.count()                         # 获取 tab 数量
+```
+
 #### 设置tab页方向
 
 ```python
@@ -350,7 +341,7 @@ class TabWid(QTabWidget):
 
         self.addTab(QWidget(), '')
         self.tab_bar.setTabButton(0, QTabBar.RightSide, add_lbl)
-        self.tab_bar.currentChanged.connect(self._on_click_tab)
+        self.tab_bar.tabBarClicked.connect(self._on_click_tab)
 
         self._new_tab()
         self._new_tab()
@@ -363,7 +354,7 @@ class TabWid(QTabWidget):
 
     def _close_tab(self, index: int):
         cur_idx = self.currentIndex()
-        self.tab_bar.removeTab(index)
+        self.removeTab(index)
         if cur_idx == index:
             self.setCurrentIndex(index - 1)
 
@@ -501,6 +492,10 @@ sp.addWidget(QTextEdit())
 sp.addWidget(QTextEdit())
 lay = QVBoxLayout()
 lay.addWidget(sp)
+
+# 设置窗口比例为 1:2
+# 如果值过小可能会无效，因为需要保证最小宽/高度以正常显示
+sp.setSizes([100, 200])
 ```
 
 ### QScrollArea 滚动窗口

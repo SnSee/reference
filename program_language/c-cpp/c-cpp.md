@@ -91,3 +91,102 @@ uint16_t ntohs(uint16_t netshort);
 * LLONG_MIN
 * LLONG_MAX
 * ULLONG_MAX
+
+## STL
+
+### initializer_list
+
+初始化序列
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <initializer_list>
+using namespace std;
+
+vector<int> make_vec(initializer_list<int> numbers) {
+    return vector<int>(numbers);
+}
+
+int main(int, char **) {
+    auto vec = make_vec({1, 2, 3, 4});
+    for (int v : vec) {
+        cout << v << endl;
+    }
+    return 0;
+}
+```
+
+### vector
+
+```cpp
+// 初始化
+vector<int> vec;                        // 空
+vector<int> vec(3, 10);                 // 3 个 10
+vector<int> vec(v.begin(), v.end());    // 从迭代器获取数据
+vector<int> vec(vec2);                  // 复制另一个vector
+vector<int> vec({1, 2, 3});             // 初始化序列
+
+// 添加数据
+vec.push_back(1);
+vec.emplace_back(1);                    // 自动调用构造函数(如果有)
+vec.insert(0, 1);
+vec.insert(0, 10, 1);                   // 插入 10 个 1
+vec.insert(vec.begin(), vec2.begin(), vec2.end());
+vec.insert(vec.begin(), {1, 1, 1});
+```
+
+遍历
+
+```cpp
+vector<int> vec = {0, 1, 2, 3};
+// 方式一
+for (size_t i = 0; i < vec.size(); ++i) {
+    vec[i];
+}
+// 方式二
+for (auto it = vec.begin(); it != vec.end(); ++it) {
+    *it;
+}
+// 方式三
+for (int val: vec) {
+    val;
+}
+```
+
+### map
+
+遍历
+
+```cpp
+map<int, char> m = {{1, 'a'}, {2, 'b'}, {3, 'c'}};
+// 方式一
+for (auto it = m.begin(); it != m.end(); ++m) {
+    it->first; it->second;
+}
+// 方式二
+for (const auto &pair: m) {
+    pair.first; pair.second;
+}
+// 方式三
+for (const auto &[key, value]: m) {
+    key; value;
+}
+```
+
+## 库函数
+
+### algorithm
+
+#### upper_bound/lower_bound
+
+注意: 只能用于已经是 **升序** 的序列，否则结果不可信
+
+```cpp
+// 返回 [left, right) 中第一个 >= target 的迭代器
+lower_bound(left, right, target);
+
+// 返回 [left, right) 中第一个 > target 的迭代器
+upper_bound(left, right, target);
+```
+
