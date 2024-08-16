@@ -397,3 +397,61 @@ check.on_clicked(callback)
 
 plt.show()
 ```
+
+## 多图/子图
+
+```py
+import matplotlib.pyplot as plt
+import numpy as np
+
+# 创建数据
+x = np.linspace(0, 10, 100)
+y1 = np.sin(x)
+y2 = np.cos(x)
+y3 = np.tan(x)
+y4 = np.exp(x / 10)
+
+# 创建一个2x2的网格布局
+fig, axs = plt.subplots(2, 2)
+
+# 在第一个子图中绘制正弦函数
+axs[0, 0].plot(x, y1, 'r-', label='sin(x)')
+axs[0, 0].set_title('Sine Function')
+axs[0, 0].legend()  # 添加图例
+
+# 在第二个子图中绘制余弦函数
+axs[0, 1].plot(x, y2, 'g-', label='cos(x)')
+axs[0, 1].set_title('Cosine Function')
+axs[0, 1].legend()  # 添加图例
+
+# 在第三个子图中绘制正切函数
+axs[1, 0].plot(x, y3, 'b-', label='tan(x)')
+axs[1, 0].set_title('Tangent Function')
+axs[1, 0].legend()  # 添加图例
+
+# 在第四个子图中绘制指数函数
+axs[1, 1].plot(x, y4, 'm-', label='exp(x/10)')
+axs[1, 1].set_title('Exponential Function')
+axs[1, 1].legend()  # 添加图例
+
+# 添加总标题
+fig.suptitle('Various Mathematical Functions', fontsize=16)
+
+# 自动调整布局
+plt.tight_layout(rect=[0, 0, 1, 0.95])  # 调整布局以给总标题留出空间
+
+# 显示图形
+plt.show()
+```
+
+## 报错
+
+### coverage 报错
+
+测试代码覆盖率时如果 import matplotlib.pyplot 报错:
+
+```txt
+No source code for: .../shibokensupport/__init__.py
+```
+
+则在 **rcfile** 中指定 source 即可。

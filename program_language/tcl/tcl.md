@@ -41,22 +41,6 @@ lappend auto_path [file dirname [file normalize [info script]]]
 lappend auto_path "/path/to/custom/directory"
 ```
 
-### source
-
-执行指定文件中的命令
-
-```tcl
-source test.tcl
-```
-
-### exit
-
-在任意位置退出程序
-
-```tcl
-exit
-```
-
 ### 命令行参数
 
 ```tcl
@@ -65,23 +49,6 @@ set argc [llength $argv]
 set v1 [lindex $argv 0]     # 第一个参数
 set v2 [lindex $argv 1]
 set v3 [lindex $argv 2]     # 超出列表长度时值为空
-```
-
-### 类型及类型转换
-
-```tcl
-true, false     # 布尔值
-1               # 整型
-1.23            # 浮点型
-"123"           # 字符串
-```
-
-```tcl
-# int -> float
-set d [expr double(1)]
-
-# float -> int
-set i [expr int(1.2)]
 ```
 
 ### namespace
@@ -157,6 +124,23 @@ namespace eval my_name2 {
 
 ### 变量
 
+#### 类型及类型转换
+
+```tcl
+true, false     # 布尔值
+1               # 整型
+1.23            # 浮点型
+"123"           # 字符串
+```
+
+```tcl
+# int -> float
+set d [expr double(1)]
+
+# float -> int
+set i [expr int(1.2)]
+```
+
 #### variable
 
 创建只在命名空间内通用的变量
@@ -184,7 +168,9 @@ namespace eval namespace1 {
 puts "out of namespace: $v_namespace"       # 报错：未定义
 ```
 
-### 列表(list)
+### 容器
+
+#### 列表(list)
 
 ```tcl
 set my_list {}              # 创建空列表
@@ -229,7 +215,7 @@ proc cmp {v1 v2} {
 set sorted_list [lsort -command cmp $my_list]   # 自定义排序函数
 ```
 
-### 字典映射(map)
+#### 字典映射(map)
 
 ```tcl
 set myDict [dict create]            # 创建
@@ -252,7 +238,7 @@ set values [dict values $myDict]
 dict unset myDict key1              # 删除元素
 ```
 
-### array
+#### array
 
 |子命令 |功能
 |- |-
@@ -372,39 +358,6 @@ puts $file "Hello, World!"
 close $file
 ```
 
-### 调用shell命令
-
-```tcl
-# shell命令不能用双引号包括，如: "ls -l"
-exec ls -l
-exec sh -c "ls -l"
-
-# 获取标准输出及返回码
-set cmd "ls"
-# set cmd "invalid_cmd"
-catch {exec $cmd} output code_info
-set return_code [lindex $code_info 1]
-puts "output     : $output"
-puts "return info: $code_info"
-puts "return code: $return_code"
-```
-
-引用环境变量
-
-```tcl
-$env(PATH)
-
-# 设置环境变量
-set env(PATH) "/test:$env(PATH)"
-
-# 判断环境变量是否存在
-if {[info exists ::env(PATH)]} {
-    puts "has"
-} else {
-    puts "no"
-}
-```
-
 ### 花括号
 
 ```tcl
@@ -467,19 +420,7 @@ if {!$isAdmin} {
 需要注意的是，在Tcl中，由于其动态类型系统，某些情况下会发生类型转换。例如，在使用<或>比较字符串时，Tcl会将字符串转换为数字进行比较。因此，对于字符串比较，应该使用eq和ne比较运算符。
 ```
 
-### if语法
-
-```tcl
-if {条件} {
-    # 条件成立时执行的代码块
-} elseif {条件2} {
-    # 条件2成立时执行的代码块
-} else {
-    # 所有条件都不成立时执行的代码块
-}
-```
-
-### 取反
+#### 取反
 
 在Tcl中，可以使用!或not关键字对if语句进行取反。具体方法如下：
 
@@ -496,7 +437,70 @@ if {$x != 1} { }
 if {![string equal $name "john"]} { }
 ```
 
-### for语法
+### 控制语句
+
+#### source
+
+执行指定文件中的命令
+
+```tcl
+source test.tcl
+```
+
+#### exit
+
+在任意位置退出程序
+
+```tcl
+exit
+```
+
+#### 调用shell命令
+
+```tcl
+# shell命令不能用双引号包括，如: "ls -l"
+exec ls -l
+exec sh -c "ls -l"
+
+# 获取标准输出及返回码
+set cmd "ls"
+# set cmd "invalid_cmd"
+catch {exec $cmd} output code_info
+set return_code [lindex $code_info 1]
+puts "output     : $output"
+puts "return info: $code_info"
+puts "return code: $return_code"
+```
+
+引用环境变量
+
+```tcl
+$env(PATH)
+
+# 设置环境变量
+set env(PATH) "/test:$env(PATH)"
+
+# 判断环境变量是否存在
+if {[info exists ::env(PATH)]} {
+    puts "has"
+} else {
+    puts "no"
+}
+```
+
+#### if
+
+```tcl
+if {条件} {
+    # 条件成立时执行的代码块
+} elseif {条件2} {
+    # 条件2成立时执行的代码块
+} else {
+    # 所有条件都不成立时执行的代码块
+}
+```
+
+#### for
 
 ```tcl
 for {初始化} {条件} {自增/自减} {
@@ -511,7 +515,7 @@ for {set i 0} {$i < [llength $my_list]} {incr i 2} {
 }
 ```
 
-### while语法
+#### while
 
 ```tcl
 while {条件} {
@@ -519,7 +523,7 @@ while {条件} {
 }
 ```
 
-### foreach语法
+#### foreach
 
 ```tcl
 foreach 变量 集合 {
@@ -530,6 +534,28 @@ foreach 变量 集合 {
 set myList {apple banana cherry}
 foreach item $myList {
     puts $item
+}
+```
+
+#### switch
+
+|option |desc
+|- |-
+|-exact     |相等才匹配(默认方式)
+|-glob      |支持通配符
+|-regexp    |支持正则表达式
+|-nocase    |忽略大小写
+
+```tcl
+set str "abc"
+switch $str {
+    # - 相当于 c 中不 break
+    abc -
+    def {
+        puts "is"
+        puts "abc or def"
+    }
+    default { puts "is default" }
 }
 ```
 
@@ -742,7 +768,7 @@ level1 $v_global
 puts "global AF: $v_global == 99"
 ```
 
-### proc定义函数
+### proc 定义函数
 
 ```tcl
 proc my_proc {arg1 arg2} {
@@ -772,7 +798,7 @@ proc my_proc {arg1 arg2} {
 }
 ```
 
-默认参数
+默认参数/可选参数
 
 ```tcl
 proc func {x {y 10}} {
@@ -823,19 +849,6 @@ set list {abc aa b}
 puts [lsort -command compareByLength $list]     # 输出：b aa abc
 ```
 
-### info
-
-#### locals
-
-```tcl
-# 查看局部变量
-info locals
-```
-
-#### frame
-
-[打印堆栈信息: print_frame](./proc.tcl)
-
 ## packages
 
 ### TCLLIBPATH
@@ -882,7 +895,135 @@ foreach key [dict keys $dic] val [dict values $dic] {
 
 [参考 breakpoint](./proc.tcl)
 
+### info
+
+#### locals
+
 ```tcl
 # 查看局部变量
 info locals
 ```
+
+#### frame
+
+[打印堆栈信息: print_frame](./proc.tcl)
+
+假设一共有 n 级堆栈
+
+|frame index |desc
+|- |-
+|0   |当前命令，即 n 级
+|1   |最顶层命令
+|2   |第二顶层命令
+|... |中间命令
+|n-1 |上一级命令
+|n   |当前命令
+
+### uplevel
+
+```tcl
+# 在上 n 级执行命令，n 默认为 1
+uplevel n {command}
+```
+
+### trace
+
+#### 追踪变量读写
+
+```tcl
+trace add variable <name> <option> <callback>
+
+<name>     : 变量名
+<option>   : 见表格
+<callback> : 回调函数，有三个参数：
+             name1: 变量名
+             name2: 普通变量为空字符串，array为索引
+             option: 参数中的 option
+
+# 取消追踪
+trace remove <type> <name> [trace_type] <callback>
+```
+
+|option |desc
+|- |-
+|array |通过 array 访问/修改变量时调用
+|read  |读时调用
+|write |写时调用
+|unset |移除变量时调用
+
+示例
+
+```tcl
+# 普通变量
+proc scalar_cb {name index opt} {
+    puts "cb: $opt $name $index"
+}
+set var_name 1
+trace add variable var_name {read write unset} scalar_cb
+puts "read var_name: $var_name"
+set var_name 2
+unset var_name
+
+# 数组
+proc array_cb {name index opt} {
+    puts "array cb: $opt $name\[$index]"
+}
+array set my_arr {k1 v1 k2 v2}
+trace add variable my_arr {array read write} array_cb
+puts "read arr: $my_arr(k1)"
+set my_arr(k1) v11
+set my_arr(k3) v3
+```
+
+#### 追踪函数调用
+
+```tcl
+trace add execution <cmd> <option> <callback>
+
+<cmd>: 要追踪的命令
+<option>: 见表格
+<callback>: 回调函数，有两个参数：
+            cmd: 完整的 command 命令，如果有参数包括参数
+            option: 参数中的 option
+```
+
+|option |desc
+|- |-
+|enter     |刚进入 cmd 时调用 callback
+|leave     |即将退出时调用
+|enterstep |cmd 内执行每条子命令前调用
+|leavestep |cmd 内执行每条子命令后调用
+
+示例
+
+```tcl
+proc enter_callback {cmd opt} {
+    puts "$opt $cmd"
+}
+# leave的参数必须叫 args，否则报错，原因未知
+proc leave_callback {cmd args} {
+    puts "$args $cmd"
+}
+
+proc my_cmd {index} {
+    puts "in my_cmd: $index"
+}
+
+trace add execution my_cmd enter enter_callback
+trace add execution my_cmd leave leave_callback
+my_cmd 1
+```
+
+## 发行版
+
+### tclpro
+
+调试需要 license
+
+[下载](https://sourceforge.net/projects/tclpro/files/TclPro-1.4.1/1.4.1)
+
+### ActiveState
+
+不能调试
+
+[下载](https://www.activestate.com/products/tcl)

@@ -16,24 +16,10 @@ proc print_frame {} {
     set max_level [info frame]          # 当前 proc 的 level
     for {set i 0} {$i < $max_level} {incr i} {
         set fi [info frame $i]
-        # set file [lindex $fi 5]
-        # set line [lindex $fi 3]
-        # set proc [lindex $fi 7]
+        # set type [dict get $fi "type"]
+        # set file [dict get $fi "file"]
+        # set line [dict get $fi "line"]
+        # set proc [dict get $fi "proc"]
         puts "Frame $i: $fi"
-    }
-}
-
-# 设置断点，可输入 tcl 命令，q/exit 退出
-proc breakpoint {msg} {
-    puts "breakpoint: $msg"
-    while {1} {
-        puts -nonewline "tdb > "
-        flush stdout
-        gets stdin user_input
-        if {$user_input eq "q" || $user_input eq "exit"} {
-            break
-        }
-        catch {uplevel 1 $user_input} result
-        puts -nonewline $result
     }
 }

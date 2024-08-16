@@ -464,6 +464,13 @@ pip install xxx.whl
 python setup.py install --prefix=...    # 会安装
 ```
 
+在线安装脚本
+
+```sh
+#!/bin/bash
+pip install $1 -i http://mirrors.aliyun.com/pypi/simple --trusted-host mirrors.aliyun.com
+```
+
 ## 添加包搜索路径
 
 ```text
@@ -592,6 +599,9 @@ logging.debug(), logging.info(), logging.warning(), logging.error(), logging.cri
 logging.getLogger().setLevel(logging.DEBUG)
 # 一次性设置
 logging.basicConfig(level=logging.DEBUG, format="%(levelname)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S", filename="/tmp/test.log", filemode="w")
+
+logging.getLogger().addHandler(handler)         # 添加 handler
+logging.getLogger().removeHandler(handler)      # 移除 handler
 
 # 日记记录到文件
 logPath = "./log"

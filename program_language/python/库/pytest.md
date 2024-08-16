@@ -1,6 +1,8 @@
 
 # pytest
 
+[官网](https://docs.pytest.org)
+
 ## 基础介绍
 
 命名规则
@@ -68,6 +70,16 @@ pytest -m "label1 or label2"
 
 ```text
 通过conftest.py进行设置
+```
+
+## 命令行参数
+
+```sh
+pytest [options] [file_or_dir, ...]
+
+-s          : 不捕获标准输出，即显示 print 等日志信息
+-m          : 只运行指定 mark 的 case
+--rootdir   : 指定根目录(创建case名称时将使用该参数), NOT PYTHONPATH!!!
 ```
 
 ## 配置文件
@@ -168,14 +180,14 @@ pytest --cov=<name> --cov-report=html
 
 ## tips
 
-检查是否所有case通过测试
+### 检查是否所有case通过测试
 
 ```bash
 # 0表示全部通过, 1表示有失败case
 pytest; echo $?
 ```
 
-> **fixture + conftest.py**
+### fixture + conftest
 
 注册为fixture的函数可以用函数名直接作为test函数的参数，当执行test函数时会自动调用
 
@@ -205,7 +217,7 @@ def test_index(get_index):
 pytest --index 2
 ```
 
-定义执行test函数之前自动执行的函数
+### 定义执行test函数之前自动执行的函数
 
 ```python
 # conftest.py
@@ -215,7 +227,34 @@ def setup_before_test():
     print("Setup before test")
 ```
 
-调用conftest.py中定义的普通函数
+### fixture 定义 test case 之前之后执行的装饰器
+
+```py
+# 需要在指定测试函数手动调用，如需自动调用添加参数 autouse=True
+# scope: 指定作用域为 module，即每个 module 调用一次(默认为 function)
+@pytest.fixture(scope='module', autouse=True)
+def module_scope():
+    print('\n***** before module *****')
+    # 对于手动指定的 fixture 可以获取 yield 返回值
+    yield 'yield-value-of-module_scope'
+    print('***** after module *****')
+
+@pytest.fixture(scope='function', autouse=True)
+def func_scope():
+    print('\n+++ before function +++')
+    yield
+    print('+++ after function +++')
+
+def test_case1(module_scope):
+    print('testcase 1')
+    # 获取 yield 返回值
+    print('yield value:', module_scope)
+
+def test_case2():
+    print('testcase 2')
+```
+
+### 调用conftest.py中定义的普通函数
 
 ```python
 # test.py
@@ -225,7 +264,9 @@ def test():
     my_func()
 ```
 
-> 日志
+### 日志
+
+#### 日志显示
 
 ```bash
 # 直接使用logging就可以
@@ -253,4 +294,97 @@ log_cli = True
 log_cli_level = INFO
 # 实时日志格式
 log_cli_format = %(levelname)s: %(message)s
+```
+
+#### 检查日志内容
+
+**注意:** 不能使用 -s(--show-capture=no) 选项
+
+```py
+import logging
+# 使用自带日志捕获器，名称固定为 capsys
+def test_log(capsys):
+    msg = 'log message'
+    print(msg)
+    assert capsys.readouterr().out.strip() == 'log message'
+
+```
+
+#### 捕获 logging 日志的方式
+
+方式一
+
+```py
+def test_log(capsys):
+    # 不推荐，多个case可能会乱
+    logging.getLogger().addHandler(logging.StreamHandler())
+    # 同上
+```
+
+方式二
+
+```py
+import logging
+import pytest
+
+class MyLogHandler(logging.Handler, object):
+    def __init__(self):
+        logging.Handler.__init__(self)
+        self._logs = []
+    
+    def get_logs(self, clear=True):
+        logs = [line for line in self._logs]
+        if clear:
+            self._logs.clear()
+        return logs
+
+    def emit(self, record):
+        self._logs.append(self.format(record))
+
+@pytest.fixture
+def log_handler():
+    handler = MyLogHandler()
+    logging.getLogger().addHandler(handler)
+    logging.getLogger().setLevel(logging.INFO)
+    yield handler
+    logging.getLogger().removeHandler(handler)
+
+def test_log(log_handler):
+    msg = 'logging info message'
+    logging.info(msg)
+    assert log_handler.get_logs()[0] == msg
+```
+
+### 借助装饰器为 test 传参
+
+```py
+@pytest.mark.parametrize('a, b', [(1, 0), (2, 0)])
+def test_divide_by_zero(a, b):
+    print('check:', a, b)
+    assert a + b < 10
+```
+
+### 异常
+
+必须抛出指定异常
+
+```py
+import pytest
+
+def divide(a, b):
+    if b == 0:
+        raise ValueError("不能除以零1")
+    return a / b
+
+def test_divide_by_zero():
+    # match 参数实际匹配时使用的是 re.search
+    with pytest.raises(ValueError, match=r"^不能除以零$"):
+        divide(1, 0)
+```
+
+```py
+@pytest.mark.parametrize("a, b", [(1, 0), (2, 0)])
+def test_divide_by_zero(a, b):
+    with pytest.raises(ZeroDivisionError, match=r"^division by zero$"):
+        print(a / b)
 ```
