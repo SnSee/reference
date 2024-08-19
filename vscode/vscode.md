@@ -129,3 +129,12 @@ from libstdcxx.v6.printers import register_libstdcxx_printers
 register_libstdcxx_printers (None)
 end
 ```
+
+## 禁用 alt 唤起菜单栏
+
+在设置中搜索并应用
+
+```txt
+window.titleBarStyle 设置为 custom
+window.customMenuBarAltFocus 取消勾选
+```

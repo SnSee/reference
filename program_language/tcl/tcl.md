@@ -74,6 +74,7 @@ namespace eval my_name {
 
         global abc      # 无效
         #puts $abc       # 报错：未定义
+        upvar ::my_name::abc abc    # 引用 namespace 中定义变量
     }
 
     proc func_export {} {
@@ -127,7 +128,7 @@ namespace eval my_name2 {
 #### 类型及类型转换
 
 ```tcl
-true, false     # 布尔值
+true, false     # 布尔值，bool
 1               # 整型
 1.23            # 浮点型
 "123"           # 字符串
@@ -219,6 +220,7 @@ set sorted_list [lsort -command cmp $my_list]   # 自定义排序函数
 
 ```tcl
 set myDict [dict create]            # 创建
+set myDict [dict create k v]        # 创建并初始化
 dict set myDict key1 value1         # 添加元素
 dict set myDict key2 value2
 
@@ -376,7 +378,7 @@ puts [subst {$name}]    # 输出：Tom
 
 [lsearch options](https://blog.csdn.net/asty9000/article/details/89693505)
 
-### 布尔运算
+### 布尔运算(bool)
 
 表示真假
 
@@ -633,18 +635,23 @@ puts -nonewline "test"          # 不换行输出
 
 ```tcl
 format "%.2f" 1.34567           # 1.35
+
+format "---%*s---" $width $out_str      # 设置字符串宽度，默认右对齐
+format "---%-*s---" $width $out_str     # 设置为左对齐
+# 同时设置多个字符串
+format "---%*s---%*s---" $width1 $out_str1 $width2 $out_str2
 ```
 
 ### string命令
 
 ```tcl
-# 移除首尾空白字符
-string trim $test
-# 长度
-string length $test
+string trim $test               # 移除首尾空白字符
+string trim $test :             # 移除首尾指定字符
+string trimleft $test           # 移除行首空白字符
+string trimright $test          # 移除行尾空白字符
+string length $test             # 长度
 
-# 重复字符
-string repeat 'X' $size
+string repeat 'X' $size         # 重复字符
 ```
 
 #### split 拆分字符串
@@ -704,7 +711,7 @@ if {[string compare $str1 $str2] > 0} {
 
 #### match
 
-使用通配符模式匹配来测试一个字符串是否与另一个字符串匹配
+使用 **通配符** 模式匹配来测试一个字符串是否与另一个字符串匹配
 
 ```tcl
 if {[string match "*hello*" $str]} {
@@ -849,6 +856,139 @@ set list {abc aa b}
 puts [lsort -command compareByLength $list]     # 输出：b aa abc
 ```
 
+## 模拟对象
+
+### 模拟成员变量
+
+```tcl
+namespace eval MyClass {
+    variable instances [dict create]
+    proc new {inst_name} {
+        variable instances
+        dict set instances $inst_name [dict create name "" age -1]
+    }
+    proc set {inst_name key value} {
+        variable instances
+        ::set inst_dict [dict get $instances $inst_name]
+        dict set inst_dict $key $value
+        dict set instances $inst_name $inst_dict
+    }
+    proc get {inst_name key} {
+        variable instances
+        return [dict get [dict get $instances $inst_name] $key]
+    }
+    proc show {inst_name} {
+        puts "name: [get $inst_name name]"
+        puts "age : [get $inst_name age]"
+    }
+}
+
+::MyClass::new pet1
+::MyClass::set pet1 name Tom
+::MyClass::set pet1 age 18
+::MyClass::new pet2
+::MyClass::set pet2 name Jerry
+::MyClass::set pet2 age 16
+
+::MyClass::show pet1
+::MyClass::show pet2
+```
+
+### 模拟静态变量
+
+```tcl
+namespace eval MyClass {
+    variable total_size 0
+    proc add_size {size} {
+        variable total_size
+        incr total_size $size
+    }
+    proc get_size {} {
+        variable total_size
+        return $total_size
+    }
+}
+
+puts "size: [MyClass::get_size]"
+MyClass::add_size 1
+MyClass::add_size 2
+puts "size: [MyClass::get_size]"
+```
+
+### 模拟成员变量2
+
+所有类的对象保存在一起
+不支持对象嵌套，即类成员变量不能是类
+
+```tcl
+# 存储所有对象
+set __instances__ [dict create]
+proc new {class_name inst_name} {
+    global __instances__
+    if {![namespace exists $class_name]} {
+        puts "No class: $class_name"
+        exit
+    }
+    dict set __instances__ $inst_name [dict create __CLASS__ $class_name __ATTR__ [dict create]]
+}
+
+proc _get_object_info {inst_name} {
+    global __instances__
+    if {![dict exists $__instances__ $inst_name]} {
+        puts "No instance: $inst_name"
+        exit
+    }
+    return [dict get $__instances__ $inst_name]
+}
+proc _check_attr_existence {obj_info attr_name} {
+    set class_name [dict get $obj_info __CLASS__]
+    if {![info exists ::${class_name}::$attr_name]} {
+        puts "class $class_name has no attribute: $attr_name"
+        exit
+    }
+}
+# path: 形如 instance_name.attribute
+proc set_attr {path value} {
+    global __instances__
+    regexp {(\w+)\.(\w+)} $path match inst_name attr_name
+    set obj_info [_get_object_info $inst_name]
+    _check_attr_existence $obj_info $attr_name
+    set attr_dict [dict get $obj_info __ATTR__]
+    dict set attr_dict $attr_name $value
+    dict set obj_info __ATTR__ $attr_dict
+    dict set __instances__ $inst_name $obj_info
+}
+proc get_attr {path} {
+    regexp {(\w+)\.(\w+)} $path match inst_name attr_name
+    set obj_info [_get_object_info $inst_name]
+    _check_attr_existence $obj_info $attr_name
+    set attr_dict [dict get $obj_info __ATTR__]
+    if {[dict exists $attr_dict $attr_name]} {
+        return [dict get $attr_dict $attr_name]
+    }
+    set class_name [dict get $obj_info __CLASS__]
+    return [set ::${class_name}::$attr_name]
+}
+
+
+# 声明 class 及成员
+namespace eval MyClass {
+    set name "UNSET"
+    set age "UNSET"
+}
+new MyClass pet1
+set_attr pet1.name Tom
+set_attr pet1.age 20
+new MyClass pet2
+set_attr pet2.name Jerry
+set_attr pet2.age 18
+
+puts "name: [get_attr pet1.name]"
+puts "age : [get_attr pet1.age]"
+puts "name: [get_attr pet2.name]"
+puts "age : [get_attr pet2.age]"
+```
+
 ## packages
 
 ### TCLLIBPATH
@@ -991,7 +1131,7 @@ trace add execution <cmd> <option> <callback>
 |- |-
 |enter     |刚进入 cmd 时调用 callback
 |leave     |即将退出时调用
-|enterstep |cmd 内执行每条子命令前调用
+|enterstep |cmd 内执行每条子命令前调用，如果子命令是自定义 proc 则会进入
 |leavestep |cmd 内执行每条子命令后调用
 
 示例
@@ -1012,6 +1152,11 @@ proc my_cmd {index} {
 trace add execution my_cmd enter enter_callback
 trace add execution my_cmd leave leave_callback
 my_cmd 1
+```
+
+#### trace 搭配 breakpoint 命令
+
+```tcl
 ```
 
 ## 发行版
