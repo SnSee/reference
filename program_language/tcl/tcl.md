@@ -51,6 +51,15 @@ set v2 [lindex $argv 1]
 set v3 [lindex $argv 2]     # 超出列表长度时值为空
 ```
 
+### eval
+
+将普通字符串解析为命令并执行
+
+```tcl
+set cmd "puts ABC"
+eval $cmd
+```
+
 ### namespace
 
 命令空间
@@ -260,6 +269,8 @@ array set myArray {
 set myArray(key1) NEW_VALUE
 # 添加
 set myArray(key4) value4
+# 检查是否是 array
+if {[llength [array names myArray]] > 0} {}
 
 # 遍历
 # 方式一
@@ -548,12 +559,20 @@ foreach item $myList {
 |-regexp    |支持正则表达式
 |-nocase    |忽略大小写
 
+**注意：**
+
+```txt
+1.匹配模式位置不支持注释，否则会被当做模式进行匹配
+```
+
 ```tcl
 set str "abc"
+# - 相当于 c 中不 break
 switch $str {
-    # - 相当于 c 中不 break
+    # 这个位置不支持注释
     abc -
     def {
+        # 注释可以写在这里
         puts "is"
         puts "abc or def"
     }
@@ -672,7 +691,11 @@ foreach sp [split $var '-'] {
 #### map 字符串替换
 
 ```tcl
-string map {old new} string
+set str "ABCD ABCD"
+
+set str [string map {AB E CD F} $str]       # str = "EF EF"
+string map {AB E CD F} str                  # str = "EF EF"
+regsub -all {\w+} $str "EF" str             # str = "EF EF"
 ```
 
 #### range 字符串截取
@@ -698,6 +721,8 @@ if {![string equal $str1 $str2]} {
     puts "The two strings are different."
 }
 ```
+
+在 if 中也可直接使用 == 判断字符串是否一样
 
 #### compare
 
