@@ -546,6 +546,46 @@ lay.addStretch()        # 添加自动伸缩空白区域，使其他控件布局
 lay.addSpacing(20)      # 添加高度为 20 像素的空白区域
 ```
 
+### QGridLayout
+
+```py
+from PyQt5.QtWidgets import QApplication, QWidget, QGridLayout, QPushButton
+
+
+class MainWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+
+        grid_layout = QGridLayout()
+        button1 = QPushButton('按钮 1')
+        button2 = QPushButton('按钮 2')
+        button3 = QPushButton('按钮 3')
+
+        # 将按钮添加到布局中
+        row_span = 1
+        col_span = 2
+        grid_layout.addWidget(button1, 0, 0)
+        grid_layout.addWidget(button2, 0, 1)
+        grid_layout.addWidget(button3, 1, 0, row_span, col_span)    # 跨越两列
+        grid_layout.setColumnMinimumWidth(0, 50)        # 设置格子宽度，优先级高于列宽比
+        for i in range(grid_layout.rowCount()):
+            grid_layout.setRowMinimumHeight(i, 100)     # 设置格子高度
+
+        # 设置列宽比例为 1:2
+        grid_layout.setColumnStretch(0, 1)  # 第一列的拉伸因子设置为 1
+        grid_layout.setColumnStretch(1, 2)  # 第二列的拉伸因子设置为 2
+
+        # 设置窗口的布局
+        self.setLayout(grid_layout)
+
+
+if __name__ == '__main__':
+    app = QApplication([])
+    window = MainWindow()
+    window.show()
+    app.exec_()
+```
+
 ## style
 
 Qt帮助文档搜索：**Qt Style Sheets**
@@ -658,6 +698,93 @@ closeEvent: 只有最顶层窗口关闭时才会触发
 
 ```text
 在需要事件过滤器的类中通过installEventFilter(对象)安装，对象需要有eventFilter(QObject, QEvent)函数
+```
+
+## QGraphics
+
+```txt
+QGraphicsView : 用于展示 QGraphicsScene 的 widget，继承关系包括 QFrame
+QGraphicsItem : 被绘制的二维图形基类
+QGraphicsScene: 用于绘制 QGraphicsItem 的场景画布
+```
+
+```py
+import sys
+from PyQt5.QtWidgets import QApplication, QGraphicsView, QGraphicsScene, QGraphicsEllipseItem, QGraphicsItem
+from PyQt5.QtCore import QRectF
+from PyQt5.QtGui import QColor, QBrush
+from PyQt5.QtGui import QPainter, QPen, QTransform
+from PyQt5.QtCore import Qt
+
+
+# 水平镜像
+class HMirrorTransform(QTransform):
+    def __init__(self, origin_y: int = 0, pivot_y: int = 0):
+        super().__init__()
+        self.scale(-1, 1)
+        offset = 2 * (origin_y - pivot_y)
+        self.translate(-offset, 0)
+
+
+class CustomGraphicsItem(QGraphicsItem):
+    def __init__(self, bounding: QRectF):
+        super().__init__()
+        self._bounding = bounding
+
+    # item 的矩形边界，所有绘制的内容都要在该范围内
+    def boundingRect(self) -> QRectF:
+        return self._bounding
+
+    def paint(self, painter: QPainter, option, widget=None):
+        painter.setBrush(Qt.green)          # 绘制填充矩形
+
+        pen = QPen()                        # 边界线画笔
+        pen.setColor(QColor('red'))         # 颜色: 红色
+        pen.setWidth(4)                     # 线宽: 4 像素
+        pen.setStyle(Qt.DashLine)           # 样式: 虚线
+        pen.setDashPattern([5, 10])         # 设置虚线实线与空白比例
+        pen.setCapStyle(Qt.RoundCap)        # 端点: 圆头
+        pen.setJoinStyle(Qt.RoundJoin)      # 交点: 圆角
+
+        painter.setPen(pen)                 # 设置边界线画笔
+        painter.drawRect(self._bounding)
+        painter.setBrush(Qt.blue)
+        painter.drawRect(int(self._bounding.x()), int(self._bounding.y()), 10, 10)
+
+
+class MainWindow(QGraphicsView):
+    def __init__(self):
+        super().__init__()
+
+        self.scene = QGraphicsScene(self)               # 创建场景
+        self.scene.setBackgroundBrush(Qt.black)         # 设置背景颜色
+
+        # 添加自定义图形
+        item = CustomGraphicsItem(QRectF(0, 0, 100, 100))
+        self.scene.addItem(item)
+        item2 = CustomGraphicsItem(QRectF(0, 100, 100, 100))
+        item2.setTransform(item2.transform() * HMirrorTransform())
+        self.scene.addItem(item2)
+        item3 = CustomGraphicsItem(QRectF(100, 200, 100, 100))
+        self.scene.addItem(item3)
+        item3_2 = CustomGraphicsItem(QRectF(100, 200, 100, 100))
+        item3_2.setTransform(item3_2.transform() * HMirrorTransform(item3_2.boundingRect().x(), 50))
+        self.scene.addItem(item3_2)
+
+        # 添加椭圆项
+        ellipse_item = QGraphicsEllipseItem(QRectF(150, 0, 100, 100))
+        ellipse_item.setBrush(QBrush(QColor('red')))
+        self.scene.addItem(ellipse_item)
+
+        self.setScene(self.scene)
+
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    view = MainWindow()
+    view.resize(800, 600)
+    view.show()
+    sys.exit(app.exec_())
 ```
 
 ## 其他

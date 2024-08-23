@@ -190,6 +190,7 @@ set my_list [list 1 2 3]    # 创建列表
 llength $my_list                            # 长度
 lindex $my_list 1                           # 访问列表，通过索引获取元素
 lset my_list 1 5                            # 修改元素值 my_list[1] = 5
+lreplace my_list 1 2 A B C                  # 替换区间 [1, 2] 为 A B C 三个值
 lappend my_list 4                           # 追加元素(修改当前list)
 lappend $my_list 4                          # 追加元素(不修改当前list)
 set my_list [linsert $my_list 1 5]          # 插入元素，可插入多个值
@@ -199,8 +200,7 @@ if {[lsearch $myList $element] != -1} {}    # 判断元素是否存在
 if {!($e in $my_list)} {}                   # 判断元素不存在
 if {[lsearch $myList $element] == -1} {}    # 判断元素不存在
 
-# 合并/拼接列表
-set new_list [concat $my_list $my_list]
+set new_list [concat $my_list $my_list]     # 合并/拼接列表
 
 # 切片
 set slice [lrange $my_list 2 5]             # 包括 5
