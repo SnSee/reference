@@ -38,7 +38,9 @@ SQL(Structured Query Language) 用于管理关系型数据库(RDBMS), 可以对�
 
 ### 操作表
 
-#### WHERE 条件
+#### 条件
+
+##### WHERE 条件
 
 |operator | desc
 |- |-
@@ -72,6 +74,13 @@ SELECT * FROM 表名 WHERE NOT 条件;
 ```sql
 -- 存在性判断
 SELECT * FROM 表名 WHERE 列名 IN (值1, 值2, 值3);
+```
+
+##### LIMIT
+
+```sql
+-- 只获取第一条数据
+SELECT * FROM 表名 WHERE 条件 LIMIT 1;
 ```
 
 #### create
@@ -112,6 +121,13 @@ CREATE TABLE Students (
     CHECK (Age > 6),
     CONSTRAINT fk_name FOREIGN KEY (CustomerID) REFERENCES 表名,
 );
+```
+
+##### 检查是否存在表
+
+```sql
+-- sqlite3
+select name from sqlite_master where type='table' and name='表名';
 ```
 
 #### insert

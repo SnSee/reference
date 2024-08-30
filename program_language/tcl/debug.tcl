@@ -404,7 +404,8 @@ proc break_now {} {
                 # 打印所有局部变量
                 catch {uplevel $cur_level "info locals"} local_var_names
                 set name_width 0
-                foreach var_name [lsort $local_var_names] {
+                set local_var_names [lsort $local_var_names]
+                foreach var_name $local_var_names {
                     if {[string length $var_name] > $name_width} {
                         set name_width [string length $var_name]
                     }

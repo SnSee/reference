@@ -150,6 +150,42 @@ escaped_text = text.replace('<', '&lt;')
 self.append("<font style='font-size:14px' color=red>message to show</font>")
 ```
 
+### QTextBrowser
+
+添加可点击文本
+
+```py
+from PyQt5.QtWidgets import QApplication, QTextBrowser, QMainWindow
+from PyQt5.QtCore import QUrl
+
+
+class ClickableEdit(QTextBrowser):
+    def __init__(self):
+        super().__init__()
+
+    # 重写点击回调函数
+    def setSource(self, url: QUrl):
+        print('click:', url.toString())
+
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        ce = ClickableEdit()
+        self.setCentralWidget(ce)
+
+        # 添加可点击文本
+        ce.append('点击 <a href="TEST1">click here</a>')
+        ce.append('点击 <a href="TEST2">click here</a>')
+
+
+if __name__ == '__main__':
+    app = QApplication([])
+    window = MainWindow()
+    window.show()
+    app.exec_()
+```
+
 ### QTableWidget
 
 ```py
@@ -203,21 +239,30 @@ table.cellClicked.connect(on_click)
 ### QCheckBox(勾选框)
 
 ```py
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QCheckBox
 
 box = QCheckBox('name', parent)
-box.setChecked(True)                # 是否勾选
-box.clicked.connect(_on_clicked)    # 点击时回调
+box.setChecked(True)                            # 是否勾选
+box.clicked.connect(_on_clicked)                # 点击时回调
+box.stateChanged.connect(_on_state_changed)     # 状态改变回调
 
 def _on_clicked():
-    if box.isChecked():             # 自动取消勾选
+    if box.isChecked():                         # 自动取消勾选
         box.setChecked(False)
+
+def _on_state_changed(state: int):
+    if state == Qt.Checked:
+        pass
+    elif state == Qt.Unchecked:
+        pass
 ```
 
 ### QComboBox(下拉框)
 
 ```cpp
 // 添加下拉选项
+addItem(const QString &)
 addItems(const QStringList &)
 // 获取选项个数
 count()
@@ -234,6 +279,10 @@ insertItem(int index, const QStringList &)
 insertSeparator(int index)
 // 改变序号内容
 setItemText(int index, const QString &)
+
+// 信号
+void currentIndexChanged(int index)
+void currentTextChanged(const QString &text)
 ```
 
 ### QTreeView
@@ -403,6 +452,15 @@ frame = QFrame()
 frame.setFrameStyle(QFrame.Panel | QFrame.Sunken)
 ```
 
+#### widget 间距
+
+[QLayout](#qlayout)
+
+```py
+# 如果没自定义 layout 直接调用，定义了调用 layout 同名方法
+setContentsMargins(0, 0, 0, 0)
+```
+
 #### 分隔线
 
 水平分隔线/分割线
@@ -534,7 +592,55 @@ if __name__ == "__main__":
     app.exec_()
 ```
 
+### QSpinBox 计数器
+
+```py
+from PyQt5.QtWidgets import QApplication, QSpinBox, QVBoxLayout, QWidget
+
+app = QApplication([])
+
+# 点击上箭头 +1，下箭头 -1
+spin_box = QSpinBox()
+spin_box.setRange(0, 100)
+# spin_box.setMinimum(0)
+# spin_box.setMaximum(100)
+spin_box.setSingleStep(1)
+
+window = QWidget()
+layout = QVBoxLayout(window)
+layout.addWidget(spin_box)
+window.show()
+app.exec_()
+```
+
+### QSlider 滑块
+
+```py
+from PyQt5.QtWidgets import QApplication, QSlider, QVBoxLayout, QWidget
+from PyQt5.QtCore import Qt
+
+app = QApplication([])
+
+slider = QSlider(Qt.Horizontal)
+slider.setMinimum(0)
+slider.setMaximum(100)
+slider.setTickInterval(1)
+
+window = QWidget()
+layout = QVBoxLayout(window)
+layout.addWidget(slider)
+window.show()
+app.exec_()
+```
+
 ## 布局
+
+### QLayout
+
+```py
+setContentsMargin(0, 0, 0, 0)       # 设置子 widget 到当前 widget 边缘距离
+setSpacing(0)                       # 设置子 widget 之间距离
+```
 
 ### QBoxLayout
 
@@ -700,7 +806,11 @@ closeEvent: 只有最顶层窗口关闭时才会触发
 在需要事件过滤器的类中通过installEventFilter(对象)安装，对象需要有eventFilter(QObject, QEvent)函数
 ```
 
-## QGraphics
+## QtGui
+
+### QGraphics
+
+#### 示例用法
 
 ```txt
 QGraphicsView : 用于展示 QGraphicsScene 的 widget，继承关系包括 QFrame
@@ -785,6 +895,36 @@ if __name__ == '__main__':
     view.resize(800, 600)
     view.show()
     sys.exit(app.exec_())
+```
+
+#### tips
+
+```py
+# 设置非自动调整 view 显示区域，而是固定区域
+QGraphicsView.setSceneRect(0, 0, 800, 600)
+# 添加 QWidget
+QGraphicsScene.addWidget()
+```
+
+### QTransform
+
+对图形对象作 平移、缩放、剪切、旋转或投影坐标系统
+
+```py
+from PyQt5.QtGui import QTransform, QPolygon
+from PyQt5.QtCore import QRect
+
+rect = QRect(0, 0, 100, 60)
+poly = QPolygon(rect)
+transform = QTransform()
+# 沿 (0, 0) 顺时针旋转 90 度(左上角为坐标原点)
+transform.rotate(90)
+r2 = transform.mapRect(rect)    # 旋转矩形
+p2 = transform.map(poly)        # 旋转多边形
+
+print(r2.x(), r2.y(), r2.width(), r2.height())
+for i in range(p2.size()):
+    print(f'({p2.point(i).x()}, {p2.point(i).y()}), ',  end='')
 ```
 
 ## 其他

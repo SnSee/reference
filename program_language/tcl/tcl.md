@@ -5,6 +5,10 @@
 
 [官网](https://core.tcl-lang.org/index.html)
 
+[Tcl 命令](https://www.tcl.tk/man/tcl/TclCmd/contents.htm)
+
+[Tk 命令](https://www.tcl.tk/man/tcl/TkCmd/contents.htm)
+
 [w3school 文档](https://www.w3cschool.cn/doc_tcl_tk/)
 
 [wiki](https://wiki.tcl-lang.org/welcome)
@@ -883,6 +887,10 @@ puts [lsort -command compareByLength $list]     # 输出：b aa abc
 
 ## 模拟对象
 
+### TclOO
+
+[oop](./oop.tcl)
+
 ### 模拟成员变量
 
 ```tcl
@@ -1056,11 +1064,37 @@ foreach key [dict keys $dic] val [dict values $dic] {
 }
 ```
 
+## Tk 界面
+
+### 监听键盘
+
+只有当 Tk 界面获得焦点时才能监听
+
+```tcl
+package require Tk
+
+proc on_press_key {key} {
+    puts "press $key"
+}
+
+wm title . "Listen Keyboard"
+# 监听指定按键
+bind . <KeyPress-a> {puts "press a"}
+# 监听所有按键
+bind . <KeyPress> {on_press_key %K}
+```
+
 ## 调试
 
 [参考 breakpoint](./proc.tcl)
 
 ### info
+
+#### 查看 tcl 版本
+
+```tcl
+info patch
+```
 
 #### locals
 

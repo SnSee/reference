@@ -308,6 +308,9 @@ class Color(Enum):
     RED = 1
     GREEN = 2
     BLUE = 3
+
+# 转换为 int 值
+print(Color.RED.value, type(Color.RED.value))
 ```
 
 ### 抽象类
