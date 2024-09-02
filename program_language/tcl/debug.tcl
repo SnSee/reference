@@ -1,11 +1,15 @@
-### 只支持 proc 断点
+### 预设只支持 proc 断点，文件断点手动调用 break_now 命令
 ### 同一 proc 只能打一个断点
 ### 不支持嵌套断点，即为断点函数的子函数打断点
-### 由于 trace 命令只能追踪已定义函数，因此要在 proc 定义后才能打断点，否则无效
-### 由于 trace 回调函数不带命名空间，因此不支持不同命名空间的同名 proc
-### 用法：b proc_name[:file_line_number]
-###   如：b test:10; b my_namespace::test:10
+### 不支持嵌套 namespace
+### 断点需要在定义 proc 之前打
+### 不支持不同命名空间的同名 proc
+### 用法：b proc_name [file_line_number]
+###   如：b test 10; b my_namespace::test 10; b ns1::ns2::test 10
 
+### sb              : 查看所有断点，sb<num> 查看指定编号断点
+### disable<num>    : 取消指定编号的断点
+### enable<num>     : 激活指定编号的断点
 ### continue(c)     : 下一个断点
 ### next(n)         : 下一行(不进入子函数)
 ### step(s)         : 下一行(进入子函数)
@@ -19,7 +23,7 @@
 ### 普通变量         : 普通变量会自动调用 puts 打印
 
 ### TODO
-### 断点编号，查看断点，动态增删断点，可以根据命令pattern打断点
+### 动态增删断点，可以根据命令pattern打断点
 ### proc 内支持多个断点
 ### until 正好是无效行(注释，空行等)时改为最近的有效行
 ### 添加 watch 功能
@@ -64,14 +68,17 @@ namespace eval glv {
 
     # 所有断点信息
     # {proc_name: {             proc_name 不包括 namespace
+    #     "index": 1,           断点编号
+    #     "enabled": true       断点是否激活
     #     "namespace": ::,      proc 所属 namespace
     #     "line": 1,            断点行号，0 表示刚进入 proc
     #     "triggered": false,   当进入函数时，是否已经触发了断点(多次进入可多次触发)，仅行号为 0 时生效
     # }}
+    variable break_index 1
     variable breakpoints [dict create]
     variable tmp_breakpoints [dict create]
 
-    # 正在调试的 proc
+    # 正在调试的 proc，0 为断点函数，[1:] 为 step 进入的子函数
     variable debugging_proc_list ""
 
     # 行调试开关
@@ -94,9 +101,10 @@ namespace eval glv {
         variable debugging_proc_list
         variable breakpoints
         variable tmp_breakpoints
-        lappend debugging_proc_list $name
-        if {![dict exists $breakpoints $name]} {
-            dict set tmp_breakpoints $name [dict create "namespace" "" "line" 0 "triggered" false]
+        set proc_name [lindex [split $name ":"] end]
+        lappend debugging_proc_list $proc_name
+        if {![dict exists $breakpoints $proc_name]} {
+            dict set tmp_breakpoints $proc_name [dict create "index" -1 "enabled" true "namespace" "" "line" 0 "triggered" false]
         }
     }
     proc remove_debugging_proc {name} {
@@ -122,37 +130,102 @@ namespace eval glv {
             remove_debugging_proc [lindex $debugging_proc_list $i]
         }
     }
+    proc _check_name {name_space proc_name} {
+        if {[string match "*::" $name_space]} {
+            puts "namespace($name_space) should not ends with ::"
+            exit
+        }
+    }
+    proc _full_name {name_space proc_name} {
+        _check_name $name_space $proc_name
+        return "${name_space}::${proc_name}"
+    }
 
     proc _add_breakpoint {name_space proc_name line} {
+        _check_name $name_space $proc_name
+        variable break_index
         variable breakpoints
         if {[dict exists $breakpoints $proc_name]} {
             puts "Duplicated breakpoint for ${name_space}::$proc_name"
             exit
         }
-        set full_name "$name_space$proc_name"
-        dict set breakpoints $proc_name [dict create "namespace" $name_space "line" $line "triggered" false]
-        trace add execution $full_name enter tdb::_proc_b_enter_wrapper
-        trace add execution $full_name leave tdb::_proc_b_leave_wrapper
-        trace add execution $full_name enterstep tdb::_proc_b_enter_step_wrapper
-        trace add execution $full_name leavestep tdb::_proc_b_leave_step_wrapper
+        dict set breakpoints $proc_name [dict create "index" $break_index "enabled" true "namespace" $name_space "line" $line "triggered" false]
+        incr break_index
     }
-    proc _set_break_info {key value} {
+    proc is_breakpoint_proc {proc_name} {
         variable breakpoints
-        set debugging_proc [get_debugging_proc]
-        if {[dict exists $breakpoints $debugging_proc]} {
-            set b_info [dict get $breakpoints $debugging_proc]
-            dict set b_info $key $value
-            dict set breakpoints $debugging_proc $b_info
+        return [dict exists $breakpoints $proc_name]
+    }
+    proc _try_init_breakpoint {name_space proc_name} {
+        _check_name $name_space $proc_name
+        variable breakpoints
+        if {[dict exists $breakpoints $proc_name]} {
+            set full_name [_full_name $name_space $proc_name]
+            trace add execution $full_name enter tdb::_proc_b_enter_wrapper
+            trace add execution $full_name leave tdb::_proc_b_leave_wrapper
+            trace add execution $full_name enterstep tdb::_proc_b_enter_step_wrapper
+            trace add execution $full_name leavestep tdb::_proc_b_leave_step_wrapper
         }
     }
-    proc _get_break_info {key} {
+    proc _show_breakpoints {{tar_index ""}} {
+        variable breakpoints
+        set lines {}
+        lappend lines "index namespace proc line enabled"
+        dict for {proc_name break_info} $breakpoints {
+            set index [dict get $break_info "index"]
+            if {$tar_index == "" || $tar_index == $index} {
+                set ns [dict get $break_info "namespace"]
+                set en [dict get $break_info "enabled"]
+                set line [dict get $break_info "line"]
+                lappend lines "$index $ns $proc_name $line $en"
+            }
+        }
+        foreach line $lines {
+            foreach part $line {
+                puts -nonewline [format "%*s " 20 $part]
+            }
+            puts ""
+        }
+    }
+    proc _try_disable_breakpoint {index} {
+        variable breakpoints
+        dict for {proc_name break_info} $breakpoints {
+            if {[dict get $break_info "index"] == $index} {
+                _set_break_info "enabled" false $proc_name
+                break
+            }
+        }
+    }
+    proc _try_enable_breakpoint {index} {
+        variable breakpoints
+        dict for {proc_name break_info} $breakpoints {
+            if {[dict get $break_info "index"] == $index} {
+                _set_break_info "enabled" true $proc_name
+                break
+            }
+        }
+    }
+    proc _set_break_info {key value {proc_name ""}} {
+        variable breakpoints
+        if {$proc_name == ""} {
+            set proc_name [get_debugging_proc]
+        }
+        if {[dict exists $breakpoints $proc_name]} {
+            set b_info [dict get $breakpoints $proc_name]
+            dict set b_info $key $value
+            dict set breakpoints $proc_name $b_info
+        }
+    }
+    proc _get_break_info {key {proc_name ""}} {
         variable breakpoints
         variable tmp_breakpoints
-        set debugging_proc [get_debugging_proc]
-        if {[dict exists $breakpoints $debugging_proc]} {
-            set debug_info [dict get $breakpoints $debugging_proc]
-        } elseif {[dict exists $tmp_breakpoints $debugging_proc]} {
-            set debug_info [dict get $tmp_breakpoints $debugging_proc]
+        if {$proc_name == ""} {
+            set proc_name [get_debugging_proc]
+        }
+        if {[dict exists $breakpoints $proc_name]} {
+            set debug_info [dict get $breakpoints $proc_name]
+        } elseif {[dict exists $tmp_breakpoints $proc_name]} {
+            set debug_info [dict get $tmp_breakpoints $proc_name]
         } else {
             return ""
         }
@@ -175,6 +248,7 @@ proc highlight_frame {frame} {
 
 # 显示当前堆栈代码
 proc _show_line {ini_frame cur_frame {size 10}} {
+    variable breakpoints
     set frame [info frame $cur_frame]
 
     set proc_bt ""
@@ -189,6 +263,8 @@ proc _show_line {ini_frame cur_frame {size 10}} {
     }
 
     puts [string repeat "*" 50]
+    # 断点编号
+    puts_color2 "breakpoint" [glv::_get_break_info "index"]
     puts_color2 "step" $proc_bt
     highlight_frame $frame
     puts [string repeat "*" 50]
@@ -300,7 +376,7 @@ proc _show_current_frame_detail {msg} {
 
 
 # 设置断点，可输入 tcl 命令以及自定义调试命令
-proc break_now {} {
+proc _break_now {} {
     set ini_frame [_get_current_frame]
     set cur_frame $ini_frame
     _show_line $ini_frame $cur_frame
@@ -390,6 +466,25 @@ proc break_now {} {
                 _show_line $ini_frame $cur_frame
             }
 
+            {^sb\d*$} {
+                # 查看断点信息
+                if {[regexp {\d+} $user_input index]} {
+                    glv::_show_breakpoints $index
+                } else {
+                    glv::_show_breakpoints
+                }
+            }
+            {^disable\s*\d+$} {
+                # disable 指定编号断点
+                regexp {\d+} $user_input index
+                glv::_try_disable_breakpoint $index
+            }
+            {^enable\s*\d+$} {
+                # enable 指定编号断点
+                regexp {\d+} $user_input index
+                glv::_try_enable_breakpoint $index
+            }
+
             {^\.\s*\d*$} {
                 # 显示源代码
                 if {[regexp {\d+} $user_input size]} {
@@ -472,6 +567,9 @@ proc break_now {} {
         }
     }
 }
+proc break_now {} {
+    _break_now
+}
 
 
 # 是否是通过 [] 等方式调用的内置函数
@@ -513,6 +611,10 @@ proc _proc_b_enter_step_wrapper {cmd args} {
     glv::remove_sub_debugging_proc $cur_proc
 
     if {[string equal $cur_proc [glv::get_debugging_proc]]} {
+        # 跳过 disabled 断点
+        if {![glv::_get_break_info "enabled"]} {
+            return
+        }
         # 跳过子函数
         if {[_is_builtin_command $frame]} {
             return
@@ -524,18 +626,18 @@ proc _proc_b_enter_step_wrapper {cmd args} {
         if {$tar_line == 0 && ![glv::_get_break_info "triggered"]} {
             # 断点未设置行号且刚进入函数
             glv::_set_break_info "triggered" true
-            break_now
+            _break_now
         } elseif {[string equal $tar_line $cur_line]} {
             # 当前行号和断点行号一致
-            break_now
+            _break_now
         } elseif {[string equal $glv::until_line_num $cur_line]} {
             # 当前行号和 until 行号一致
             set glv::until_line_num 0
-            break_now
+            _break_now
         } elseif {$glv::next_line} {
             # 行调试
             set glv::next_line false
-            break_now
+            _break_now
         }
     } else {
         # 非断点函数内(自定义子proc)
@@ -546,7 +648,7 @@ proc _proc_b_enter_step_wrapper {cmd args} {
                 set glv::enter_sub_proc false
                 set glv::next_line false
                 glv::add_debugging_proc $cur_proc
-                break_now
+                _break_now
             }
         }
     }
@@ -559,29 +661,56 @@ proc _get_procs {name_space} {
 }
 
 # 目前只支持对 proc 打断点，不支持文件断点
-proc b {desc} {
-    if {[regexp {^(\w+::)*(\w+)(:\d+)*} $desc match name_space proc_name line]} {
-        set name_space "::[string trimleft $name_space :]"
-        set line [string trim $line :]
-        if {[string length $line] == 0} {
-            set line 0
-        }
-
-        set valid_procs [_get_procs $name_space]
-
-        if {[lsearch -exact $valid_procs $proc_name] >= 0} {
-            glv::_add_breakpoint $name_space $proc_name $line
-        } else {
-            _show_current_frame_detail "proc is undefined when try make breakpoint: $desc"
-            exit
-        }
+proc b {desc {line 0}} {
+    if {[regexp {(.*?)(\w+)$} $desc match name_space proc_name]} {
+        glv::_add_breakpoint [string trim $name_space ":"] $proc_name $line
     } else {
         puts "Invalid breakpoint pattern: $desc"
     }
 }
 
 namespace export b
+namespace export break_now
 # namespace tdb end
 }
 
-namespace import tdb::b
+proc _get_name_levels {proc_name} {
+    set name_levels {}
+    if {![string match {::*} $proc_name]} {
+        # proc 名称未显示指定在全局作用域创建，则自动搜索命名空间层级
+        for {set i [expr [info frame] - 1]} {$i > 0} {incr i -1} {
+            set cmd [dict get [info frame $i] "cmd"]
+            if {[regexp {^\s*namespace\s+eval\s+(\w+)} $cmd match ns]} {
+                if {[lsearch $name_levels $ns] == -1} {
+                    lappend name_levels $ns
+                }
+            }
+        }
+    }
+    set name_levels [lreverse $name_levels]
+    # 由于 proc 支持名称中有冒号，所以不能简单 split
+    set pure_proc_name $proc_name
+    while {[set pos [string first "::" $pure_proc_name]] != -1} {
+        set ns [string range $pure_proc_name 0 [expr $pos-1]]
+        if {$ns != "" && [lsearch $name_levels $ns] == -1} {
+            lappend name_levels $ns
+        }
+        set pure_proc_name [string range $pure_proc_name [expr $pos+2] end]
+    }
+    lappend name_levels $pure_proc_name
+    return $name_levels
+}
+
+proc __tdb_proc__ {name args body} {
+    set name_levels [_get_name_levels $name]
+    set name_spaces [lrange $name_levels 0 end-1]
+    set name_space [join $name_spaces "::"]
+    set proc_name [lindex $name_levels end]
+    # 使用 {} 防止名字中有空格
+    eval "__proc__ {${name_space}::$proc_name} {$args} {$body}"
+    eval "namespace eval tdb { namespace eval glv { _try_init_breakpoint {$name_space} {$proc_name} }}"
+}
+
+rename proc __proc__
+rename __tdb_proc__ proc
+namespace import tdb::b tdb::break_now

@@ -19,17 +19,6 @@
 
 ## 命令
 
-[disassemble](https://wiki.tcl-lang.org/page/disassemble)
-
-调试disassemble
-
-```text
-gdb 命令
-    break Tcl_DisassembleObjCmd
-tcl 命令
-    tcl::unsupported::disassemble script script
-```
-
 ```tcl
 puts $text: 输出变量
 lsearch ?option? list pattern: 查找列表是否包含指定pattern的元素，如果包含返回第一个匹配元素的索引，否则返回-1
@@ -67,6 +56,11 @@ eval $cmd
 ### namespace
 
 命令空间
+
+```tcl
+# 查看当前命名空间
+namespace current
+```
 
 ```tcl
 set v_global "global var"
@@ -204,14 +198,19 @@ if {[lsearch $myList $element] != -1} {}    # 判断元素是否存在
 if {!($e in $my_list)} {}                   # 判断元素不存在
 if {[lsearch $myList $element] == -1} {}    # 判断元素不存在
 
+set new_list [lreverse $myList]             # 翻转列表
+
 set new_list [concat $my_list $my_list]     # 合并/拼接列表
+
+set lsr [join $myList ":"]                  # 使用字符串拼接列表
 
 # 切片
 set slice [lrange $my_list 2 5]             # 包括 5
 set slice [lrange $my_list 2 end]           # 包括最后一位
+set slice [lrange $my_list 2 end-1]         # 不包括最后一位
 ```
 
-排序
+##### 排序
 
 ```tcl
 # 使用 lsort 命令，原列表不变
@@ -229,7 +228,31 @@ proc cmp {v1 v2} {
 set sorted_list [lsort -command cmp $my_list]   # 自定义排序函数
 ```
 
-#### 字典映射(map)
+```tcl
+# 按字母的ASCII码 升序排序
+set list {b c a}
+puts [lsort -ascii $list]       # 输出：a b c
+
+# 按整数值 降序排序
+set list {3 1 2}
+puts [lsort -integer -decreasing $list]     # 输出：3 2 1
+
+# 自定义排序函数
+proc compareByLength {a b} {
+    if {[string length $a] < [string length $b]} {
+        return -1
+    } elseif {[string length $a] > [string length $b]} {
+        return 1
+    } else {
+        return 0
+    }
+}
+
+set list {abc aa b}
+puts [lsort -command compareByLength $list]     # 输出：b aa abc
+```
+
+#### dict(字典映射)
 
 ```tcl
 set myDict [dict create]            # 创建
@@ -754,6 +777,7 @@ if {[string match "*hello*" $str]} {
 可以用来判断字符串中是否包含某个子串
 
 ```tcl
+# string search
 set pos [string first "world" $str]
 if {$pos >= 0} {
     puts "The string 'world' is found at position $pos."
@@ -774,6 +798,8 @@ if {[string length $s] == 0} {}
 ### upvar
 
 在当前作用域引用其他作用域内的变量，并且可以修改，类似于c++引用传递
+
+* 不能在 namespace 中引用 proc 内定义的变量，可以先定义 namespace 再将其值设置为 proc 变量值
 
 ```tcl
 upvar ?level? ref_var cur_var
@@ -804,7 +830,54 @@ level1 $v_global
 puts "global AF: $v_global == 99"
 ```
 
+在 namespace 中间接获取 proc 变量值
+
+```tcl
+proc test1 {} {
+    set a 1
+    namespace eval NS {
+        # upvar a ra    无法引用，会报错
+    }
+}
+
+# 方式一: 定义 proc getter 获取外部变量
+proc pv_getter {var_name} {
+    upvar #1 $var_name ref
+    return $ref
+}
+proc test2 {} {
+    set b 2
+    namespace eval NS {
+        set rb [pv_getter b]
+        puts "rb: $rb"
+    }
+}
+
+# 方式二: 定义 namespace 变量然后设置其值
+proc test3 {} {
+    set c 3
+    namespace eval NS { set rc 0 }
+    set NS::rc $c
+    namespace eval NS {
+        puts "rc: $rc"
+    }
+}
+
+# 方式三: 借助 eval 或 uplevel
+proc test4 {} {
+    set d 4
+    eval "namespace eval NS { set rd $d; puts \"rd: \$rd\" }"
+}
+
+test2
+test3
+test4
+```
+
 ### proc 定义函数
+
+* proc 可以嵌套
+* proc 名称支持特殊字符，如冒号，空格(需 \ 转义) 等
 
 ```tcl
 proc my_proc {arg1 arg2} {
@@ -834,7 +907,21 @@ proc my_proc {arg1 arg2} {
 }
 ```
 
-默认参数/可选参数
+#### 在指定命名空间定义
+
+```tcl
+namespace eval NS1 {
+    namespace eval NS2 {
+        proc func1 {} { puts "NS1 -> NS2 -> func1" }
+    }
+}
+
+proc NS1::NS2::func2 {} { puts "NS1 -> NS2 -> func2" }
+NS1::NS2::func1
+NS1::NS2::func2
+```
+
+#### 默认参数/可选参数
 
 ```tcl
 proc func {x {y 10}} {
@@ -842,6 +929,21 @@ proc func {x {y 10}} {
 }
 func 5          # x = 5, y = 10
 func 5 20       # x = 5, y = 20
+```
+
+#### 自定义 proc 命令覆盖默认 proc
+
+```tcl
+proc my_proc {name args body} {
+    puts "my_proc: $name"
+    uplevel 1 [__proc__ $name $args $body]
+}
+rename proc __proc__
+rename my_proc proc
+
+proc test {} { puts "in test" }
+
+test
 ```
 
 ### 正则表达式
@@ -857,32 +959,6 @@ if {[regexp $test_pat $test_str match word1 num1 num2 word2]} {
     puts $num1
     puts $num2
 }
-```
-
-### 排序
-
-```tcl
-# 按字母的ASCII码 升序排序
-set list {b c a}
-puts [lsort -ascii $list]       # 输出：a b c
-
-# 按整数值 降序排序
-set list {3 1 2}
-puts [lsort -integer -decreasing $list]     # 输出：3 2 1
-
-# 自定义排序函数
-proc compareByLength {a b} {
-    if {[string length $a] < [string length $b]} {
-        return -1
-    } elseif {[string length $a] > [string length $b]} {
-        return 1
-    } else {
-        return 0
-    }
-}
-
-set list {abc aa b}
-puts [lsort -command compareByLength $list]     # 输出：b aa abc
 ```
 
 ## 模拟对象
@@ -1103,6 +1179,17 @@ info patch
 info locals
 ```
 
+#### procs
+
+```tcl
+# 查看已定义 proc
+info procs
+# 查看指定名称的 proc
+info procs ::prefix*
+# 查看指定 namespace 中的 proc
+namespace eval NS { info procs }
+```
+
 #### frame
 
 [打印堆栈信息: print_frame](./proc.tcl)
@@ -1216,6 +1303,19 @@ my_cmd 1
 #### trace 搭配 breakpoint 命令
 
 ```tcl
+```
+
+### disassemble
+
+[disassemble](https://wiki.tcl-lang.org/page/disassemble)
+
+反汇编调试
+
+```text
+gdb 命令
+    break Tcl_DisassembleObjCmd
+tcl 命令
+    tcl::unsupported::disassemble script script
 ```
 
 ## 发行版
