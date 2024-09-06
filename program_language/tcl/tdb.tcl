@@ -238,11 +238,24 @@ proc highlight_frame {frame} {
     set frame_type [dict get $frame type]
     switch -exact [dict get $frame type] {
         source  { set entity [dict get $frame file] }
-        proc    { set entity [dict get $frame proc] }
+        proc    {
+            set proc_name [dict get $frame proc]
+            set entity "$proc_name \{[info args $proc_name]\}"
+        }
         eval    { set entity [dict get $frame cmd] }
         default { set entity $frame }
     }
     puts_color2 $frame_type $entity
+}
+
+proc _get_source_file {cur_frame} {
+    for {set i $cur_frame} {$i > 0} {incr i -1} {
+        set fd [info frame $i]
+        if {[dict get $fd "type"] == "source"} {
+            return [dict get $fd "file"]
+        }
+    }
+    return ""
 }
 
 
@@ -265,6 +278,8 @@ proc _show_line {ini_frame cur_frame {size 10}} {
     puts [string repeat "*" 50]
     # 断点编号
     puts_color2 "breakpoint" [glv::_get_break_info "index"]
+    # 所处 source 文件
+    puts_color2 "file" [_get_source_file $cur_frame]
     puts_color2 "step" $proc_bt
     highlight_frame $frame
     puts [string repeat "*" 50]
@@ -338,7 +353,7 @@ proc _get_current_frame {{skip_eval false}} {
         set cf [info frame $cur_frame]
         switch -exact [dict get $cf "type"] {
             source {
-                if {[string equal "debug.tcl" [file tail [dict get $cf "file"]]]} {
+                if {[string equal "tdb.tcl" [file tail [dict get $cf "file"]]]} {
                     incr cur_frame -1
                 } else {
                     break
@@ -363,17 +378,6 @@ proc _get_current_frame {{skip_eval false}} {
     }
     return $cur_frame
 }
-proc _show_current_frame_detail {msg} {
-    puts $msg
-    set cf [info frame [_get_current_frame]]
-    switch -exact [dict get $cf "type"] {
-        source { puts "file: [dict get $cf file]" }
-        proc { puts "proc: [dict get $cf proc]" }
-        eval { puts "eval: [dict get $cf cmd]" }
-    }
-    puts "line: [dict get $cf line]"
-}
-
 
 # 设置断点，可输入 tcl 命令以及自定义调试命令
 proc _break_now {} {
@@ -385,7 +389,8 @@ proc _break_now {} {
         puts -nonewline "tdb > "
         flush stdout
         gets stdin user_input
-        set cur_level [expr $ini_frame - $cur_frame + 2]
+        # uplevel 命令的 level
+        set cur_level [dict get [info frame $cur_frame] "level"]
         switch -regexp $user_input {
             ^q$ -
             ^exit$ { exit }

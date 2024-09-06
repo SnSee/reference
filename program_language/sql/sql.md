@@ -126,8 +126,15 @@ CREATE TABLE Students (
 ##### 检查是否存在表
 
 ```sql
--- sqlite3
+-- sqlite3: 返回空字符串在不存在
 select name from sqlite_master where type='table' and name='表名';
+```
+
+##### 获取表列信息
+
+```sql
+PRAGMA table_info(表名);
+select sql from sqlite_master where type='table' and name='表名';
 ```
 
 #### insert

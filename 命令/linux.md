@@ -63,6 +63,30 @@ Ctrl + n：历史中的下一条命令(下方向键)
 Alt + .：使用上一条命令的最后一个参数
 ```
 
+## man
+
+[在线 man 手册](https://www.systutorials.com/docs/linux/man)
+
+```sh
+man [options] command
+
+-k      : 查找符合指定正则的 short description 和 manual page name，如 -k . 表示所有 man 手册
+```
+
+数字对应手册类型
+
+|type | desc
+|- |-
+|1 | 可执行程序 和 shell 命令
+|2 | 内核 函数，头文件，结构体等
+|3 | 库 函数，头文件，结构体等
+|4 | Special files (usually found in /dev)
+|5 | File formats and conventions eg /etc/passwd
+|6 | Games
+|7 | Miscellaneous (including macro packages and conventions), e.g. man(7), groff(7)
+|8 | System administration command (usually only for root)
+|9 | Kernel routines [Non standard]
+
 ## 用户
 
 ```text
@@ -162,7 +186,7 @@ set -e
 
 [知乎](https://zhuanlan.zhihu.com/p/458010111)
 
-[进程状态](#41-ps)
+[进程状态](#ps)
 
 ```text
 PID USER PR NI VIRT RES SHR S %CPU %MEM TIME+ COMMAND
@@ -248,7 +272,9 @@ locate <file_name> (支持wildcard)
 -amin      : 同 atime，单位是分钟
 -mmin      : 同 mtime，单位是分钟
 -cmin      : 同 ctime，单位是分钟
--exec      : 找到文件后执行命令({}是文件名，\;表示结束)，如: -exec wc -l {} \;
+-exec      : 找到文件后执行命令({}是文件名，\; 或 + 表示结束)，如: -exec wc -l {} \; 
+             其中 + 表示将多个找到的文件用空格连接作为命令输入
+-execdir   : 在文件所在目录执行命令
 -executable: 只查找具有执行权限的文件或目录
 -L         : 跟随软链接，使用链接到的文件的属性，如 -type 时指定的文件类型。
              对于目录的软链接，会对目录进行递归查找。
@@ -866,7 +892,7 @@ awk 'BEGIN {print "Start processing file"}
      END {print "Finished processing file"}' file
 ```
 
-#### 格式化输出
+#### awk 格式化输出
 
 参考[c-printf](../program_language/c-cpp/c-cpp.md#printf-format)
 
@@ -894,7 +920,7 @@ echo "1 2 3" | awk '{
 }'
 ```
 
-#### 数学运算
+#### awk 数学运算
 
 ```bash
 # 变量无需声明，默认值为 0
@@ -1134,18 +1160,6 @@ declare -r con="Constant value"     # 声明只读变量
 ```sh
 -S : 按文件大小降序
 -r : 倒序
-```
-
-### find
-
-```sh
-find path [options ...]
-
--name "*.txt"               : 指定查找的文件名称
--type f/d                   : 指定查找的文件类型，f 普通文件，d 目录
--exec linux_cmd {} \;       : 执行指定命令，{} 代表文件，\; 表示命令结尾
--exec linux_cmd {} +        : 执行指定命令，但是会将多个文件同时作为命令的参数，可以减少命令执行次数
--execdir linux_cmd {} \;    : 在文件所在目录执行命令
 ```
 
 ### yes
@@ -1760,3 +1774,13 @@ man 7 signal
 通过mount命令查看挂载的文件系统
 查看挂载的目录是否有noexec标志，如果有这个标志即使加了执行权限仍然不可执行
 ```
+
+## XCB 图形界面
+
+[XCB 文档](https://xcb.freedesktop.org)
+
+[XCB API](https://xcb.freedesktop.org/XcbApi)
+
+### 窗口事件
+
+结构体(xcb_generic_event_t) 定义在 xcb.h 中

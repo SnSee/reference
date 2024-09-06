@@ -1166,17 +1166,10 @@ bind . <KeyPress> {on_press_key %K}
 
 ### info
 
-#### 查看 tcl 版本
-
 ```tcl
-info patch
-```
-
-#### locals
-
-```tcl
-# 查看局部变量
-info locals
+info patch              # 查看 tcl 版本
+info locals             # 查看局部变量名
+info vars               # 查看所有变量名
 ```
 
 #### procs

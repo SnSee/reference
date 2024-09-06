@@ -15,7 +15,7 @@ python -m test
 
 ## 关键字
 
-### with ... as ...
+### with ... as
 
 ```txt
 原理：
@@ -684,25 +684,6 @@ if __name__ == "__main__":
     logging.info("this is a test")
 ```
 
-## windll
-
-```python
-# 查看是否具有管理员权限
-from ctypes import windll
-windll.shell32.IsUserAnAdmin()
-
-# 加载动态库
-windll.LoadLibrary(dll_path)
-
-# 申请以管理员方式运行脚本
-windll.shell32.ShellExecuteW(None, "runas", sys.executable, <script_path>, None, 1)
-
-# 申请以管理员方式运行当前脚本
-windll.shell32.ShellExecuteW(None, "runas", sys.executable, __file__, None, 1)
-!!!注意!!! 代码中一定要在判断不具有管理员权限之后再申请，否则会无限运行当前脚本
-管理员权限是通过ShellExecutedW启动的程序具有的，而不是申请之前的原脚本具有的
-```
-
 ## 解析命令行参数
 
 ### argparse
@@ -851,7 +832,9 @@ if __name__ == '__main__':
 
 #### 装饰器无额外参数
 
-**functools.wraps** 能够保留被装饰后函数的元信息，如 函数名称(__name__) 等
+```txt
+functools.wraps 能够保留被装饰后函数的元信息，如 函数名称(__name__) 等
+```
 
 ```python
 from functools import wraps

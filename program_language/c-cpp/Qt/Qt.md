@@ -82,7 +82,7 @@ if p.exitCode() != 0:
     print('stderr:', p.readAllStandardError())
 ```
 
-## 控件
+## widgets
 
 ### QWidget
 
@@ -91,8 +91,9 @@ if p.exitCode() != 0:
 |setDisabled            | 设置不可交互
 |setStyleSheet          | 设置 style
 |setContentsMargins     | 设置到子控件边缘到自身边缘距离
+|nativeEvent            | 针对操作系统事件的回调函数，virtual
 
-设备背景色
+#### 设备背景色
 
 ```cpp
 方式一：
@@ -105,12 +106,21 @@ p.setColor(self.backgroundRole(), QtGui.QColor(200, 200, 200))
 setPalette(p)
 ```
 
-设置鼠标穿透
+#### 设置鼠标穿透
 
 ```cpp
 setAttribute(Qt.WA_TransparentForMouseEvents, True)
 但是使用该方法后QWidget自身不再处理鼠标事件
 ```
+
+#### nativeEvent
+
+不同操作系统事件类型 和 message 类型
+
+|platform |event type |message type
+|- |- |-
+|Windows    |"windows_generic_MSG" |MSG *(wtypes.h)
+|linux(XCB) |"xcb_generic_event_t" |xcb_generic_event_t *(xcb/xcb.h)
 
 ### QPushButton
 
@@ -490,54 +500,6 @@ v_line.setFrameShape(QFrame.VLine)
 v_line.setFrameShadow(QFrame.Sunken)
 ```
 
-### QFileDialog 文件浏览框
-
-选择文件
-
-```py
-from PyQt5.QtWidgets import QFileDialog
-
-options = QFileDialog.Options()
-fileName, _ = QFileDialog.getOpenFileName(self, "选择文件", "", "All Files (*);;Python Files (*.py)", options=options)
-if fileName:
-    print("选择的文件路径:", fileName)
-```
-
-选择文件夹
-
-```py
-folderName = QFileDialog.getExistingDirectory(self, "选择文件夹", options=QFileDialog.ShowDirsOnly)
-if folderName:
-    print("选择的文件夹路径:", folderName)
-```
-
-自定义打开文件/文件夹
-
-```py
-import os
-from PyQt5.QtWidgets import QFileDialog
-
-class FileDialog(QFileDialog):
-    def __init__(self, cwd: str = None):
-        super().__init__()
-        self._cwd = cwd if cwd else os.getcwd()
-
-    def open(self, only_dir: bool = False, title='', cwd='', name_filter=''):
-        if not cwd:
-            cwd = self._cwd
-        self.setWindowTitle(title)
-        self.setDirectory(cwd)
-        self.setNameFilter(name_filter)
-        self.setFileMode(QFileDialog.Directory if only_dir else QFileDialog.FileMode.ExistingFile)
-        self.setOptions(QFileDialog.DontResolveSymlinks)
-
-        if self.exec_() == QFileDialog.Accepted:
-            sel_file = self.selectedFiles()[0]
-            self._cwd = sel_file if only_dir else os.path.dirname(sel_file)
-            return sel_file
-        return ''
-```
-
 ### QSplitter 滑动窗口
 
 遇到拖不动的情况使用 [QScrollArea](#qscrollarea--qsplitter)
@@ -631,6 +593,79 @@ layout = QVBoxLayout(window)
 layout.addWidget(slider)
 window.show()
 app.exec_()
+```
+
+### QDialog
+
+### QFileDialog 文件浏览框
+
+选择文件
+
+```py
+from PyQt5.QtWidgets import QFileDialog
+
+options = QFileDialog.Options()
+fileName, _ = QFileDialog.getOpenFileName(self, "选择文件", "", "All Files (*);;Python Files (*.py)", options=options)
+if fileName:
+    print("选择的文件路径:", fileName)
+```
+
+选择文件夹
+
+```py
+folderName = QFileDialog.getExistingDirectory(self, "选择文件夹", options=QFileDialog.ShowDirsOnly)
+if folderName:
+    print("选择的文件夹路径:", folderName)
+```
+
+自定义打开文件/文件夹
+
+```py
+import os
+from PyQt5.QtWidgets import QFileDialog
+
+class FileDialog(QFileDialog):
+    def __init__(self, cwd: str = None):
+        super().__init__()
+        self._cwd = cwd if cwd else os.getcwd()
+
+    def open(self, only_dir: bool = False, title='', cwd='', name_filter=''):
+        if not cwd:
+            cwd = self._cwd
+        self.setWindowTitle(title)
+        self.setDirectory(cwd)
+        self.setNameFilter(name_filter)
+        self.setFileMode(QFileDialog.Directory if only_dir else QFileDialog.FileMode.ExistingFile)
+        self.setOptions(QFileDialog.DontResolveSymlinks)
+
+        if self.exec_() == QFileDialog.Accepted:
+            sel_file = self.selectedFiles()[0]
+            self._cwd = sel_file if only_dir else os.path.dirname(sel_file)
+            return sel_file
+        return ''
+```
+
+#### QMessageBox 提示弹窗
+
+弹窗显示错误，警告，提示等信息
+
+```py
+import sys
+from PyQt5.QtWidgets import QApplication, QMessageBox, QPushButton
+
+def show_error_message():
+    msg_box = QMessageBox()
+    msg_box.setWindowTitle("ERROR")             # 标题
+    msg_box.setText("Error summary")            # 内容
+    msg_box.setDetailedText("Error details")    # 详细信息
+    msg_box.setIcon(QMessageBox.Critical)       # 图标
+    msg_box.exec_()
+
+app = QApplication(sys.argv)
+btn = QPushButton('show error window', None)
+btn.clicked.connect(show_error_message)
+btn.show()
+sys.exit(app.exec_())
 ```
 
 ## 布局
@@ -788,19 +823,56 @@ endResetModel();
 
 ## 事件
 
-注意事项
+* 重写事件: 直接重写相关事件的函数/方法即可
 
-```text
-closeEvent: 只有最顶层窗口关闭时才会触发
+### 事件类型
+
+搜索 **QEvent::Type** 查看全部事件类型
+QEvent::type() 获取事件枚举 id，有些 id 没有对应的 class
+
+|type |class |desc
+|- |- |-
+|None               |QEvent         |基类
+|Enter              |QEnterEvent    |鼠标进入
+|HoverEnter         |QHoverEvent    |鼠标悬停
+|HoverMove          |QHoverEvent    |鼠标悬停
+|HoverLeave         |QHoverEvent    |鼠标悬停
+|Leave              |none           |鼠标离开
+|MouseButtonPress   |QMouseEvent    |鼠标按下(左右键都可)
+|MouseButtonRelease |QMouseEvent    |鼠标松开
+|Close              |QCloseEvent    |关闭窗口(只有最顶层窗口关闭时才会触发)
+
+### 代码示例
+
+```py
+import sys
+from PyQt5.QtCore import QObject, QEvent
+from PyQt5.QtWidgets import QApplication, QMainWindow
+from PyQt5.QtGui import QMouseEvent
+
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setGeometry(100, 100, 300, 200)
+        self.installEventFilter(self)
+
+    # watched: 触发该回调函数的对象
+    def eventFilter(self, watched: QObject, e: QEvent):
+        if e.type() == QEvent.MouseButtonPress:
+            assert isinstance(e, QMouseEvent)
+            print('press')
+        return super().eventFilter(watched, e)
+
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    win = MainWindow()
+    win.show()
+    sys.exit(app.exec_())
 ```
 
-重写事件
-
-```text
-直接重写相关事件的函数/方法即可
-```
-
-事件过滤器
+### 事件过滤器
 
 ```text
 在需要事件过滤器的类中通过installEventFilter(对象)安装，对象需要有eventFilter(QObject, QEvent)函数

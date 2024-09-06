@@ -92,3 +92,13 @@ Ctrl 组合键查看: Editor -> Vim
 [检查描述](https://pycharm-security.readthedocs.io/en/latest/checks/index.html)
 
 忽略指定类型检查: Alt + Enter -> Inspection -> Edit -> 取消勾选
+
+## 卸载
+
+### 清除配置
+
+```sh
+rm -rf ~/.config/JetBrains/PyCharm*
+rm -rf ~/.cache/JetBrains/PyCharm*
+rm -rf ~/.local/share/JetBrains/PyCharm*
+```
