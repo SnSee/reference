@@ -26,6 +26,8 @@ lsearch ?option? list pattern: 查找列表是否包含指定pattern的元素，
 
 ### 脚本搜索路径
 
+[package 搜索路径](#tcllibpath)
+
 ```tcl
 # 将当前目录添加到自动搜索路径(只适用于 load 和 package require)
 lappend auto_path [file dirname [file normalize [info script]]]
@@ -292,12 +294,14 @@ array set myArray {
     key3 value3
 }
 
-# 修改
-set myArray(key1) NEW_VALUE
-# 添加
-set myArray(key4) value4
-# 检查是否是 array
-if {[llength [array names myArray]] > 0} {}
+set myArray(key4) value4                        # 添加
+set myArray(key1) NEW_VALUE                     # 修改
+unset myArray(key4)                             # 删除
+
+if {[llength [array names myArray]] > 0} {}     # 检查是否是 array
+
+array exists myArray        # 检查是否存在 array
+info exists myArray(key)    # 检查 array  中是否存在元素
 
 # 遍历
 # 方式一
@@ -427,15 +431,22 @@ set false 0
 
 在Tcl中，布尔运算符用于比较两个表达式的值，以生成布尔结果（真或假）。
 
-以下是一些常用的布尔运算符：
+使用场景
 
-* ==或eq：检查两个表达式的值是否相等。
-* !=或ne：检查两个表达式的值是否不相等。
-* <或>或<=或>=：比较两个数字表达式的大小。字符串也可以进行比较，但结果可能不如预期。
-* &&或and：逻辑与运算符，如果两个表达式都为真，则结果为真。
-* ||或or：逻辑或运算符，如果至少有一个表达式为真，则结果为真。
-* !或not：逻辑非运算符，将一个表达式的布尔值取反。
-以下是一些示例，演示如何使用布尔运算符：
+* if {布尔表达式} {}
+* set ret [expr {布尔表达式}]，结果为 0 / 1
+
+```sh
+# 布尔运算符
+==(eq)    : 值比较(字符是否完全一样，数字和字符串均可使用)
+!=(ne)    : 值比较
+< > <= >= : 数字比较
+&&(and)   : 与
+||(or)    : 或
+!(not)    : 非
+```
+
+示例
 
 ```tcl
 set x 5
@@ -565,6 +576,8 @@ while {条件} {
 
 #### foreach
 
+* 可同时获取列表内的多个连续变量
+
 ```tcl
 foreach 变量 集合 {
     # 循环体代码块
@@ -574,6 +587,13 @@ foreach 变量 集合 {
 set myList {apple banana cherry}
 foreach item $myList {
     puts $item
+}
+
+# 多变量示例
+# 不足部分为空字符串
+set ml "1 2 3 4 5 6 7 8 9 10"
+foreach {v1 v2 v3} $ml {
+    puts "v1: $v1, v2: $v2, v3: $v3"
 }
 ```
 
@@ -771,9 +791,9 @@ if {[string match "*hello*" $str]} {
 }
 ```
 
-#### first
+#### first / last
 
-在一个字符串中查找另一个字符串，并返回第一次出现的位置。
+在一个字符串中查找另一个字符串，并返回 第一次/最后一次 出现的位置。
 可以用来判断字符串中是否包含某个子串
 
 ```tcl

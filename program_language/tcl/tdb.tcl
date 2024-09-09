@@ -7,11 +7,12 @@
 ### 用法：b proc_name [file_line_number]
 ###   如：b test 10; b my_namespace::test 10; b ns1::ns2::test 10
 
+### help(h)         : 查看所有命令
 ### sb              : 查看所有断点，sb<num> 查看指定编号断点
 ### disable<num>    : 取消指定编号的断点
 ### enable<num>     : 激活指定编号的断点
 ### continue(c)     : 下一个断点
-### next(n)         : 下一行(不进入子函数)
+### next(n)         : 下一行(不进入子函数)，n<num> 表示下 num 行
 ### step(s)         : 下一行(进入子函数)
 ### until(t)        : 直到指定行，t<num> 表示直到哪一行
 ### finish(f)       : 直到退出当前函数
@@ -28,24 +29,26 @@
 ### until 正好是无效行(注释，空行等)时改为最近的有效行
 ### 添加 watch 功能
 ### 显示源代码时高亮指定 pattern
-### next 支持跳过多少行
 
 namespace eval tdb {
 
-# 不显示颜色；单个高亮颜色；双高亮配色
+# 不显示颜色；单个高亮颜色(绿)；双高亮配色(紫+天蓝)
 variable _NO_COLOR "\033\[0m"
-variable _HL_COLOR "\033\[32m"
-variable _PAIR_COLOR {\033\[35m \033\[36m}
+variable _GREEN "\033\[32m"
+variable _PURPLE "\033\[35m"
+variable _AZURE "\033\[36m"
+variable _PAIR_COLOR "$_PURPLE $_AZURE"
 proc no_color {} { variable _NO_COLOR; return $_NO_COLOR }
 proc hl_color {{is_hl true}} {
-    variable _HL_COLOR
+    variable _GREEN
     if {$is_hl} {
-        return $_HL_COLOR
+        return $_GREEN
     }
     return [no_color]
 }
-proc format_color {color msg} { return "$color$msg[no_color]" }
-proc puts_color {msg {is_hl true}} { puts [format_color [hl_color $is_hl] $msg] }
+proc format_color {msg color} { return "$color$msg[no_color]" }
+proc puts_color {msg color} { puts [format_color $msg $color] }
+proc puts_green {msg {is_hl true}} { puts_color $msg [hl_color $is_hl] }
 proc puts_color2 {key value {c0 ""} {c1 ""} {key_width 10}} {
     variable _PAIR_COLOR
     set key [format " %*s" $key_width $key]
@@ -83,6 +86,8 @@ namespace eval glv {
 
     # 行调试开关
     set next_line false
+    # 当该值大于 0 时不触发 next 断点，实现跳过多行效果
+    set next_skip_left 0
     # 行调试是否进入子函数开关
     set enter_sub_proc false
 
@@ -169,22 +174,48 @@ namespace eval glv {
     }
     proc _show_breakpoints {{tar_index ""}} {
         variable breakpoints
+        upvar tdb::_PURPLE _PURPLE
+        upvar tdb::_GREEN _GREEN
         set lines {}
         lappend lines "index namespace proc line enabled"
         dict for {proc_name break_info} $breakpoints {
             set index [dict get $break_info "index"]
             if {$tar_index == "" || $tar_index == $index} {
                 set ns [dict get $break_info "namespace"]
+                if {$ns == ""} {
+                    set ns "::"
+                }
                 set en [dict get $break_info "enabled"]
                 set line [dict get $break_info "line"]
                 lappend lines "$index $ns $proc_name $line $en"
             }
         }
+        set line_num 0
+        array set widthes {}
         foreach line $lines {
+            set pi 0
             foreach part $line {
-                puts -nonewline [format "%*s " 20 $part]
+                if {![info exists widthes($pi)] || [string length $part] > $widthes($pi)} {
+                    set widthes($pi) [string length $part]
+                }
+                incr pi
+            }
+        }
+
+        foreach line $lines {
+            set pi 0
+            foreach part $line {
+                set part [format "    %*s " $widthes($pi) $part]
+                if {$line_num == 0} {
+                    set part [tdb::format_color $part $_PURPLE]
+                } else {
+                    set part [tdb::format_color $part $_GREEN]
+                }
+                puts -nonewline $part
+                incr pi
             }
             puts ""
+            incr line_num
         }
     }
     proc _try_disable_breakpoint {index} {
@@ -272,7 +303,7 @@ proc _show_line {ini_frame cur_frame {size 10}} {
         # 高亮当前堆栈
         set color [hl_color [expr $pl_size - $i - $frame_step == 1]]
         set proc_name [lindex $proc_list $i]
-        set proc_bt "$proc_bt[format_color $color $proc_name] > "
+        set proc_bt "$proc_bt[format_color $proc_name $color] > "
     }
 
     puts [string repeat "*" 50]
@@ -310,7 +341,7 @@ proc _show_line {ini_frame cur_frame {size 10}} {
         set line_mark [format "%*s" $num_width $cur_line_num]
         set print_line "$mark $line_mark: [lindex $lines $i]"
         if {$mark == ">"} {
-            puts_color $print_line
+            puts_green $print_line
         } else {
             puts $print_line
         }
@@ -344,43 +375,59 @@ proc _get_proc_lines {proc_name {start -1} {end "end"}} {
     }
 }
 
+# 判断指定帧是否是当前文件中定义的函数
+proc _is_tdb_frame {frame} {
+    set cf [info frame $frame]
+    switch -exact [dict get $cf "type"] {
+        source  { return [regexp {tdb.tcl} [file tail [dict get $cf "file"]]] }
+        eval    { return [regexp {tdb::}   [dict get $cf "cmd"]] }
+        proc    {
+            # proc outf { rename outf {}; proc inf {} }
+            # 应对 inf 这种嵌套 proc 外部 proc 被移除的情况
+            if {![dict exists $cf "proc"]} {
+                return false
+            }
+            if {[regexp {tdb::} [dict get $cf "proc"]] || [regexp {tdb::} [dict get $cf "cmd"]]} {
+                return true
+            }
+            return false
+        }
+        default { return false }
+    }
+}
+
 # 获取断点函数所在帧
-proc _get_current_frame {{skip_eval false}} {
+proc _get_current_frame {} {
     set max_frame [info frame]
     set cur_frame [expr $max_frame - 1]
     # 跳过 debug 帧
-    while {1} {
-        set cf [info frame $cur_frame]
-        switch -exact [dict get $cf "type"] {
-            source {
-                if {[string equal "tdb.tcl" [file tail [dict get $cf "file"]]]} {
-                    incr cur_frame -1
-                } else {
-                    break
-                }
-            }
-            proc {
-                if {[string match "::tdb::*" [dict get $cf "proc"]]} {
-                    incr cur_frame -1
-                } else {
-                    break
-                }
-            }
-            eval {
-                if {$skip_eval || [string match "tdb::*" [dict get $cf "cmd"]]} {
-                    incr cur_frame -1
-                } else {
-                    break
-                }
-            }
-            default { break }
-        }
+    while {[_is_tdb_frame $cur_frame]} {
+        incr cur_frame -1
     }
     return $cur_frame
 }
 
+proc _puts_help {line} {
+    variable _GREEN
+    set parts [split $line ":"]
+    puts -nonewline [format_color [lindex $parts 0] $_GREEN]
+    puts [lindex $parts 1]
+}
+
+proc _get_frame_level {cur_frame} {
+    for {set i $cur_frame} {$i > 0} {incr i -1} {
+        set fd [info frame $i]
+        if {[dict exists $fd "level"]} {
+            # -1 是去除当前函数增加的 level
+            return [expr [dict get $fd "level"] - 1]
+        }
+    }
+    return 0
+}
+
 # 设置断点，可输入 tcl 命令以及自定义调试命令
 proc _break_now {} {
+    variable _PURPLE
     set ini_frame [_get_current_frame]
     set cur_frame $ini_frame
     _show_line $ini_frame $cur_frame
@@ -390,10 +437,41 @@ proc _break_now {} {
         flush stdout
         gets stdin user_input
         # uplevel 命令的 level
-        set cur_level [dict get [info frame $cur_frame] "level"]
+        set cur_level [_get_frame_level $cur_frame]
         switch -regexp $user_input {
             ^q$ -
             ^exit$ { exit }
+
+            ^h$ -
+            ^help$ {
+                # 帮助信息
+                puts_color "  FLOW" $_PURPLE
+                _puts_help "    exit(q)       : exit"
+                _puts_help "    c             : continue"
+                _puts_help "    next(n)       : next n lines, default n: 1"
+                _puts_help "    step(s)       : step into sub-proc"
+                _puts_help "    until(t)      : until specified line number"
+                _puts_help "    finish(f)     : until current proc return"
+                puts ""
+
+                puts_color "  FRAME" $_PURPLE
+                _puts_help "    backtrace(bt) : show frame stacks"
+                _puts_help "    f             : jump into specified frame"
+                _puts_help "    up(u)         : jump into previous frame"
+                _puts_help "    down(d)       : jump into next frame"
+                puts ""
+
+                puts_color "  BREAKPOINT" $_PURPLE
+                _puts_help "    sb            : show all/specified breakpoint"
+                _puts_help "    disable       : disable specified breakpoint"
+                _puts_help "    enable        : enable specified breakpoint"
+                puts ""
+
+                puts_color "  PRINT" $_PURPLE
+                _puts_help "    puts(p)       : show all variables"
+                _puts_help "    pa            : print specified array"
+                _puts_help "    .             : print source code"
+            }
 
             ^c$ {
                 # 下一个断点
@@ -401,9 +479,12 @@ proc _break_now {} {
                 break
             }
 
-            ^n$ -
-            ^next$ {
+            {^n\s*\d*$} -
+            {^next\s*\d*$} {
                 # 下一行(不进入子函数)
+                if {[regexp {\d+} $user_input line_num]} {
+                    set glv::next_skip_left [expr $line_num - 1]
+                }
                 set glv::next_line true
                 break
             }
@@ -438,7 +519,7 @@ proc _break_now {} {
                 # 显示所有堆栈
                 for {set i 1} {$i <= $ini_frame} {incr i} {
                     # 高亮当前堆栈
-                    puts_color "$i: [info frame $i]" [expr $i == $cur_frame]
+                    puts_green "$i: [info frame $i]" [expr $i == $cur_frame]
                 }
             }
 
@@ -641,6 +722,10 @@ proc _proc_b_enter_step_wrapper {cmd args} {
             _break_now
         } elseif {$glv::next_line} {
             # 行调试
+            if {$glv::next_skip_left > 0} {
+                incr glv::next_skip_left -1
+                return
+            }
             set glv::next_line false
             _break_now
         }
@@ -665,6 +750,12 @@ proc _get_procs {name_space} {
     namespace eval $name_space { return [info procs] }
 }
 
+proc _show_frames {} {
+    for {set i 0} {$i < [info frame]} {incr i} {
+        puts "Frame $i: [info frame $i]"
+    }
+}
+
 # 目前只支持对 proc 打断点，不支持文件断点
 proc b {desc {line 0}} {
     if {[regexp {(.*?)(\w+)$} $desc match name_space proc_name]} {
@@ -679,38 +770,26 @@ namespace export break_now
 # namespace tdb end
 }
 
-proc _get_name_levels {proc_name} {
-    set name_levels {}
-    if {![string match {::*} $proc_name]} {
-        # proc 名称未显示指定在全局作用域创建，则自动搜索命名空间层级
-        for {set i [expr [info frame] - 1]} {$i > 0} {incr i -1} {
-            set cmd [dict get [info frame $i] "cmd"]
-            if {[regexp {^\s*namespace\s+eval\s+(\w+)} $cmd match ns]} {
-                if {[lsearch $name_levels $ns] == -1} {
-                    lappend name_levels $ns
-                }
-            }
-        }
-    }
-    set name_levels [lreverse $name_levels]
-    # 由于 proc 支持名称中有冒号，所以不能简单 split
-    set pure_proc_name $proc_name
-    while {[set pos [string first "::" $pure_proc_name]] != -1} {
-        set ns [string range $pure_proc_name 0 [expr $pos-1]]
-        if {$ns != "" && [lsearch $name_levels $ns] == -1} {
-            lappend name_levels $ns
-        }
-        set pure_proc_name [string range $pure_proc_name [expr $pos+2] end]
-    }
-    lappend name_levels $pure_proc_name
-    return $name_levels
-}
 
 proc __tdb_proc__ {name args body} {
-    set name_levels [_get_name_levels $name]
-    set name_spaces [lrange $name_levels 0 end-1]
-    set name_space [join $name_spaces "::"]
-    set proc_name [lindex $name_levels end]
+    if {[regexp {^::} $name]} {
+        # 使用绝对路径创建的 proc
+        set full_proc_name $name
+    } else {
+        # 自动检测定义 proc 时所在 namespace
+        set proc_frame [tdb::_get_current_frame]
+        set proc_level [tdb::_get_frame_level $proc_frame]
+        set proc_namespace [uplevel $proc_level namespace current]
+        if {$proc_namespace == "::"} {
+            set proc_namespace ""
+        }
+        set full_proc_name "${proc_namespace}::${name}"
+    }
+
+    # puts "ADD PROC: $full_proc_name"
+    set proc_name_idx [string last "::" $full_proc_name]
+    set name_space [string range $full_proc_name 0 [expr $proc_name_idx - 1]]
+    set proc_name [string range $full_proc_name [expr $proc_name_idx + 2] end]
     # 使用 {} 防止名字中有空格
     eval "__proc__ {${name_space}::$proc_name} {$args} {$body}"
     eval "namespace eval tdb { namespace eval glv { _try_init_breakpoint {$name_space} {$proc_name} }}"
