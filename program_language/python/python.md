@@ -422,6 +422,12 @@ print(val1 / val2)
 
 ## pip
 
+```sh
+# 安装
+sudo apt update
+sudo apt install pip
+```
+
 [pip源](../../website.md#编程)
 
 ```python
@@ -472,6 +478,13 @@ python setup.py install --prefix=...    # 会安装
 ```sh
 #!/bin/bash
 pip install $1 -i http://mirrors.aliyun.com/pypi/simple --trusted-host mirrors.aliyun.com
+```
+
+```sh
+# 查看指定库的版本
+pip show package_name
+# 查看所有已安装包
+pip list
 ```
 
 ## 添加包搜索路径

@@ -306,6 +306,23 @@ proc _show_line {ini_frame cur_frame {size 10}} {
         set proc_bt "$proc_bt[format_color $proc_name $color] > "
     }
 
+    switch -exact [dict get $frame "type"] {
+        source  { set lines [_get_file_lines [dict get $frame file]] }
+        proc    { set lines [_get_proc_lines [dict get $frame proc]] }
+        eval    { 
+            if {[dict exists $frame "proc"]} {
+                _show_line $ini_frame [expr $cur_frame - 1]
+            } else {
+                puts_green $frame
+            }
+            return
+        }
+        default {
+            puts_green $frame
+            return
+        }
+    }
+
     puts [string repeat "*" 50]
     # 断点编号
     puts_color2 "breakpoint" [glv::_get_break_info "index"]
@@ -314,19 +331,6 @@ proc _show_line {ini_frame cur_frame {size 10}} {
     puts_color2 "step" $proc_bt
     highlight_frame $frame
     puts [string repeat "*" 50]
-
-    switch -exact [dict get $frame "type"] {
-        source  { set lines [_get_file_lines [dict get $frame file]] }
-        proc    { set lines [_get_proc_lines [dict get $frame proc]] }
-        eval    { 
-            _show_line $ini_frame [expr $cur_frame - 1]
-            return
-        }
-        default {
-            puts $frame
-            return
-        }
-    }
 
     set line_num [dict get $frame "line"]
     set start [expr max(0, $line_num - $size)]

@@ -10,6 +10,35 @@ git clone git://git.savannah.gnu.org/coreutils.git
 [Bash FAQ](http://mywiki.wooledge.org/BashFAQ/)
 [命令在线查询](https://www.lzltool.com/LinuxCommand)
 
+## 终端(terminal)
+
+自定义终端提示信息
+
+```sh
+# 设置 PS1 的值即可
+PS1='[\u@\h \W]$ '
+
+\u: 当前用户名
+\h: 短主机名
+\H: 全主机名
+\w: 当前工作目录(相对于主目录)
+\W: 当前工作目录(只显示最后一级)
+\[\033[32m\]: 颜色
+```
+
+### Tab 候选项/自动补全
+
+```sh
+bind -f ~/.inputrc
+```
+
+.inputrc 内容
+
+```sh
+set show-all-if-ambiguous on
+set completion-ignore-case on
+```
+
 ## 快捷键
 
 终端
@@ -86,6 +115,11 @@ man [options] command
 |7 | Miscellaneous (including macro packages and conventions), e.g. man(7), groff(7)
 |8 | System administration command (usually only for root)
 |9 | Kernel routines [Non standard]
+
+```bash
+# 查看所有 SIGNAL 信号
+man 7 signal
+```
 
 ## 用户
 
@@ -1742,12 +1776,15 @@ apropos . | egrep 'wh.*'
 
 ### uname
 
-查看系统架构
-
 ```sh
+# 查看系统架构
 uname -m
 # 或
 arch
+
+# 查看操作系统详情
+uname -a
+lsb_release -a
 ```
 
 ## tips
@@ -1759,11 +1796,6 @@ arch
 # 关闭：shopt -u globstar
 # 查看是否开启：shopt globstar
 ls **/*.txt
-```
-
-```bash
-# 查看所有 SIGNAL 信号
-man 7 signal
 ```
 
 ## QA
