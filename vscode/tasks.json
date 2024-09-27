@@ -18,6 +18,15 @@
             "dependsOn": ["cmake"]
         },
         {
+            "type": "shell",
+            "label": "ninja",
+            "options": {
+                "cwd": "${workspaceFolder}/build"
+            },
+            "command": "ninja ${fileBasenameNoExtension}",
+            "dependsOn": ["cmake"]
+        },
+        {
             "type": "cppbuild",
             "label": "g++",
             "command": "/usr/local/bin/g++",

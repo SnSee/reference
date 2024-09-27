@@ -269,6 +269,55 @@ int main () {
 
 ## 库函数
 
+### fstream
+
+#### ifstream
+
+一般流程
+
+```cpp
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+
+using namespace std;
+int main(int argc, char **argv) {
+    ifstream ifs;
+    ifs.exceptions(ifstream::failbit | ifstream::badbit);
+    try {
+        ifs.open("/home/ycd/test/opengl/src/test.txt");
+        // stringstream ss;
+        // ss << ifs.rdbuf();
+        // cout << ss.str() << endl;
+        string line;
+        while (getline(ifs, line)) {
+            cout << line << endl;
+            cout << "===" << endl;
+        }
+        ifs.close();
+    } catch(ifstream::failure e) {
+        if (!ifs.eof()) {       // eof 会导致 failbit
+            cout << "Failed to read file: " << e.what() << endl;
+        }
+    }
+    return 0;
+}
+```
+
+设置读取出问题时抛出异常
+
+```cpp
+std::ifstream file;
+file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+try {
+  file.open("test.txt");
+  while (!file.eof()) { file.get(); }
+  file.close();
+} catch(std::ifstream::failure e) {
+}
+```
+
 ### algorithm
 
 #### upper_bound/lower_bound

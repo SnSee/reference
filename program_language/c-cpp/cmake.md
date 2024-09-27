@@ -1,7 +1,7 @@
 
 # cmake
 
-官方文档: <https://cmake.org/cmake/help/latest/index.html>
+[官方文档](https://cmake.org/cmake/help/latest/index.html)
 
 ## 环境设置
 
@@ -33,9 +33,11 @@ cd build && cmake ..
 cmake --build . -j 10
 # linux下可以 make -j10
 
--j       : 进程数
---build  : 在指定目录编译
---target : 编译指定目标
+-j          : 进程数
+-S          : 指定 CMakeLists.txt 所在路径，默认当前
+-B          : 指定编译路径，默认当前
+--target    : 编译指定目标
+--build     : 编译配置好的 cmake project
 
 # 安装
 cmake --build . --target install
@@ -67,9 +69,30 @@ vscode编译命令示例
 cmake -DCMAKE_BUILD_TYPE:STRING=Debug -DCMAKE_C_COMPILER:FILEPATH=/bin/gcc -DCMAKE_CXX_COMPILER:FILEPATH=/bin/g++ -S/my/project -B/my/project/build -G "Unix Makefiles"
 ```
 
+#### 宏选项
+
+|宏 |值
+|- |-
+|CMAKE_PREFIX_PATH      |包、库等搜索路径
+|CMAKE_BUILD_TYPE       |编译类型，Debug/Release
+
 ## 语法
 
 命令文档: <https://cmake.org/cmake/help/latest/manual/cmake-commands.7.html>
+
+### commands
+
+#### find_library
+
+```cmake
+find_library(MYLIB_PATH mylib PATHS /usr/local/lib)
+# 检查是否找到库
+if(NOT MYLIB_PATH)
+    message(FATAL_ERROR "mylib not found")
+else()
+    message(STATUS "mylib found at ${MYLIB_PATH}")
+endif()
+```
 
 ### 版本
 
@@ -225,6 +248,9 @@ aux_source_directory(path SRCS)    # 将path下所有源文件append到变量SRC
 # 添加编译选项
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ...")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ...")
+# 添加链接选项
+set(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} ...")
+set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} ...")
 
 # 添加子项目
 add_subdirectory(..)
@@ -248,7 +274,7 @@ add_compile_options(-Wall)
 
 # 设置依赖项目(编译该项目前会先编译依赖项目)
 add_dependencies(exe_name need_lib_project1 need_lib_project2)
-# 设置链接动态库路径
+# 设置链接动态库路径，注意要在 add_executable 之前
 link_directories(path)
 # 链接动态库(库名为libtest1.so, libtest2.so)
 target_link_libraries(exe_name test1 test2 ...)
@@ -386,7 +412,8 @@ file(GLOB_RECURSE <variable> [FOLLOW_SYMLINKS]
 示例
 
 ```cmake
-file(GLOB_RECURSE SRCS ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
+# file(GLOB_RECURSE SRCS ${CMAKE_CURRENT_SOURCE_DIR} *.cpp) 会向上递归
+file(GLOB_RECURSE SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 ```
 
 #### find_package
@@ -411,3 +438,18 @@ VERBOSE
 ```
 
 #### option
+
+## 代码片段
+
+### 为所有源文件创建可执行程序
+
+```cmake
+file(GLOB_RECURSE SRCS ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
+
+foreach(source_file IN LISTS SRCS)
+    # 提取文件名（不带路径和扩展名）
+    get_filename_component(exec_name ${source_file} NAME_WE)
+    add_executable(${exec_name} ${source_file})
+    target_link_libraries(${exec_name} lib_name1 lib_name2)
+endforeach()
+```

@@ -9,7 +9,7 @@
             "name": "gdb-cpp调试",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceRoot}/${fileBasenameNoExtension}",
+            "program": "${workspaceFolder}/${fileBasenameNoExtension}",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -29,7 +29,7 @@
             "name": "cmake-调试",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceRoot}/${fileBasenameNoExtension}",
+            "program": "${workspaceFolder}/${fileBasenameNoExtension}",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -51,6 +51,7 @@
                 }
             ],
             "preLaunchTask": "make",
+            // "preLaunchTask": "ninja",
             "miDebuggerPath": "/usr/local/bin/gdb"
         }
     ]

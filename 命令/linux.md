@@ -283,6 +283,16 @@ readelf -V app_or_so
 strings test.so
 ```
 
+### for
+
+```sh
+arr=(1 2 3 4 5)
+
+for i in "${arr[@]}"; do
+  echo $i
+done
+```
+
 ## 文件
 
 ### locate
@@ -348,6 +358,14 @@ find ./ -type {type} -name {name} -exec rm -rf {} \;
 # 使用管道
 find . name "*.txt" -exec sh -c 'basename {} | fgrep test' \;
 # 对于 csh 可以使用 -cf 不 source ~/.cshrc 加快速度
+```
+
+### du
+
+```sh
+du -hs                  # 统计当前目录总占用(不显示子目录)
+du -h -d 1              # 统计当前目录总占用(显示一级子目录)
+du -h --max-depth 1     # 同 -d 1
 ```
 
 ### ncdu
@@ -630,8 +648,9 @@ grep 命令 **默认为贪婪模式**，如果要使用非贪婪模式，使用 
 ```text
 -i: 忽略大小写
 -v: 不匹配行
--h: 仅显示匹配行
--c: 仅显示匹配文件及行号
+-h: 仅显示匹配行，不显示文件名
+-H: 显示匹配行及文件名
+-c: 仅显示匹配文件数量
 -o: 仅显示匹配的部分，如果一行中有多个部分匹配，显示为多行
 -l: 仅显示匹配文件
 -L: 仅显示不匹配文件
@@ -1056,6 +1075,22 @@ sudo apt-cache madison <package>
 # 使用 apt-show-versions 列出软件所有版本，并查看是否已经安装
 sudo apt-get install apt-show-versions
 apt-show-versions -a <package>
+```
+
+### pkg-config
+
+查看已安装的库信息，库名为元文件 *.pc 去掉 .pc，元文件一般在下列位置
+
+```txt
+/usr/lib/pkgconfig
+/usr/share/pkgcon‐fig
+/usr/local/lib/pkgconfig
+/usr/local/share/pkgconfig
+```
+
+```sh
+--libs <lib_name>               :查看编译时如何链接
+--modversion <lib_name>         :只显示版本号
 ```
 
 ## 其他
@@ -1513,6 +1548,13 @@ mkdir empty && rsync --delete -d ./empty/ ./dir_to_delete/ && rm -r empty
 readelf 是一个用于分析 ELF 文件的命令行工具，可以查看各个节（section）的详细内容。
 
 ```bash
+# 查看程序运行时动态库搜索路径
+readelf -d app_or_so | head - 20
+ldd app_or_so
+
+# 查看动态库版本及依赖库版本信息
+readelf -V app_or_so
+
 # 查看编译动态库时的gcc版本
 # 查看 .comment 节
 # 当 test.so 依赖于多个库且编译这些库由GCC版本不同时，可能会显示多个版本 GCC

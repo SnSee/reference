@@ -4,6 +4,38 @@
 [官网](https://www.rust-lang.org)
 [The Rust Standard Library](https://doc.rust-lang.org/stable/std/)
 
+## 版本
+
+rust 有三个版本，稳定版(stable)、试用版(beta)、尝鲜版(nightly)，beta 和 nightly 会有一些 stable 没有的功能
+
+[版本切换](https://www.cnblogs.com/pu369/p/15161194.html)
+
+```sh
+rustup default nightly              # 全都使用 nightly 版本
+rustup run nightly cargo build      # 本次使用
+rustup override set nightly         # 当前目录使用
+```
+
+## ERROR
+
+```sh
+# 查看错误码
+rustc --explain $error_code
+```
+
+## Cargo
+
+[配置镜像源](https://zhuanlan.zhihu.com/p/672354584)(config 改名为 **config.toml**, 首选 **ustc**)
+
+Cargo 是 Rust 的官方构建系统和包管理器。它负责管理 Rust 项目的依赖项、构建项目以及管理项目的配置。
+
+```sh
+# 根据 Cargo.toml 编译当前项目
+cargo build
+# 安装
+cargo install --path .
+```
+
 ## 语法
 
 ### main函数

@@ -74,6 +74,8 @@ IEEE Standard 编号格式：number-year（如：1450.6.2-2014）
 
 [命令在线查询](https://www.lzltool.com/LinuxCommand)
 
+[vmvare 虚拟机下载](https://softwareupdate.vmware.com/cds/vmw-desktop/ws)
+
 ## Windows
 
 [Windows下的GNU命令](https://gnuwin32.sourceforge.net/)

@@ -43,6 +43,8 @@
 
 使用 $$ 将数学公式括起来
 
+使用两组 $$ 就会创建代码块
+
 |type | sample
 |- |-
 |加     | $a + b$
@@ -50,7 +52,17 @@
 |乘     | $a * b$
 |除     | $a / b$
 |指数   | $a ^ b$
+|下标   | $a_b$
 |分数   | $\frac{a}{b}$
+|向量   | $\vec{v}$
+
+$$
+\vec{v} = \begin{pmatrix}
+1 \\
+2 \\
+3
+\end{pmatrix}
+$$
 
 ## 表格
 
@@ -165,7 +177,7 @@ class Flight {
 
 ```text
 mermaid语法:
-* graph TD表示竖向，横向使用graph LD
+* graph TD表示竖向，横向使用graph LR
 * var_name([var_value]): var_name为节点名称，var value为节点内容
   var_name不能是end
   var_value中如果有括号，使用双引号["var_value()"]
