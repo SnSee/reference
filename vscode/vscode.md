@@ -109,6 +109,12 @@ ctrl + shift + p: QtConfigure: New Project 根据提示配置项目后就会在�
 5. VARIABLES 窗口查看变量
 6. TERMINAL 位置点击 DEBUG CONSOLE，可以输入表达式
 
+#### 使用 gdb 原生命令
+
+```sh
+-exec <gdb_command>
+```
+
 #### 优化显示效果
 
 STL 容器显示值而不是地址信息

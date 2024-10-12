@@ -3,6 +3,28 @@
 
 ## 概念
 
+### 预编译指令
+
+* 布尔值表示真只能用 **true** (大小写敏感)，也可以用 int 表示
+
+```c
+#define MACRO                   // 定义宏
+#define MACRO VALUE             // 定义宏
+#undef MACRO                    // 取消宏
+
+#ifdef MACRO                    // 只检查是否定义了宏，不管其值是什么
+#else
+#endif
+
+#ifndef MACRO                   // 参考 ifdef
+#endif
+
+#if MACRO                       // 检查宏表达式是否为真，相当于普通代码的 if
+#elif
+#else
+#endif
+```
+
 ### 大小端法
 
 大端法: 内存低位对数据高位(网络字节序)
@@ -331,3 +353,13 @@ lower_bound(left, right, target);
 // 返回 [left, right) 中第一个 > target 的迭代器
 upper_bound(left, right, target);
 ```
+
+## 内存布局
+
+|segment |desc
+|- |-
+|BSS        |Block Started by Symbol, 通常存放未初始化的全局变量。属于静态内存分配
+|data       |通常存放已初始化全局变量。属于静态内存分配。 
+|code/text  |通常存放执行代码。这部分区域的大小在程序运行前就已经确定，并且通常只读, 可能包含一些只读的常数变量 ，例如字符串常量等。程序段为程序代码在内存中的映射.一个程序可以在内存中多有个副本
+|heap       |堆, 存放进程动态分配的内存
+|stack      |栈/堆栈，存放线程的局部变量，函数堆栈信息

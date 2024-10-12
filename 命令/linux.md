@@ -170,11 +170,21 @@ cat /proc/cpuinfo | grep "core id" | wc -l
 
 ### ps
 
-```text
-查看进程启动及运行时间: ps -eo pid,lstart,etime | grep 进程id
-    pid: 进程id，可通过 `ps aux | grep app_name` 查找
-    lstart: 启动时间
-    etime: 运行时间
+```sh
+# 查看指定进程状态
+ps -l $pid
+
+# 查看进程启动及运行时间
+# pid       : 进程id，可通过 `ps aux | grep app_name` 查找
+# lstart    : 启动时间
+# etime     : 运行时间
+ps -eo pid,lstart,etime | grep 进程id
+
+# 查看指定父进程唤起的子进程(非递归)
+ps --ppid $pid
+pgrep -P $pid
+# 递归查看
+pstree -p $pid
 ```
 
 进程状态(man ps：搜索 STATE)
@@ -1079,7 +1089,8 @@ apt-show-versions -a <package>
 
 ### pkg-config
 
-查看已安装的库信息，库名为元文件 *.pc 去掉 .pc，元文件一般在下列位置
+* 查看已安装的库信息，库名为元文件 *.pc 去掉 .pc，元文件一般在下列位置
+* 可以将 .pc 所在路径添加到 PKG_CONFIG_PATH 变量中
 
 ```txt
 /usr/lib/pkgconfig
@@ -1089,7 +1100,8 @@ apt-show-versions -a <package>
 ```
 
 ```sh
---libs <lib_name>               :查看编译时如何链接
+--list-all                      :查看所有已安装库
+--cflags --libs <lib_name>      :查看编译时如何使用库
 --modversion <lib_name>         :只显示版本号
 ```
 
@@ -1543,7 +1555,15 @@ diff结果如果有多出不一样会显示多次以下介绍内容
 mkdir empty && rsync --delete -d ./empty/ ./dir_to_delete/ && rm -r empty
 ```
 
-### readelf
+### 分析二进制文件
+
+查看动态库是否是 debug 模式
+
+```sh
+file test.so        # 有 with debug_info 表示是 debug 模式
+```
+
+#### readelf
 
 readelf 是一个用于分析 ELF 文件的命令行工具，可以查看各个节（section）的详细内容。
 
@@ -1560,6 +1580,34 @@ readelf -V app_or_so
 # 当 test.so 依赖于多个库且编译这些库由GCC版本不同时，可能会显示多个版本 GCC
 readelf -p .comment test.so
 ```
+
+#### nm
+
+nm 可以列出二进制可执行文件，动态库，静态库中的符号信息，包括符号的类型，符号名称，比如函数名，全局变量等
+
+```sh
+nm [options, ...] file
+    -a      : 列出所有符号
+    -D      : 只列出动态链接符号，只适用于动态库
+```
+
+符号类型表示含义:
+
+* 大写一般表示全局可见，小写表示仅局部可见，如 static function
+
+[字段含义](../program_language/c-cpp/cpp.md#内存布局)
+
+|symbol |desc
+|- |-
+|B/b |BSS data section
+|D/d |initialized data section
+|N   |debugging symbol
+|p   |stack unwind section
+|R/r |readonly data section
+|T/t |text(code) section (当函数为 t 时无法在外部调用该函数)
+|U   |undefined symbol
+
+#### objdump
 
 ### X11
 
@@ -1858,3 +1906,19 @@ ls **/*.txt
 ### 窗口事件
 
 结构体(xcb_generic_event_t) 定义在 xcb.h 中
+
+## 概念
+
+### ABI
+
+Application Binary Interface: 即应用程序二进制接口。ABI 是操作系统、硬件架构和编译器之间的一组规范，定义了应用程序如何与系统库、动态链接库和其他系统组件进行交互。
+
+### ELF TLS
+
+ELF TLS（Thread-Local Storage）是指在 ELF（Executable and Linkable Format）文件格式中实现的线程局部存储机制。它允许每个线程有自己的独立变量副本，从而避免多线程环境中数据竞争和共享问题。
+
+```c
+// 声明 TLS 变量 ?
+// 运行时环境（如操作系统或线程库）会维护一个指向当前线程的TLS区块的指针
+thread_local __attribute__((tls_model("initial-exec"))) int var;
+```

@@ -40,5 +40,20 @@ def find(ele: ET.Element) -> None:
 # 解析XML文件
 tree = ET.parse('test.xml')
 root = tree.getroot()
+root.find('employee/name')     # 非递归查找，需要手动指定层级
 traverse(root)
+```
+
+## 格式化
+
+```py
+import xml.etree.ElementTree as ET
+import xml.dom.minidom
+
+tree = ET.parse('test.xml')
+root = tree.getroot()
+xml_bytes = ET.tostring(root, encoding='utf-8')
+# 使用 minidom 格式化字符串
+parsed_xml = xml.dom.minidom.parseString(xml_bytes)
+print(parsed_xml.toprettyxml(indent="  "))
 ```

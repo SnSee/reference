@@ -1,7 +1,14 @@
 
 # gdb
 
+[官方文档](https://www.gnu.org/software/gdb/documentation)
+
 [安装gdb](../../%E7%8E%AF%E5%A2%83/cpp.md#gdb)
+
+```sh
+# 查看命令帮助
+help command_name
+```
 
 ## 基本流程
 
@@ -71,6 +78,20 @@ catch
     catch throw            : 捕捉抛出异常事件
 ```
 
+### call 调用代码
+
+```sh
+call function(args, ...)
+```
+
+### watch 监控变量 / 内存
+
+```sh
+watch *(int*)0x7fffa060         # 监听指定内存地址
+
+watch -l <expression>           # 执行表达式并监控其指向的内存地址
+```
+
 ## 信息显示
 
 ```gdb
@@ -88,17 +109,26 @@ x/[nfu] <指针或地址>
     f: 显示格式，s 表示字符串，x,o,t,d 含义同print
     u: 要查看的数据类型占内存单元字节数，默认为4，可取值: b(1), h(2), w(4), g(8)
 list <行号/函数名>: 显示以行号/函数为中心的10行源码，按Enter滚动，如果不输入行号，默认显示以当前断点为中心的10行代码
-info(i)
-    info args: 显示函数参数
-    info variables [过滤条件]: 显示全局和静态变量
-    info locals: 显示局部变量
-    info break [断点编号]: 显示断点信息
-    info display: 显示自动显示表达式
 show
     show args:查看命令行参数
     show values: 查看历史输出记录
 display/[format] <表达式>: 追踪查看某个表达式的值
 undisplay <编号>: 删除追踪显示，也可用 delete display <编号> 删除
+```
+
+### info(i)
+
+```sh
+info <subcmd> [regex_filter]    # 过滤输出，正则表达式采用 search 方式
+help info <subcmd>              # 查看子命令详细文档
+
+info args                       # 显示函数参数
+info variables                  # 显示全局和静态变量
+info locals                     # 显示局部变量
+info break [break_number]       # 显示断点信息
+info display                    # 显示自动显示表达式
+info sources                    # 查看支持哪些文件源码
+info sharedlibrary              # 查看动态库
 ```
 
 ## 缩写
@@ -185,6 +215,14 @@ set 设置通过 help set 能查到的变量时不要加赋值运算符(=)
 whatis <变量或表达式>: 显示变量或表达式数据类型
 ptype <变量或表达式>: 显示变量所有成员(不能是指针)
 ```
+
+## 内置函数
+
+库函数都可以试一试
+
+|function |usage |desc
+|- |- |-
+|strcmp     |strcmp(char *, char *)     |比较字符串
 
 ## vscode
 

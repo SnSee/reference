@@ -3,6 +3,8 @@
 
 [官方文档](https://cmake.org/cmake/help/latest/index.html)
 
+[commands](https://cmake.org/cmake/help/latest/manual/cmake-commands.7.html)
+
 ## 环境设置
 
 ### 环境变量
@@ -105,6 +107,8 @@ endif()
 ```
 
 ### 条件语句
+
+* 在 if 中不需要使用 $
 
 ```cmake
 if(<condition>)
@@ -269,6 +273,7 @@ add_library(so_name STATIC 1.cpp 2.cpp ${SRCS})
 
 # 添加宏
 target_compile_definitions(exe_name PRIVATE MACRO_NAME)
+add_compile_definitions(MACRO_NAME)
 # 添加编译选项
 add_compile_options(-Wall)
 
@@ -390,11 +395,11 @@ else()
 endif()
 ```
 
-### 一些命令
+## 命令
 
 <https://cmake.org/cmake/help/v3.20/manual/cmake-commands.7.html>
 
-#### file
+### file
 
 ```cmake
 # 不递归
@@ -416,14 +421,14 @@ file(GLOB_RECURSE <variable> [FOLLOW_SYMLINKS]
 file(GLOB_RECURSE SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 ```
 
-#### find_package
+### find_package
 
 ```cmake
 # 如查找qt
 find_package(Qt5 COMPONENTS Core Gui Widgets REQUIRED)
 ```
 
-#### message
+### message
 
 ```cmake
 # 用法
@@ -437,7 +442,33 @@ STATUS: 相当于DEBUG
 VERBOSE
 ```
 
-#### option
+### option
+
+### string
+
+#### 检查子串
+
+```cmake
+set(my_string "Hello, World!")
+set(my_sub_string "World")
+
+string(FIND "${my_string}" "${my_sub_string}" found_index)
+
+if(found_index GREATER -1)
+    message("The string contains the substring at position ${found_index}")
+else()
+    message("The string does not contain the substring")
+endif()
+```
+
+### 路径操作
+
+```cmake
+# 提取文件名（不带路径和扩展名）
+get_filename_component(basename ${full_path} NAME_WE)
+# 提取路径
+get_filename_component(path ${full_path} DIRECTORY)
+```
 
 ## 代码片段
 
@@ -447,7 +478,6 @@ VERBOSE
 file(GLOB_RECURSE SRCS ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 
 foreach(source_file IN LISTS SRCS)
-    # 提取文件名（不带路径和扩展名）
     get_filename_component(exec_name ${source_file} NAME_WE)
     add_executable(${exec_name} ${source_file})
     target_link_libraries(${exec_name} lib_name1 lib_name2)
