@@ -15,8 +15,9 @@
             "cwd": "${workspaceFolder}",
             "externalConsole": false,
             "MIMode": "gdb",
+            "miDebuggerPath": "${workspaceFolder}",
+            "miDebuggerArgs": "",
             "preLaunchTask": "g++",
-            "miDebuggerPath": "/usr/local/bin/gdb",
             "setupCommands": [
                 {
                     "description": "为 gdb 启用整齐打印",
@@ -30,7 +31,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/${fileBasenameNoExtension}",
-            "args": [],
+            "args": ["要调试的程序命令行参数"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [
@@ -38,6 +39,8 @@
             ],
             "externalConsole": false,
             "MIMode": "gdb",
+            "miDebuggerPath": "/usr/local/bin/gdb",
+            "miDebuggerArgs": "GDB 命令行参数",
             "setupCommands": [
                 {
                     "description": "为 gdb 启用整齐打印",
@@ -52,7 +55,6 @@
             ],
             "preLaunchTask": "make",
             // "preLaunchTask": "ninja",
-            "miDebuggerPath": "/usr/local/bin/gdb"
         }
     ]
 }

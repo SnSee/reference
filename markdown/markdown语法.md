@@ -107,6 +107,8 @@ $$
 
 #### 安装
 
+[graphviz下载链接](https://graphviz.org/download)
+
 安装Markdown Preview Enhanced插件
 按照 [官网](https://plantuml.com/zh/starting) 步骤安装java和graphviz-dot
 添加环境变量 GRAPHVIZ_DOT=$GRAPHVIZ_INSTALL_DIR/bin/dot.exe

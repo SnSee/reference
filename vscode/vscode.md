@@ -102,6 +102,8 @@ ctrl + shift + p: QtConfigure: New Project 根据提示配置项目后就会在�
 
 ### C/C++
 
+[配置文档](https://code.visualstudio.com/docs/cpp/launch-json-reference)
+
 1. 配置好 launch.json 和 tasks.json
 2. 点击左侧 Run and Debug 打开 debug 界面
 3. 打断点

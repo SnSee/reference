@@ -223,6 +223,7 @@ ptype <变量或表达式>: 显示变量所有成员(不能是指针)
 |function |usage |desc
 |- |- |-
 |strcmp     |strcmp(char *, char *)     |比较字符串
+|$_regex    |$_regex(char *, "regex_pattern") |正则表达式比较，匹配返回 1，否则 0
 
 ## vscode
 
