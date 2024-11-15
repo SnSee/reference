@@ -153,6 +153,8 @@ leader-key: Ctrl + x
     SingleKey模式: s, 此模式下使用缩写调试命令不需要按回车
 ```
 
+* 进入 tui 后无法使用上下箭头查看历史命令，使用 **Ctrl-p，Ctrl-n** 代替
+
 ## tui 界面
 
 ```gdb

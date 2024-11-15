@@ -1,6 +1,8 @@
 
 # VS-Code
 
+[插件官网](https://marketplace.visualstudio.com/vscode)
+
 ## 制作插件
 
 ```text
@@ -43,6 +45,11 @@
 ```
 
 ## 插件
+
+```sh
+code --list-extensions                      # 查看已安装插件
+code --install-extension <extension-name>   # 安装指定插件
+```
 
 ### Vim
 

@@ -149,6 +149,7 @@ ls -l           # 查看最后修改时间
 
 ```bash
 # 基础用法
+# 注意: 要打包的目录放到命令行选项之后
 tar czvf test.tar.gz [--exclude ..] ./*
 
 # 可选参数
@@ -1087,6 +1088,12 @@ sudo apt-get install apt-show-versions
 apt-show-versions -a <package>
 ```
 
+```sh
+# 一种安装 apt 包到指定目录的方式
+apt download <package>                      # 下载 .deb 包
+sudo dpkg --instdir=/install/dir tmp.deb    # 安装到指定目录
+```
+
 ### pkg-config
 
 * 查看已安装的库信息，库名为元文件 *.pc 去掉 .pc，元文件一般在下列位置
@@ -1553,6 +1560,9 @@ diff结果如果有多出不一样会显示多次以下介绍内容
 # 删除大文件夹
 # 文件夹后的 / 不能去掉
 mkdir empty && rsync --delete -d ./empty/ ./dir_to_delete/ && rm -r empty
+
+# 复制目录时跳过指定子目录
+rsync -av --exclude 'skipped_sub_dir/' source_dir target_dir
 ```
 
 ### 分析二进制文件
@@ -1906,6 +1916,25 @@ ls **/*.txt
 ### 窗口事件
 
 结构体(xcb_generic_event_t) 定义在 xcb.h 中
+
+### lightdm 切换为 gdm3
+
+```sh
+sudo apt install gdm3
+sudo dpkg-reconfigure gdm3              # 切换
+sudo systemctl stop lightdm
+sudo systemctl disable lightdm
+sudo systemctl start gdm3               # 启用服务
+sudo systemctl enable gdm3
+cat /etc/X11/default-display-manager    # 查看默认管理器
+sudo reboot
+```
+
+### X11 终端无法使用 GUI
+
+```sh
+sudo xhost +
+```
 
 ## 概念
 
