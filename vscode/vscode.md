@@ -126,24 +126,7 @@ ctrl + shift + p: QtConfigure: New Project 根据提示配置项目后就会在�
 
 #### 优化显示效果
 
-STL 容器显示值而不是地址信息
-
-```gdb
-# 打开 gdb 后查看是否支持，显示 global pretty-printers 即支持
-info pretty-print
-```
-
-可能会遇到缺少 pretty-print 相关 python 包的情况，使用 everything 搜索 libstdcxx，并将其路径添加到 gdbinit 中
-
-```python
-# gdbinit 内容
-python
-import sys
-sys.path.insert(0, '/python/package/path/of/libstdcxx')
-from libstdcxx.v6.printers import register_libstdcxx_printers
-register_libstdcxx_printers (None)
-end
-```
+[pretty-printer](../program_language/c-cpp/gdb调试.md#pretty-printer)
 
 ## 禁用 alt 唤起菜单栏
 
@@ -153,3 +136,10 @@ end
 window.titleBarStyle 设置为 custom
 window.customMenuBarAltFocus 取消勾选
 ```
+
+## 配置代码片段 snippets
+
+1. Ctrl-Shift-P 搜索 snippets
+2. 点击 Configure Snippets
+3. 搜索要配置的文件类型如 cpp
+4. 编辑显示的文件

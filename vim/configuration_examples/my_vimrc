@@ -1,3 +1,5 @@
+" Alt 组合键 <M-key> 需要检查是否需要通过 Ctrl-V Alt-<key> 的方式设置
+
 if has("gui_running")
 	set guifont=Monospace\ 14	" gvim 设置字体
 else
@@ -113,8 +115,8 @@ inoremap <C-c> <C-\><C-n>"+yiw
 " normal 使用 "+p 即可
 cnoremap <C-S-v> <C-R>+
 inoremap <C-S-v> <C-R>+
-cnoremap <C-v> <C-R>+
-inoremap <C-v> <C-R>+
+"cnoremap <C-v> <C-R>+
+"inoremap <C-v> <C-R>+
 nnoremap * "+yiw*
 nnoremap # "+yiw#
 

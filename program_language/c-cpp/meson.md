@@ -46,6 +46,10 @@ opt = get_option('opt')
 meson setup build -Da=true -Db=enabled -DC=s1,s2
 ```
 
+```yml
+--reconfigure: 重新配置
+```
+
 ## 语法
 
 ### 宏

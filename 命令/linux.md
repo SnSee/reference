@@ -10,6 +10,48 @@ git clone git://git.savannah.gnu.org/coreutils.git
 [Bash FAQ](http://mywiki.wooledge.org/BashFAQ/)
 [命令在线查询](https://www.lzltool.com/LinuxCommand)
 
+## session
+
+启动 X server
+
+```sh
+# :100 表示 DISPLAY 值
+sudo nohup startx -- :100 &
+# 启动 X server 后执行，使所有用户都可以连接 server
+xhost +
+
+# 锁住虚拟终端，避免其他人使用
+vlock
+
+# 切换虚拟控制台
+chvt <idx>
+```
+
+### X11
+
+```sh
+# 检查是否安装了 X11
+which X
+which Xorg
+echo $DISPLAY
+```
+
+检查 X11 环境是否启用
+
+```sh
+xdpyinfo            # 不响应表示没启动
+ps aux | grep X     # 检查是否有相应进程
+ps aux | grep Xorg  # 检查是否有 X server
+```
+
+### tty
+
+TTY 是 Linux 或 UNIX 的一个子系统，它通过 TTY 驱动程序在内核级别实现进程管理、行编辑和会话管理。
+
+```sh
+ps aux | grep X     # 查看 tty 编号
+```
+
 ## 终端(terminal)
 
 自定义终端提示信息
@@ -37,6 +79,18 @@ bind -f ~/.inputrc
 ```sh
 set show-all-if-ambiguous on
 set completion-ignore-case on
+```
+
+### 设置默认为 bash
+
+```sh
+sudo chsh -s /bin/bash username
+```
+
+### linux 桌面进入命令行模式
+
+```sh
+Ctrl + Alt + F<N>
 ```
 
 ## 快捷键
@@ -123,9 +177,14 @@ man 7 signal
 
 ## 用户
 
-```text
-根据 uid 查询用户名: getent passwd uid
-根据用户名查询 uid: id user_name
+```sh
+# 根据 uid 查询用户名
+getent passwd uid
+# 根据用户名查询 uid
+id user_name
+
+# 将用户添加到用户组
+sudo gpasswd -a <user_name> <group_name>
 ```
 
 ## 文件
@@ -218,6 +277,7 @@ ls按时间排序:
     ls -lt  最新文件在前
     ls -lrt 相反
 获取当前脚本绝对路径: $(dirname `readlink -f $0`)   # source时无效
+bash 中通过 $BASH_SOURCE 可获取被 source 脚本路径
 ```
 
 ### 任意命令返回非 0 值自动退出
@@ -292,6 +352,30 @@ readelf -V app_or_so
 # 查看动态库中有那些符号
 # 如果要查找是否含有特定字符串，配合grep使用
 strings test.so
+```
+
+### if
+
+```sh
+# 基础语法
+if [ condition ]; then
+elif [ another_condition ]; then
+else
+fi
+
+# 字符串比较
+if [ "$var" = "hello" ]; then
+fi
+
+# 数值比较
+if [ $num -eq 10 ]; then
+fi
+
+# 文件测试
+if [ -f "filename.txt" ]; then
+elif [ -d "dirname" ]; then
+else
+fi
 ```
 
 ### for
@@ -630,15 +714,24 @@ time ./a.out
 
 ## 环境变量
 
-```bash
-$SHELL                  # 当前shell类型
-$PATH                   # 可执行文件查找路径
-$HOME                   # 用户家目录
-$USER                   # 用户名
-$HOSTNAME               # 主机名($HOST)
-$LD_LIBRARY_PATH        # 临时动态库查找路径
-$PYTHONHOME             # python 家目录(默认lib及 site-package 路径)
-$PYTHONPATH             # python 库搜索路径
+```sh
+export KEY=VALUE        # bash 设置环境变量
+unset KEY               # 取消环境变量
+```
+
+```yml
+SHELL                  : 当前shell类型
+PATH                   : 可执行文件查找路径
+HOME                   : 用户家目录
+USER                   : 用户名
+HOSTNAME               : 主机名($HOST)
+LD_LIBRARY_PATH        : 临时动态库查找路径
+PYTHONHOME             : python 家目录(默认lib及 site-package 路径)
+PYTHONPATH             : python 库搜索路径
+XDG_SESSION_TYPE       : 当前会话类型
+    - x11
+    - wayland
+    - tty
 ```
 
 ## 三剑客
@@ -1076,6 +1169,12 @@ apt search          apt-cache search        搜索应用程序
 apt show            apt-cache show          显示装细节
 ```
 
+```sh
+# 查看依赖关系
+apt-cache rdepends libglvnd0
+apt-cache showpkg libglvnd0
+```
+
 ```bash
 # 安装指定版本软件
 sudo apt-get install <package>=<version>
@@ -1425,6 +1524,8 @@ ls | tee a.txt b.txt
 
 # 以追加方式写入
 ls | tee -a a.txt b.txt
+# 同时写入标准错误
+ls 2>&1 | tee a.txt
 ```
 
 ### wc
@@ -1619,23 +1720,6 @@ nm [options, ...] file
 
 #### objdump
 
-### X11
-
-检查是否安装了 X11
-
-```sh
-which X
-which Xorg
-echo $DISPLAY
-```
-
-检查 X11 环境是否启用
-
-```sh
-xdpyinfo            # 不响应表示没启动
-ps aux | grep X     # 检查是否有相应进程
-```
-
 ### xclip
 
 [安装](../环境/linux.md#xclip)
@@ -1771,6 +1855,12 @@ iptables -D OUTPUT -d "www.test.com" -j DROP
 ```
 
 ### DISPLAY 为其他用户创建终端
+
+```sh
+# 在目标用户主机开启显示权限
+xhost +source_user@source_host      # 支持指定用户访问 X 服务器
+xhost +                             # 支持所有用户
+```
 
 格式 hostname:display-number.scree-number
 

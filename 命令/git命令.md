@@ -19,6 +19,7 @@
 # 查看所有配置
 git config --list
 git config --global --list
+git config --global user.name "Your Name"   # 设置用户名
 ```
 
 ## 编码

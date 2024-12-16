@@ -13,9 +13,15 @@ sh autogen.sh
 make -j 8 && make install
 ```
 
-[快捷键](https://zhuanlan.zhihu.com/p/628396742)
+## 启动命令
 
-自定义配置
+```sh
+tmux                            # 创建 tmux 会话
+tmux ls                         # 查看有哪些会话，attached 表示正在使用
+tmux attach -t <session_id>     # 恢复指定会话
+```
+
+## 自定义配置
 
 ```sh
 # ~/.tmux.conf
@@ -106,6 +112,10 @@ set -g mouse-select-window on
 # bind P pipe-pane -o "cat >>~/#W.log" \; display "Toggled logging to ~/#W.log"
 ```
 
+## 快捷键
+
+[快捷键](https://zhuanlan.zhihu.com/p/628396742)
+
 ```sh
 tmux                # 创建会话
 
@@ -113,17 +123,21 @@ tmux                # 创建会话
 o           # 横向分屏
 O           # 纵向分屏
 hjkl        # 窗口跳转
-x           # 最大化当前窗口，再次执行恢复原大小
+z           # 最大化当前窗口，再次执行恢复原大小
 ;           # 回到上次使用的窗口
 q           # 显示窗口编号，有编号时按对应数字跳转到窗口
 x           # 关闭当前窗口
+r           # 刷新 ~/.tmux.conf 中配置
 :           # 进入命令模式
-d           # 退出 tmux
+d           # 保存当前会话并退出
 ?           # 列出所有快捷键，q 退出
 [           # 进入复制模式，操作同 vi
 v           # 进入复制模式，操作同 vi
+p           # 粘贴
 =           # 在单独的窗口列出粘贴板缓冲区所有内容，使用jk移动，Enter选择后粘贴
 ```
+
+## QA
 
 vim 颜色过深问题，在 ~/.vimrc 中添加
 

@@ -63,6 +63,7 @@ cmake -D CMAKE_C_COMPILER=/gcc_path/bin/gcc -D CMAKE_CXX_COMPILER=/gcc_path/bin/
 ```sh
 # 使用 mingw 编译器
 cmake -G "MinGW Makefiles" ..  -DCMAKE_INSTALL_PREFIX=/path/to/install
+# 使用 ninja: -G Ninja
 ```
 
 vscode编译命令示例
