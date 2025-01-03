@@ -116,6 +116,7 @@ ctrl + delete: 删除到单词头
     bindkey "^H" backward-delete-word
     bind '\C-H:unix-word-rubout'
 ctrl + d: 删除光标后一个字符
+Alt  + d: 删除光标后一个单词
 ctrl + 方向键: 光标按单词移动
 ```
 
@@ -124,10 +125,13 @@ ctrl + 方向键: 光标按单词移动
 ```sh
 # bash
 # 在 wsl 上无效
+bind -p                     # 查看已绑定快捷键
 bind -P                     # 查看已绑定快捷键
 bind -l                     # 查看支持的操作
 # \C: ctrl, \e: alt/escape?
 bind '"<key>":<option>'     # 绑定操作到快捷键
+
+bind -f /etc/inputrc        # 绑定一些配置号的快捷键
 ```
 
 历史命令
@@ -187,6 +191,13 @@ id user_name
 sudo gpasswd -a <user_name> <group_name>
 ```
 
+### sudo
+
+```sh
+# 以 root 用户启动 shell
+sudo -s
+```
+
 ## 文件
 
 ```bash
@@ -216,6 +227,12 @@ tar czvf test.tar.gz [--exclude ..] ./*
     --exclude build
     --exclude src/python/.idea
     --exclude test/*.txt
+```
+
+## 系统
+
+```sh
+free -h                 # 查看内存大小
 ```
 
 ## 进程
@@ -267,6 +284,13 @@ L: has pages locked into memory (for real-time and custom IO)
 s: is a session leader
 l: is multi-thread (using CLONE_THREAD, line NPTL pthreads do)
 +: is in the foreground process group
+```
+
+### 文件描述符
+
+```sh
+# 查看所有进程打开的文件描述符
+ls -l /proc/$PID/fd
 ```
 
 ### 脚本
@@ -331,6 +355,23 @@ O: 基于表达式过滤
 top -p <PID>    # PID 可通过ps获取
 ```
 
+## 驱动
+
+[设备文件编号含义](https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/Documentation/admin-guide/devices.txt)
+
+```sh
+# 查看当前系统设备文件编号
+/proc/devices
+```
+
+## 服务
+
+```sh
+systemctl status gdm            # 查看服务状态
+sudo systemctl stop gdm         # 停止服务
+sudo systemctl start gdm        # 启用服务
+```
+
 ## 版本
 
 ```text
@@ -376,6 +417,29 @@ if [ -f "filename.txt" ]; then
 elif [ -d "dirname" ]; then
 else
 fi
+```
+
+### while
+
+```sh
+count=1
+while [ $count -le 5 ]
+do
+    echo $count
+    count=$((count + 1))
+done
+```
+
+```sh
+while true
+do
+    echo -n "enter q to exit"
+    read input
+    if [ "$input" = "q" ]; then
+        break
+    fi
+    echo "entered: $input"
+done
 ```
 
 ### for
@@ -491,6 +555,46 @@ lsof [options] <names>
 -r: 每隔指定秒数刷新一次
 +d: 非递归查看目录下文件被进程占用情况
 +D: 递归查看目录下文件被进程占用情况
+-c: 过滤以指定字符串开头的 COMMAND，可指定多次
+-p: 根据 PID 过滤，如 -p 123,456
+-u: 根据 USER/USER_ID 过滤，如 -u ycd,1234
+```
+
+lsof 各列含义
+
+```yml
+COMMAND : 进程名
+PID     : 进程 id
+TID     :
+USER    : 用户名
+FD      : 打开的文件描述符类型
+    txt: 可执行文件
+    cwd: 工作目录
+    rtd: 根目录
+    mem: 内存映射文件
+    u  : 读写模式
+    r  : 读模式
+    w  : 写模式
+    0  : 标准输入
+    1  : 标准输出
+    2  ：标准错误
+    其他数字: 文件描述符?
+TYPE    : 文件类型
+    REG  : 普通文件
+    DIR  : 目录
+    CHR  : 字符设备
+    BLK  : 块设备
+    FIFO : 先进先出管道
+    IPv4 : 网络套接字
+    IPv6 : 网络套接字
+    unix : Unix 套接字
+DEVICE  : 设备号，major:minor
+SIZE/OFF: 文件大小或偏移量
+NODE    : inode
+NAME    : 文件路径
+    普通文件(REG): 如 /home/user/file.txt
+    设备文件(CHR/BLK): 如 /dev/pts/1
+    网络套接字(IPv4/IPv6): 如 localhost:6013，ssh 连接
 ```
 
 ```sh
@@ -1720,6 +1824,10 @@ nm [options, ...] file
 
 #### objdump
 
+```sh
+objdump -h          # 查看是否有 debug 相关字段，如 .debug_info
+```
+
 ### xclip
 
 [安装](../环境/linux.md#xclip)
@@ -1934,6 +2042,11 @@ mount | fgrep /home         # 方式一
 findmnt -no FSTYPE /home    # 方式二
 
 nfs: Network File System，网络共享文件系统
+```
+
+```sh
+# 重新挂载磁盘
+mount -o remount,rw,relatime /path/to/mount
 ```
 
 ### who

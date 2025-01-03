@@ -76,6 +76,13 @@ uint32_t ntohl(uint32_t netlong);
 uint16_t ntohs(uint16_t netshort);
 ```
 
+## 预定义标识符
+
+```c
+// 获取当前函数名称
+void func() { printf("Current function name: %s\n", __func__); }
+```
+
 ## 函数
 
 <a id="printf-format"></a>

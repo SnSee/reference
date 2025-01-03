@@ -7,3 +7,7 @@ function cf() {
     xsel -b > $1
 }
 alias c='tr -d "\n" | xsel -b'
+
+bind -f /etc/inputrc
+# 根据实际的 key 重新映射(可能借助Ctrl-V)
+bind '^?:backward-kill-word'       # Ctrl-backspace 删除前一个单词

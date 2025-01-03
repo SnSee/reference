@@ -32,6 +32,13 @@ git config --global gui.encoding utf-8
 git config --global core.quotepath false
 ```
 
+## clone
+
+```sh
+git clone $remote_url
+git clone $remote_url --depth 1     # 只下载最近一次提交记录
+```
+
 ## 分支
 
 ```sh

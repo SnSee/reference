@@ -19,6 +19,7 @@ make -j 8 && make install
 tmux                            # 创建 tmux 会话
 tmux ls                         # 查看有哪些会话，attached 表示正在使用
 tmux attach -t <session_id>     # 恢复指定会话
+tmux -f tmux.conf               # 以指定配置启动
 ```
 
 ## 自定义配置
@@ -92,9 +93,9 @@ bind -T copy-mode-vi y send-keys -X copy-selection-and-cancel
 
 # 鼠标支持 - 如果你想使用的话把 off 改为 on
 set -g mouse on
-set -g mouse-select-pane on
-set -g mouse-resize-pane on
-set -g mouse-select-window on
+# set -g mouse-select-pane on
+# set -g mouse-resize-pane on
+# set -g mouse-select-window on
 
 # 在相同目录下使用 tmux-panes 脚本开启面板
 # unbind v
@@ -135,9 +136,22 @@ d           # 保存当前会话并退出
 v           # 进入复制模式，操作同 vi
 p           # 粘贴
 =           # 在单独的窗口列出粘贴板缓冲区所有内容，使用jk移动，Enter选择后粘贴
+space       # 切换 split 布局
+```
+
+## 命令
+
+leader-key + : 进入命令模式
+
+```sh
+ls                                  # 列出所有会话
+source-file tmux.conf               # 加载配置
+rename-session name                 # 重命名当前会话
 ```
 
 ## QA
+
+### vim 颜色
 
 vim 颜色过深问题，在 ~/.vimrc 中添加
 
@@ -145,6 +159,17 @@ vim 颜色过深问题，在 ~/.vimrc 中添加
 set background=dark
 set t_Co=256
 ```
+
+### 使用系统粘贴板
+
+```sh
+# 开启鼠标后按住 shift 再选中需要复制的内容
+set -g mouse on
+```
+
+### 滚轮翻页
+
+按住 shift 时使用滚轮即可翻页(进入 copy 模式)，按 q 退出
 
 ## tmux 配置
 

@@ -5,6 +5,8 @@
 
 [安装gdb](../../%E7%8E%AF%E5%A2%83/cpp.md#gdb)
 
+[gdb源码](https://ftp.gnu.org/gnu/gdb)
+
 ```sh
 # 查看命令帮助
 help command_name

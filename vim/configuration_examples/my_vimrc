@@ -117,8 +117,8 @@ cnoremap <C-S-v> <C-R>+
 inoremap <C-S-v> <C-R>+
 "cnoremap <C-v> <C-R>+
 "inoremap <C-v> <C-R>+
-nnoremap * "+yiw*
-nnoremap # "+yiw#
+"nnoremap * "+yiw*
+"nnoremap # "+yiw#
 
 " 设置 Ctrl + Backspace 键来删除前方的一个单词
 inoremap <C-BS> <C-W>

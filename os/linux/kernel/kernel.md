@@ -1,0 +1,646 @@
+
+# Kernel
+
+[build kernel](https://linux.cn/article-16252-1.html)
+[build kernel](https://phoenixnap.com/kb/build-linux-kernel)
+
+[Linux Device Drivers](https://lwn.net/Kernel/LDD3)
+
+[Linux GPU Driver Developer’s Guide](https://dri.freedesktop.org/docs/drm/gpu/index.html)
+[Linux GPU Driver Developer’s Guide](https://docs.kernel.org/5.10/gpu/index.html)
+[Linux GPU Driver Developer’s Guide](https://www.kernel.org/doc/html/v5.4/gpu)
+
+[Linux Device Driver Tutorial](https://embetronicx.com/tutorials/linux/device-drivers/linux-device-driver-part-1-introduction)
+[The Linux Kernel Module Programming Guide](https://sysprog21.github.io/lkmpg)
+
+[Documentation](https://www.kernel.org/doc)
+
+[GPU Driver Developer's Guide](https://www.kernel.org/doc/html/latest/gpu/drm-uapi.html)
+
+## Abbr
+
+|Abbr |Full
+|- |-
+|APU    |Accelerated Processing Units
+|BO     |Buffer Object
+|CS     |Command Submission
+|DMA    |Direct Memory Access
+|DRM    |Direct Rendering Manager
+|EOF    |End of Pipe
+|GEM    |Graphics Execution Manager
+|GMC    |Graphics Memory Controller
+|GTT    |Graphics Translation Table
+|IB     |Indirect Buffer
+|IH     |Interrupt Handler
+|IP     |Intellectual Property
+|IRQ    |Interrupt Request
+|KIQ    |Kernel Interface Queue
+|KMD    |Kernel Mode Driver
+|KMS    |Kernel Mode Setting
+|PM4    |Programmable Multiplexer 4
+|SA     |Sub Alloc
+|TTM    |Translation Table Manager
+|UVD    |Unified Video Decoder
+|VA     |Virtual Address
+|VMA    |Virtual Memory Area
+
+## 固件
+
+[缺少固件](https://www.cnblogs.com/long5683/p/13830021.html)
+
+## GRUB
+
+安装多个系统内核时进入内核选择界面
+
+```sh
+# 方式一
+# 开机时按住 shift 或 esc
+
+# 方式二
+# GRUB_TIMEOUT_STYLE 设置为 menu
+# GRUB_TIMEOUT 时间设置长一点
+# 按 enter 进入 Advanced options for Ubuntu
+sudo vim /etc/default/grub
+```
+
+```sh
+grep menuentry /boot/grub/grub.cfg          # 查看内核版本，索引从 0 开始
+# 将 GRUB_DEFAULT 设置为对应内核索引，设置为 saved 时表示使用 grub-set-default 设置的值
+sudo vim /etc/default/grub
+
+# 如何 GRUB_DEFAULT 是 grub-set-default 则
+grub-editenv list                           # 查看 saved_entry
+sudo grub-set-default ''                    # 设置默认内核版本
+
+sudo update-grub                            # 更新 /boot/grub/grub.cfg
+sudo reboot                                 # 重启
+```
+
+## 编译内核
+
+### GRUB: out of memory
+
+```sh
+# 查看引导文件大小，如果超过 100M 很可能会内存不足
+ll -h /initrd.img
+
+# 方式一: 去掉编译信息以减小内存占用
+make INSTALL_MOD_STRIP=1 modules_install
+
+# 方式二: 在 /etc/default/grub 中设置低分辨率
+GRUB_GFXMODE=640x480
+```
+
+### basic flow
+
+```sh
+cp -v /boot/config-$(uname -r) .config
+# 按空格切换是否开启，[*] 表示开启
+# 也可使用 ./scripts/config 命令设置
+make menuconfig
+scripts/config --disable SYSTEM_TRUSTED_KEYS
+scripts/config --disable SYSTEM_REVOCATION_KEYS
+make -j8
+sudo make modules_install -j8
+# 查看 /boot 下的 initrd.img 文件，超过 500M 则会 out of memory
+# 解决方式一: 修改 /etc/initramfs-tools/initramfs.conf，MODULES=most 改为 dep
+# 解决方式二: 使用 INSTALL_MOD_STRIP 去除调试信息
+#sudo make INSTALL_MOD_STRIP=1 modules_install -j8
+sudo make install
+sudo update-initramfs -c -k 6.12.5
+sudo update-grub
+sudo reboot
+```
+
+### 编译单独模块并重启
+
+以 amdgpu.ko 为例
+
+编译新驱动，卸载旧驱动
+
+```sh
+# 只编译指定模块，如 amdgpu.ko
+make M=drivers/gpu/drm/amd/amdgpu -j5
+# 关闭使用 amdgpu 驱动的进程
+sudo systemctl stop display-manager
+sudo systemctl stop gdm
+sudo killall Xorg
+# 确保服务停止后再卸载
+sleep 2
+# 使用数需要为 0，如果不为 0 通过 lsof 查看使用驱动文件的进程并 kill
+lsmod | grep amdgpu
+# 移除驱动
+sudo rmmod amdgpu
+```
+
+安装新驱动
+
+```sh
+# 如果只时临时使用新驱动
+sudo insmod /lib/modules/6.12.5/kernel/drivers/gpu/drm/amd/amdgpu/amdgpu.ko
+# 如果需要彻底更换驱动
+sudo mv /lib/modules/6.12.5/kernel/drivers/gpu/drm/amd/amdgpu/amdgpu.ko /lib/modules/6.12.5/kernel/drivers/gpu/drm/amd/amdgpu/amdgpu.ko.bk
+sudo cp ./drivers/gpu/drm/amd/amdgpu/amdgpu.ko /lib/modules/6.12.5/kernel/drivers/gpu/drm/amd/amdgpu/amdgpu.ko
+sudo modprobe amdgpu
+```
+
+恢复服务
+
+```sh
+sudo systemctl start display-manager
+sudo systemctl start gdm
+# 重新进入桌面时会自动创建 Xorg 进程
+# startx
+```
+
+## 特性
+
+### (NO)KASLR
+
+[参考](https://blog.csdn.net/essencelite/article/details/137723705)
+
+* Address Space Layout Randomization，是一个内核安全功能
+* 开启 KASLR 后内核符号(函数，变量等)在 System.map 中地址和实际地址不一样
+
+```sh
+# 查看内核启动时选项
+cat /proc/cmdline
+# 查看符号表地址
+cat /boot/System.map-$(uname -r) | grep kmalloc_info
+# 查看实际函数地址
+cat /proc/kallsyms | grep kmalloc_info
+```
+
+关闭 KASLR
+
+```sh
+# 编译时关闭
+make menuconfig     # 关闭 CONFIG_RANDOMIZE_BASE
+# 启动时关闭，/etc/default/grub
+GRUB_CMDLINE_LINUX="... nokaslr"
+update-grub
+```
+
+## 查看内核模块
+
+```sh
+# 第三列显示被多少设备或进程使用
+lsmod | grep amdgpu
+```
+
+```sh
+# 查看使用内核模块的进程
+fuser -mv /sys/module/$module_name
+```
+
+```sh
+# 查看使用显卡设备文件的进程
+lsof /dev/dri/renderD128        
+lsof /dev/dri/renderD129
+lsof /dev/dri/card0
+lsof /dev/dri/card1
+```
+
+## SysRq
+
+```sh
+# /proc/sys/kernel/sysrq
+sysctl -n kernel.sysrq          # 查看允许使用的按键类型
+# 1 表示所有请求都支持
+sudo sysctl -w kernel.sysrq=1   # 设置允许使用的按键类型
+```
+
+## 测试内核
+
+[测试方式](https://blog.csdn.net/weixin_50829653/article/details/109537407)
+
+### debugfs
+
+```sh
+# 进入界面后输入 / 搜索 DEBUG_FS 查看 Location 及是否开启
+make menuconfig
+
+# 查看当前内核是否开启 DEBUG_FS
+vim /boot/config-$(uname -r)
+```
+
+```sh
+# amdgpu 调试信息路径
+sudo ls /sys/kernel/debug/dri/129
+```
+
+### KUint
+
+[KUint-Linux Kernel Unit Testing](https://www.kernel.org/doc/html/latest/dev-tools/kunit/index.html)
+
+```sh
+# 只测试 drm
+./tools/testing/kunit/kunit.py run --kunitconfig=drivers/gpu/drm/tests
+```
+
+```yml
+--raw_output: 显示更多细节
+```
+
+## 调试内核
+
+### kdb / kgdb
+
+[参考](https://zhuanlan.zhihu.com/p/546416941)
+[参考](https://docs.kernel.org/dev-tools/kgdb.html)
+[参考](https://www.kernel.org/pub/linux/kernel/people/jwessel/kdb/EnableKGDB.html)
+
+```sh
+# 配置 .config
+./scripts/config -d CONFIG_STRICT_KERNEL_RWX -e CONFIG_FRAME_POINTER -e CONFIG_KGDB -e CONFIG_KGDB_SERIAL_CONSOLE -e CONFIG_KGDB_KDB -e CONFIG_KDB_KEYBOARD -e CONFIG_MAGIC_SYSRQ -e CONFIG_MAGIC_SYSRQ_SERIAL
+```
+
+进入 kdb (目前仅在 QEMU 中成功)
+
+1. 使用 Serial Port 进入 kdb
+
+```sh
+# Configure kgdboc at boot using kernel parameters
+console=ttyS0,115200 kgdboc=ttyS0,115200 nokaslr
+# OR
+# Configure kgdboc after the kernel has booted
+sudo sh -c 'echo ttyS0 > /sys/module/kgdboc/parameters/kgdboc'
+# sudo echo ttyS0 > /sys/module/kgdboc/parameters/kgdboc
+
+# 中断 kernel 进入 kdb
+sudo sh -c 'echo g > /proc/sysrq-trigger'
+```
+
+2. 使用 keyboard connected console 进入 kdb
+
+```sh
+kgdboc=kbd
+# OR
+sudo echo kbd > /sys/module/kgdboc/parameters/kgdboc
+```
+
+### QEMU + gdb
+
+[参考](https://docs.kernel.org/dev-tools/gdb-kernel-debugging.html)
+[参考](https://zhuanlan.zhihu.com/p/412604505)
+
+安装环境
+
+```sh
+# build kernel，-e 开启设置，-d 关闭设置
+./scripts/config -e CONFIG_DEBUG_INFO -e CONFIG_GDB_SCRIPTS -e CONFIG_DEBUG_SECTION_MISMATCH -d CONFIG_RANDOMIZE_BASE
+# install qemu
+apt install qemu-system-x86_64
+# create initramfs
+mkinitramfs -o ./initramfs.img $(uname -r)
+# 将下面的命令添加到 ~/.gdbinit 中
+add-auto-load-safe-path $kernel_build_path
+```
+
+启动虚拟机
+
+```sh
+# -s 自动使用 1234 端口供 gdb 连接
+qemu-system-x86_64 -kernel arch/x86_64/boot/bzImage -initrd ./initramfs.img -append "root=/dev/sda1 console=ttyS0 nokaslr" -m 2048 -nographic -S -s
+```
+
+gdb 连接
+
+```sh
+gdb vmlinux
+    (gdb) target remote :1234
+    (gdb) b start_kernel
+    (gdb) continue
+```
+
+退出虚拟机
+
+```sh
+poweroff
+```
+
+### 查看 module 地址
+
+```sh
+sudo cat /sys/module/amdgpu/sections/.text
+sudo cat /sys/module/amdgpu/sections/.data
+sudo cat /sys/module/amdgpu/sections/.bss
+```
+
+### ftrace
+
+[参考](https://www.cnblogs.com/hpyu/p/14348151.html)
+
+文件在 /sys/kernel/debug/tracing 目录下
+
+#### 注意事项
+
+* README 查看文件含义
+* current_tracer 有效值查看 available_tracers
+* 编译内核时需要开启一些选项才能使用
+* 如果不显示某个函数，查看 available_filter_functions 确认是否支持
+
+#### 基本用法
+
+```sh
+echo 1              > tracing_on                # 开启追踪，0 关闭
+echo 1              > options/func_stack_trace  # 开启函数堆栈追踪
+echo                > trace                     # 清空缓存
+echo function_graph > current_tracer            # 设置 tracer 类型
+echo $func          > set_graph_function        # 只为这些函数生成 graph
+echo drm_ioctl      > set_ftrace_filter         # function 时只追踪过滤函数
+echo drm_ioctl      > set_ftrace_notrace        # function 时反向过滤
+echo $pid           > set_ftrace_pid            # 追踪指定进程
+echo 5              > max_graph_depth           # 设置 graph 深度
+
+# 追踪 amdgpu_cs 事件
+echo 1              > events/amdgpu/amdgpu_cs/enable
+
+cat enabled_functions                           # 查看当前追踪的函数
+cat /sys/kernel/debug/tracing/trace             # 查看追踪结果
+```
+
+#### 如果未追踪检查以下文件
+
+```sh
+cat tracing_on                  # 1
+cat current_trace               # function / function_graph
+cat set_ftrace_filter           # 包含追踪函数
+cat set_ftrace_pid              # no pid / 要追踪的 pid
+```
+
+#### 追踪指定 pattern
+
+```sh
+# 追踪指定模块
+echo '*:mod:amdgpu*' > set_ftrace_filter
+# 指定函数名 pattern
+echo 'amdgpu*' > set_ftrace_filter
+```
+
+#### 追踪函数
+
+使用 function 向上追踪函数堆栈，使用 function_graph 向下追踪内部调用
+
+```sh
+td="/sys/kernel/debug/tracing"
+exe="traced_exec_file args"
+func="drm_ioctl"
+echo 0          > $td/tracing_on
+echo            > $td/trace
+# echo function_graph   > $td/current_tracer
+# echo $func      > $td/set_graph_function
+echo function   > $td/current_tracer
+echo 1          > options/func_stack_trace
+echo $func      > $td/set_ftrace_filter
+echo $$         > $td/set_ftrace_pid; \
+echo 1          > $td/tracing_on; \
+exec $exe
+```
+
+#### 追踪 event
+
+```sh
+echo amdgpu:amdgpu_cs   > set_event                 # 追踪指定 event
+echo 1                  > events/amdgpu/enable      # 追踪当前目录所有 event
+echo *                  > events/amdgpu/filter      # 只追踪指定 pattern
+
+cat available_events                                # 查看有效 event
+cat /sys/kernel/debug/tracing/trace                 # 查看追踪结果
+```
+
+### trace-cmd
+
+```sh
+# 封装了 ftrace
+sudo apt install trace-cmd
+```
+
+```sh
+# 查看有哪些选项可用
+trace-cmd list -h
+    -t: 可用 tracer
+    -f: 可追踪函数
+
+# 只用于设置启动选项，并不实际追踪
+trace-cmd start -h
+    -p: 设置 current_tracer
+
+# 开始追踪并记录到 trace.dat，可通过 report 命令查看
+trace-cmd record -h
+    -e: 追踪事件
+        -f: event filter
+    -l: filter function name
+    -g: graph function name
+    -P: pid
+    -F: 只追踪给定命令
+trace-cmd report
+
+# 停止追踪，相当于 echo 0 > tracing_on
+trace-cmd stop
+
+# 查看追踪记录
+trace-cmd show
+
+# 重置所有选项，会清空 trace
+trace-cmd reset
+```
+
+#### 示例
+
+```sh
+# 追踪 drm cs 单元测试中 amdgpu 相关内核函数
+sudo trace-cmd record -p function -l "amdgpu*" -F ./amdgpu_test -s 3 -t 1
+trace-cmd report
+# 只追踪 amdgpu_cs_ioctl 的 graph
+sudo trace-cmd record -p function_graph -g amdgpu_cs_ioctl -F ./amdgpu_test -s 3 -t 1
+
+# 追踪 drm cs 单元测试中和 amdgpu_cs 有关事件
+sudo trace-cmd record -e "amdgpu_cs*" -F ./amdgpu_test -s 3 -t 1
+trace-cmd report
+```
+
+## umr
+
+[doc](https://umr.readthedocs.io/en/main/index.html)
+
+```sh
+umr -c                                      # 查看显卡配置
+sudo umr --read *.*.mmUVD_CGC_GATE          # 读取 register
+sudo umr --vm-read 0x1000 10 | xxd -e       # 读取 virtual memory
+sudo umr --ring-stream gfx[0:9]             # 读取 gfx ring 前 10 个 word
+```
+
+## Module
+
+### drm
+
+[drm-gem](https://www.systutorials.com/docs/linux/man/7-drm-gem)
+
+#### GEM/TTM
+
+* GEM: graphics execution manager developed by Intel initially, used for device memory management and focus on simplicity
+* TTM: translation table manager, another device memory management, suitable for both UMA and devices with dedicated RAM
+
+### amdgpu
+
+[drm/amdgpu AMDgpu driver](https://docs.kernel.org/gpu/amdgpu/index.html)
+[amdgpu Dirver Notes](https://wiki.huangxt.cn/gpu/amdgpu-Driver-Notes)
+[AMD GPU 手册](https://www.x.org/docs/AMD/old/R5xx_Acceleration_v1.5.pdf)
+[AMD GPU 任务调度1 - 用户态](https://blog.csdn.net/huang987246510/article/details/106658889)
+[AMD GPU 任务调度2 - 内核态](https://blog.csdn.net/huang987246510/article/details/106737570)
+[AMD GPU 任务调度3 - fence 机制](https://blog.csdn.net/huang987246510/article/details/106865386)
+
+#### 内存管理
+
+```c
+GEM {               // 通过 GEM 与 user space 交互
+    TTM {           // 将 GEN 转换为 TTM，实际使用 TTM 管理，GEM 只是接口
+        AMDGPU_BO   // Buffer Object，实际的 buffer 内容
+    }
+}
+```
+
+#### 数据结构
+
+```mermaid
+classDiagram
+    amdgpu_ring *-- amdgpu_ring_funcs
+    amdgpu_ring o-- drm_gpu_scheduler
+
+    class amdgpu_ring {
+        const struct amdgpu_ring_funcs  *funcs;     // 操作 ring buffer 的函数
+        struct drm_gpu_scheduler        sched;      // 任务调度器
+        struct amdgpu_bo                *ring_obj;  // buffer objects
+        volatile uint32_t               *ring;
+    }
+```
+
+```c
+// 任务调度器，用于调度特定实例，每个 hardware ring 都有一个调度器
+struct drm_gpu_scheduler {
+    const struct drm_sched_backend_ops  *ops;           // 操作 job 的回调函数，用于提交 job 的是 ops->run_job
+    u32                                 credit_limit;   // 能够同时提交的任务数量
+    atomic_t                            credit_count;   // 已经提交的任务数量
+    long                                timeout;        // 超时后从调度器移除 job
+    const char                          *name;          // 该调度器操作的 ring buffer 名称
+    u32                                 num_rqs;        // run-queues 数量
+    struct drm_sched_rq                 **sched_rq;     // run-queues，每个 run-queue 有一个或多个 entity，每个 entity 有一个或多个 job
+    wait_queue_head_t                   job_scheduled;  // 其他线程等待一个 entity 中所有 job 完成，完成后调度器会唤醒该线程
+    atomic64_t                          job_id_count;   // 为每个 job 赋予一个唯一的 id
+    struct workqueue_struct             *submit_wq;     // workqueue used to queue @work_run_job and @work_free_job
+    struct workqueue_struct             *timeout_wq;    // workqueue used to queue @work_tdr
+    struct work_struct                  work_run_job;   // work which calls run_job op of each scheduler
+    struct work_struct                  work_free_job;  // work which calls free_job op of each scheduler
+    struct delayed_work                 work_tdr;       // schedules a delayed call to @drm_sched_job_timedout after the timeout interval is over
+    struct list_head                    pending_list;   // the list of jobs which are currently in the job queue
+    spinlock_t                          job_list_lock;  // lock to protect the pending_list
+    int                                 hang_limit;     // once the hangs by a job crosses this limit then it is marked guilty and 
+                                                        // it will no longer be considered for scheduling.
+    atomic_t                            *score;         // 选取空闲调度器时用于帮助负载均衡
+    atomic_t                            _score;         // driver 不提供时使用的 score
+    bool                                ready;          // 标记底层硬件是否 ready
+    bool                                free_guilty;    // A hit to time out handler to free the guilty job
+    bool                                pause_submit;   // pause queuing of @work_run_job on @submit_wq
+    bool                                own_submit_wq;  // 当前调度器是否管理 @submit_wq 的内存
+    struct device                       *dev;           // system &struct device
+};
+```
+
+#### 命令传递
+
+CPU 和 GPU 的渲染命令传递通过 Ring Buffer 来实现
+
+## 命令
+
+### dmesg
+
+用于显示内核环缓冲区（ring buffer）的内容。内核环缓冲区记录了系统启动以来内核产生的各种信息，包括设备初始化、驱动程序加载、错误信息、警告信息等。
+
+```sh
+dmesg | grep amdgpu
+
+# 查看日志等级，第一个表示 console_loglevel
+cat /proc/sys/kernel/printk
+```
+
+```yml
+-C: 清除环缓冲区中的内容，需要 sudo
+-c: 显示后再清除
+-n: 设置 console 显示日志等级，可选值通过 -h 查看
+    -: 不是设置本次日志等级，而是设置后续显示日志等级
+-T: 在日志中显示时间戳
+-w: --follow 实时显示日志
+```
+
+### strace
+
+追踪命令的系统调用流程
+
+```sh
+strace ls
+```
+
+```yml
+-o: 写入文件而不是 stderr
+-p: 追踪指定 pid
+-c: 统计调用时间
+-f: 也统计子进程
+-e: 过滤，strace -e trace=open,read ls
+-y: 显示文件描述符对应文件路径
+```
+
+## 函数
+
+### ioctl
+
+[ioctl](https://zhuanlan.zhihu.com/p/578501178)
+
+Input Output Control, 用户程序通过 ioctl 和设备交互(读写)，内核会根据设备文件的 major number 自动调用相应驱动的 ioctl 函数
+
+```c
+// fd     : 读写的文件描述符
+// request: 一般用宏创建，包含: in/out, size 等信息
+//        : 内核和用户程序需要使用相同头文件以保证格式一致
+int ioctl(int fd, unsigned long request, ...);
+```
+
+### dump_stack
+
+打印函数堆栈
+
+```c
+#include <linux/kernel.h>
+dump_stack();
+```
+
+## Ring Buffer
+
+### 数据结构
+
+[参考](https://blog.csdn.net/weixin_43778179/article/details/120287393)
+
+```c
+// 仅用于辅助理解，实际代码可能有差别
+struct kfifo {
+    unsigned char *buffer;
+    unsigned int size;
+    unsigned int in;           // 从该 offset 插入数据
+    unsigned int out;          // 从该 offset 读取数据
+    spinlock_t *lock;          // 自旋锁防止并发问题
+};
+```
+
+### kernel space
+
+* 不同模块会通过 printk 共用一个用于打印的 ring buffer
+* 不同模块可能会创建自己的 ring buffer
+* ring buffer 可以在初始化时就创建，也可以动态创建
+* cpu 不同核心可能共用同一个 ring buffer(如 printk)，也可能有自己的(如 ftrace)，共用时需要使用自旋锁解决竞争问题，效率会低一些
+
+### user space
+
+```sh
+# 向 ring buffer 写入数据
+sudo sh -c 'echo test > /dev/kmsg'
+```
