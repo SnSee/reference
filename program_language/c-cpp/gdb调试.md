@@ -118,7 +118,7 @@ print(p)
     print <指针->属性>
     print ::<变量名>: 查看被局部变量覆盖的全局变量
     print <*数组名@长度>: 查看动态数组
-    print/x <整型变量名>: 控制数字显示格式
+    print/x <整型变量名>: 控制数字显示格式(p/x)
         x: 十六进制，o: 八进制，t: 二进制，d: 十进制
 x/[nfu] <指针或地址>
     查看指定内存地址，如 x/4dw <数组名> 表示查看整型数组前四位
@@ -246,27 +246,54 @@ tui reg <寄存器类型>: 打开寄存器窗口，显示处理器的寄存器�
 启动时加载脚本: gdb -x script.gdb
 在gdb内加载自动脚本: source script.gdb
 指定调试程序: file <exe>
-基本语法(和命令行模式相同)
-    # 注释
-    创建及修改变量: set $var_name = var_value
-    定义函数
-        define <func_name>
-            # do something
-        end
-    条件语句
-        if <condition>
-            # do something
-        else
-            # do something
-        end
-    循环语句
-        while <conditioin>
-            # do something
-        end
-格式化输出(变量替换方式同c语言的printf): printf "format-string", ...
 ```
 
-参考[c-printf](../program_language/c-cpp/c-cpp.md#printf-format)
+### 基本语法
+
+基本语法和命令行模式相同
+
+```sh
+# 注释
+# 创建及修改变量
+set $var_name = var_value
+```
+
+### 格式化输出
+
+```sh
+# 变量替换方式同c语言的printf
+printf "format-string", ...
+```
+
+[c-printf](./cpp.md#printf-format)
+
+### 条件语句
+
+```sh
+if <condition>
+    # do something
+else
+    # do something
+end
+```
+
+### 循环语句
+
+```sh
+while <conditioin>
+    # do something
+end
+```
+
+### 自定义命令
+
+```sh
+define <func_name>
+    # do something
+    # 使用参数
+    print $arg0
+end
+```
 
 ### commands 命令
 
@@ -329,6 +356,40 @@ ptype <变量或表达式>: 显示变量所有成员(不能是指针)
 ```vim
 继承到vscode：查看reference/vscode下的launch和task
 在调试控制台使用原生gdb命令：-exec <cmd>
+```
+
+## 调用 python
+
+查看 [gdb.py](gdb.py)
+
+### 执行 python 代码
+
+```sh
+# 在 python 和 end 中间执行 python 代码
+python
+    print("test")
+end
+```
+
+### 自定义 gdb 命令
+
+```py
+import gdb
+
+class PyPrint(gdb.Command):
+    def __init__(self):
+        super().__init__("py_print", gdb.COMMAND_USER)
+
+    def invoke(self, args: str, from_tty):
+        for name in args.split():
+            print(f"{name}: {gdb.parse_and_eval(name)}")
+
+PyPrint()
+```
+
+```sh
+gdb> source py_print.py
+gdb> py_print value1 value2
 ```
 
 ## 调试 python

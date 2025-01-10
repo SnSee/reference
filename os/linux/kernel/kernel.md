@@ -23,13 +23,17 @@
 |- |-
 |APU    |Accelerated Processing Units
 |BO     |Buffer Object
+|CP     |Command Processor
 |CS     |Command Submission
 |DMA    |Direct Memory Access
 |DRM    |Direct Rendering Manager
 |EOF    |End of Pipe
+|GART   |Graphics Address Remapping Table，alias GTT
 |GEM    |Graphics Execution Manager
 |GMC    |Graphics Memory Controller
-|GTT    |Graphics Translation Table
+|GRBM   |Graphics Register Base Map
+|GTT    |Graphics Translation Table, alias GART
+|HQD    |Hardware Queue Descriptor
 |IB     |Indirect Buffer
 |IH     |Interrupt Handler
 |IP     |Intellectual Property
@@ -37,12 +41,31 @@
 |KIQ    |Kernel Interface Queue
 |KMD    |Kernel Mode Driver
 |KMS    |Kernel Mode Setting
+|MQD    |Memory Queue Descriptor
+|PBA    |Page Base Address
 |PM4    |Programmable Multiplexer 4
 |SA     |Sub Alloc
+|SDMA   |System DMA
 |TTM    |Translation Table Manager
 |UVD    |Unified Video Decoder
 |VA     |Virtual Address
 |VMA    |Virtual Memory Area
+
+### Engine
+
+|Abbr   |Full
+|- |-
+|CE     |Constant Engine
+|DE     |Drawing Engine
+|EE     |
+|ME     |Micro Engine
+|MEC    |MicroEngine Compute
+|PFP    |Pre-Fetch Parser
+|SE     |Shader Engine
+
+## Concepts
+
+[GMC,IH,PSP,SMU,DCN,SDMA,GC,VCN,CP,MEC,MES,RLC,KIQ,IB](https://docs.kernel.org/gpu/amdgpu/driver-core.html)
 
 ## 固件
 
@@ -101,6 +124,7 @@ make menuconfig
 scripts/config --disable SYSTEM_TRUSTED_KEYS
 scripts/config --disable SYSTEM_REVOCATION_KEYS
 make -j8
+make htmldocs       # 编译 doc
 sudo make modules_install -j8
 # 查看 /boot 下的 initrd.img 文件，超过 500M 则会 out of memory
 # 解决方式一: 修改 /etc/initramfs-tools/initramfs.conf，MODULES=most 改为 dep
@@ -466,9 +490,14 @@ trace-cmd report
 
 ```sh
 umr -c                                      # 查看显卡配置
-sudo umr --read *.*.mmUVD_CGC_GATE          # 读取 register
+umr -lb                                     # 查看当前显卡的 IP blocks
+
+sudo umr --read .*.mmUVD_CGC_.*             # 读取 register
 sudo umr --vm-read 0x1000 10 | xxd -e       # 读取 virtual memory
-sudo umr --ring-stream gfx[0:9]             # 读取 gfx ring 前 10 个 word
+sudo umr --ring-stream gfx[0:9]             # 读取 gfx ring 前 10 个 dword
+sudo umr --ring-stream gfx[.]               # 读取 gfx ring 中直到读指针位置的内容
+
+sudo umr -w .*.gfx800.mmCP_RB_DOORBELL_RANGE_LOWER ff  # 设置指定寄存器的值
 ```
 
 ## Module
@@ -490,6 +519,33 @@ sudo umr --ring-stream gfx[0:9]             # 读取 gfx ring 前 10 个 word
 [AMD GPU 任务调度1 - 用户态](https://blog.csdn.net/huang987246510/article/details/106658889)
 [AMD GPU 任务调度2 - 内核态](https://blog.csdn.net/huang987246510/article/details/106737570)
 [AMD GPU 任务调度3 - fence 机制](https://blog.csdn.net/huang987246510/article/details/106865386)
+[GPU submission strategies](https://gpuopen.com/presentations/2022/gpuopen-gpu_submission-reboot_blue_2022.pdf)
+
+#### amdgpu ring buffer
+
+[PM4 packet format](https://www.jianshu.com/p/0eedbd58162b)
+[PM4 packet spec](https://www.amd.com/content/dam/amd/en/documents/radeon-tech-docs/programmer-references/si_programming_guide_v2.pdf)
+
+* amdgpu 使用 PM4 packet 作为 ring buffer 中数据的格式，PM4 packet 通过 PCIe bus 传递
+* gfx 使用的是 type-3 类型
+
+##### fence
+
+* fence 对象是共用的，但是有不同类型的 fence，通过 dma_fence_get 获取对象引用并增加引用计数
+* 需要通过 amdgpu_ctx_add_fence 添加 fence，该函数会返回一个 sequence 表示当前 fence 编号，该编号是递增的
+* 通过 PM4 packet 将 PACKET3 命令添加到 ring buffer 中时，会在最后添加一个 fence 命令(PACKET3_EVENT_WRITE_EOP)，该 fence 有一个 sequence 值
+* GPU 执行该条指令时会将 seq 值写入命令中的地址，然后发送一个中断通知 CPU，CPU 获取地址中的 seq 值并于当前维护的 cur_seq 值比较，如果不一致说明执行了 fence，即有任务完成，然后发出 signal，解除 dma_fence_wait 函数的阻塞并调用通过 dma_fence_add_callback 注册的回调
+* 记录 GPU 实际完成的 seq 的地址只有一个，当 seq 值和 cur_seq 不一致时，说明 [cur_seq, seq] 间的所有 fence 都已经执行
+
+```c
+// 将 fence 写入 ring 流程
+amdgpu_ring_write(ring, PACKET3(PACKET3_EVENT_WRITE_EOP, 4));
+amdgpu_ring_write(ring, EVENT_INDEX(5) | (exec ? EOP_EXEC : 0)));
+amdgpu_ring_write(ring, addr & 0xfffffffc);
+amdgpu_ring_write(ring, (upper_32_bits(addr) & 0xffff) | DATA_SEL(1) | INT_SEL(2));
+amdgpu_ring_write(ring, lower_32_bits(seq));
+amdgpu_ring_write(ring, upper_32_bits(seq));
+```
 
 #### 内存管理
 
@@ -501,7 +557,15 @@ GEM {               // 通过 GEM 与 user space 交互
 }
 ```
 
-#### 数据结构
+#### CS (Command submit)
+
+##### 调度器数据结构
+
+* **amdgpu_ring** (hardware ring) 中有一个任务调度器 **drm_gpu_scheduler**
+* drm_gpu_scheduler 管理多个调度队列 **drm_sched_rq**
+* drm_sched_rq 管理多个调度实体 **drm_sched_entity**，不同 entity 具有不同的优先级 drm_sched_priority
+* drm_sched_entity 管理多个调度任务 **drm_sched_job**
+* **amdgpu_job** 相当于继承了 drm_sched_job，增加了 **Indirect Buffer** 信息用来存储命令
 
 ```mermaid
 classDiagram
@@ -546,6 +610,33 @@ struct drm_gpu_scheduler {
     struct device                       *dev;           // system &struct device
 };
 ```
+
+##### CS 流程
+
+|func |step
+|- |-
+|amdgpu_cs_parser_init  |init parser (amdgpu_device，drm_file，context等)
+|amdgpu_cs_pass1        |获取或创建 entity;<br>遍历 chunks，创建 job，将渲染数据从用户态拷贝到内核态，设置 job 的 entity
+|amdgpu_cs_pass2        |遍历 chunks，初始化 job->ibs
+|amdgpu_cs_parser_bos   |设置 parser->bo_list
+|amdgpu_cs_patch_jobs   |依据 bo_va_map 拷贝 job->ibs 数据
+|amdgpu_cs_vm_handling  |
+|amdgpu_cs_sync_rings   |同步 fence
+|trace_amdgpu_cs_ibs    |tracing_fs 日志
+|amdgpu_cs_submit       |
+|--drm_sched_job_arm    |设置 job 的调度器及 s_fence 等
+|--drm_sched_job_add_dependency |设置 job 依赖的 fence
+|--amdgpu_ctx_add_fence |为 ctx 添加 fence，并将 handle 传回 UMD
+|--amdgpu_cs_post_dependencies|
+|amdgpu_cs_parser_fini  |清理工作，释放各种引用
+
+1. 解析用户态渲染命令并存储到 chunks 中
+初始化 job
+从 chunks 中拷贝渲染命令到 IB 中
+初始化 entity
+将 job 加入 entity
+GFX scheduler 选择一个 entity，以 FIFO 方式取出 job
+执行 job->amdgpu_job_run，提交存放渲染命令的 IB
 
 #### 命令传递
 
@@ -616,7 +707,7 @@ dump_stack();
 
 ## Ring Buffer
 
-### 数据结构
+### Ring Buffer 数据结构
 
 [参考](https://blog.csdn.net/weixin_43778179/article/details/120287393)
 

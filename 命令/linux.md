@@ -93,6 +93,18 @@ sudo chsh -s /bin/bash username
 Ctrl + Alt + F<N>
 ```
 
+### ubuntu 无图形界面启动
+
+```sh
+# 设置无图形界面启动
+sudo systemctl set-default multi-user.target
+# 恢复图形界面
+sudo systemctl set-default graphical.target
+
+# 启动后若想进入图形界面启动 gdm 服务
+sudo systemctl start gdm3.service
+```
+
 ## 快捷键
 
 终端
