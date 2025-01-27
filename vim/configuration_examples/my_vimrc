@@ -193,11 +193,11 @@ augroup Format-Options
 augroup END
 
 " 插件
-call plug#begin('~/.vim/plugged')
-
-Plug 'preservim/nerdtree'
-
-call plug#end()
+"call plug#begin('~/.vim/plugged')
+"
+"Plug 'preservim/nerdtree'
+"
+"call plug#end()
 
 " 打开关闭nerdtree
 nnoremap <silent> <leader>n :NERDTreeToggle<CR>

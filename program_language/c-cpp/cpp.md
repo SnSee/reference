@@ -23,6 +23,9 @@
 #elif
 #else
 #endif
+
+#define PRINT(var) printf("%s=%d", #var, var);  // 使用 # 打印变量名
+int a = 1; PRINT(a);                            // output: a=1
 ```
 
 ### 大小端法

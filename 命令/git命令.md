@@ -20,6 +20,9 @@
 git config --list
 git config --global --list
 git config --global user.name "Your Name"   # 设置用户名
+
+# 使用 vim 作为默认编辑器
+git config --global core.editor "vim"
 ```
 
 ## 编码

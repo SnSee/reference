@@ -201,3 +201,20 @@ gcc xsel.c -lX11 -o xsel
 settings -> Preferred Applications -> utilities -> Terminal Emulator
 
 选择 GNOME Terminal
+
+## DNS
+
+### DNS 解析问题
+
+```sh
+ping www.baidu.com          # 测试能否 ping 通域名
+ping 8.8.8.8                # 测试能够 ping 通解析 DNS IP
+
+# 如果能 ping 通 IP 而 ping 不通域名，说明 DNS 解析有问题
+# 打开文件并添加如下 nameserver
+# nameserver 8.8.8.8
+# nameserver 8.8.4.4
+sudo vim /etc/resolv.conf
+
+resolvectl flush-caches     # 刷新 DNS
+```

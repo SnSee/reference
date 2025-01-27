@@ -1,0 +1,239 @@
+
+# amdgpu
+
+[Glossary](https://docs.kernel.org/gpu/amdgpu/amdgpu-glossary.html)
+[drm/amdgpu AMDgpu driver](https://docs.kernel.org/gpu/amdgpu/index.html)
+[amdgpu Dirver Notes](https://wiki.huangxt.cn/gpu/amdgpu-Driver-Notes)
+[AMD GPU 手册](https://www.x.org/docs/AMD/old/R5xx_Acceleration_v1.5.pdf)
+[AMD GPU 任务调度1 - 用户态](https://blog.csdn.net/huang987246510/article/details/106658889)
+[AMD GPU 任务调度2 - 内核态](https://blog.csdn.net/huang987246510/article/details/106737570)
+[AMD GPU 任务调度3 - fence 机制](https://blog.csdn.net/huang987246510/article/details/106865386)
+[GPU submission strategies](https://gpuopen.com/presentations/2022/gpuopen-gpu_submission-reboot_blue_2022.pdf)
+
+[Module Parameters](https://docs.kernel.org/gpu/amdgpu/module-parameters.html)
+
+## Concepts
+
+### MQD
+
+* The AMD GPU has a unit called Command Processor (CP) in charge of driving work based on information provided by the driver. The MQD is an object in memory that describes the configuration of a compute queue. The firmware reads the state out of the MQD and puts it into a hardware slot when the queue is scheduled.
+* When a queue is de-scheduled, the firmware saves the queue state from the hardware slot back to the MQD.
+
+```sh
+# 查看 gfx mqd 设置
+sudo cat /sys/kernel/debug/dri/1/amdgpu_mqd_gfx_0.0.0 | xxd -c 4 -e
+```
+
+## amdgpu ring buffer
+
+[PM4 packet format](https://www.jianshu.com/p/0eedbd58162b)
+[PM4 packet spec-2011](https://www.amd.com/content/dam/amd/en/documents/radeon-tech-docs/programmer-references/evergreen_cayman_programming_guide.pdf)
+[PM4 packet spec-2012](https://www.amd.com/content/dam/amd/en/documents/radeon-tech-docs/programmer-references/si_programming_guide_v2.pdf)
+
+* amdgpu 使用 PM4 packet 作为 ring buffer 中数据的格式，PM4 packet 通过 PCIe bus 传递
+* gfx 使用的是 type-3 类型
+
+### fence
+
+* fence 对象是共用的，但是有不同类型的 fence，通过 dma_fence_get 获取对象引用并增加引用计数
+* 需要通过 amdgpu_ctx_add_fence 添加 fence，该函数会返回一个 sequence 表示当前 fence 编号，该编号是递增的
+* 通过 PM4 packet 将 PACKET3 命令添加到 ring buffer 中时，会在最后添加一个 fence 命令(PACKET3_EVENT_WRITE_EOP)，该 fence 有一个 sequence 值
+* GPU 执行该条指令时会将 seq 值写入命令中的地址，然后发送一个中断通知 CPU，CPU 获取地址中的 seq 值并于当前维护的 cur_seq 值比较，如果不一致说明执行了 fence，即有任务完成，然后发出 signal，解除 dma_fence_wait 函数的阻塞并调用通过 dma_fence_add_callback 注册的回调
+* 记录 GPU 实际完成的 seq 的地址只有一个，当 seq 值和 cur_seq 不一致时，说明 [cur_seq, seq] 间的所有 fence 都已经执行
+
+```c
+// 将 fence 写入 ring 流程
+amdgpu_ring_write(ring, PACKET3(PACKET3_EVENT_WRITE_EOP, 4));
+amdgpu_ring_write(ring, EVENT_INDEX(5) | (exec ? EOP_EXEC : 0)));
+amdgpu_ring_write(ring, addr & 0xfffffffc);
+amdgpu_ring_write(ring, (upper_32_bits(addr) & 0xffff) | DATA_SEL(1) | INT_SEL(2));
+amdgpu_ring_write(ring, lower_32_bits(seq));
+amdgpu_ring_write(ring, upper_32_bits(seq));
+```
+
+#### fence_info
+
+查看 fence 状态
+
+```sh
+sudo cat /sys/kernel/debug/dri/1/amdgpu_fence_info
+```
+
+## 内存管理
+
+```c
+GEM {               // 通过 GEM 与 user space 交互
+    TTM {           // 将 GEN 转换为 TTM，实际使用 TTM 管理，GEM 只是接口
+        AMDGPU_BO   // Buffer Object，实际的 buffer 内容
+    }
+}
+```
+
+### 虚拟内存 (VM)
+
+查看 manual: **GPU VM Management**
+
+Each VM has an ID associated with it and there is a page table associated with each VMID. When execting a command buffer, the
+kernel tells the the ring what VMID to use for that command buffer. VMIDs are allocated dynamically as commands are submitted.
+The userspace drivers maintain their own address space and the kernel sets up their pages tables accordingly when they submit
+their command buffers and a VMID is assigned.
+
+## CS (Command submit)
+
+### 调度器数据结构
+
+* **amdgpu_ring** (hardware ring) 中有一个任务调度器 **drm_gpu_scheduler**
+* drm_gpu_scheduler 管理多个调度队列 **drm_sched_rq**
+* drm_sched_rq 管理多个调度实体 **drm_sched_entity**，不同 entity 具有不同的优先级 drm_sched_priority
+* drm_sched_entity 管理多个调度任务 **drm_sched_job**
+* **amdgpu_job** 相当于继承了 drm_sched_job，增加了 **Indirect Buffer** 信息用来存储命令
+
+```mermaid
+classDiagram
+    amdgpu_ring *-- amdgpu_ring_funcs
+    amdgpu_ring o-- drm_gpu_scheduler
+
+    class amdgpu_ring {
+        const struct amdgpu_ring_funcs  *funcs;     // 操作 ring buffer 的函数
+        struct drm_gpu_scheduler        sched;      // 任务调度器
+        struct amdgpu_bo                *ring_obj;  // buffer objects
+        volatile uint32_t               *ring;
+    }
+```
+
+```c
+// 任务调度器，用于调度特定实例，每个 hardware ring 都有一个调度器
+struct drm_gpu_scheduler {
+    const struct drm_sched_backend_ops  *ops;           // 操作 job 的回调函数，用于提交 job 的是 ops->run_job
+    u32                                 credit_limit;   // 能够同时提交的任务数量
+    atomic_t                            credit_count;   // 已经提交的任务数量
+    long                                timeout;        // 超时后从调度器移除 job
+    const char                          *name;          // 该调度器操作的 ring buffer 名称
+    u32                                 num_rqs;        // run-queues 数量
+    struct drm_sched_rq                 **sched_rq;     // run-queues，每个 run-queue 有一个或多个 entity，每个 entity 有一个或多个 job
+    wait_queue_head_t                   job_scheduled;  // 其他线程等待一个 entity 中所有 job 完成，完成后调度器会唤醒该线程
+    atomic64_t                          job_id_count;   // 为每个 job 赋予一个唯一的 id
+    struct workqueue_struct             *submit_wq;     // workqueue used to queue @work_run_job and @work_free_job
+    struct workqueue_struct             *timeout_wq;    // workqueue used to queue @work_tdr
+    struct work_struct                  work_run_job;   // work which calls run_job op of each scheduler
+    struct work_struct                  work_free_job;  // work which calls free_job op of each scheduler
+    struct delayed_work                 work_tdr;       // schedules a delayed call to @drm_sched_job_timedout after the timeout interval is over
+    struct list_head                    pending_list;   // the list of jobs which are currently in the job queue
+    spinlock_t                          job_list_lock;  // lock to protect the pending_list
+    int                                 hang_limit;     // once the hangs by a job crosses this limit then it is marked guilty and 
+                                                        // it will no longer be considered for scheduling.
+    atomic_t                            *score;         // 选取空闲调度器时用于帮助负载均衡
+    atomic_t                            _score;         // driver 不提供时使用的 score
+    bool                                ready;          // 标记底层硬件是否 ready
+    bool                                free_guilty;    // A hit to time out handler to free the guilty job
+    bool                                pause_submit;   // pause queuing of @work_run_job on @submit_wq
+    bool                                own_submit_wq;  // 当前调度器是否管理 @submit_wq 的内存
+    struct device                       *dev;           // system &struct device
+};
+```
+
+### CS 流程
+
+|func |step
+|- |-
+|amdgpu_cs_parser_init  |init parser (amdgpu_device，drm_file，context等)
+|amdgpu_cs_pass1        |获取或创建 entity;<br>遍历 chunks，创建 job，将渲染数据从用户态拷贝到内核态，设置 job 的 entity
+|amdgpu_cs_pass2        |遍历 chunks，初始化 job->ibs
+|amdgpu_cs_parser_bos   |设置 parser->bo_list
+|amdgpu_cs_patch_jobs   |依据 bo_va_map 拷贝 job->ibs 数据
+|amdgpu_cs_vm_handling  |
+|amdgpu_cs_sync_rings   |同步 fence
+|trace_amdgpu_cs_ibs    |tracing_fs 日志
+|amdgpu_cs_submit       |
+|--drm_sched_job_arm    |设置 job 的调度器及 s_fence 等
+|--drm_sched_job_add_dependency |设置 job 依赖的 fence
+|--amdgpu_ctx_add_fence |为 ctx 添加 fence，并将 handle 传回 UMD
+|--amdgpu_cs_post_dependencies|
+|amdgpu_cs_parser_fini  |清理工作，释放各种引用
+
+1. 解析用户态渲染命令并存储到 chunks 中
+初始化 job
+从 chunks 中拷贝渲染命令到 IB 中
+初始化 entity
+将 job 加入 entity
+GFX scheduler 选择一个 entity，以 FIFO 方式取出 job
+执行 job->amdgpu_job_run，提交存放渲染命令的 IB
+
+### 命令传递
+
+CPU 和 GPU 的渲染命令传递通过 Ring Buffer 来实现
+
+## 寄存器
+
+```yml
+CP: Command Process 相关命令
+```
+
+```sh
+sudo umr -r *.*.mm.*                # 查看所有寄存器
+sudo umr -r *.*.mmCP.*              # 查看所有 CP 寄存器
+```
+
+|Name |Desc
+|- |-
+|CP_RB.*_BASE       |当前 ring buffer
+|CP_IB.*_BASE       |当前 indirect buffer
+
+## debug
+
+[GPU Debugging](https://docs.kernel.org/gpu/amdgpu/debugging.html)
+
+### umr
+
+[doc](https://umr.readthedocs.io/en/main/index.html)
+[查看 fence 状态](#fence_info)
+
+```sh
+umr -c                                      # 查看显卡配置
+umr -lb                                     # 查看当前显卡的 IP blocks
+
+sudo umr --read .*.mmUVD_CGC_.*             # 读取 register
+sudo umr --vm-read 0x1000 10 | xxd -e       # 读取 virtual memory
+sudo umr --ring-stream gfx[0:9]             # 读取 gfx ring 前 10 个 dword
+sudo umr --ring-stream gfx[.]               # 读取 gfx ring 中直到读指针位置的内容
+
+sudo umr -w .*.gfx800.mmCP_RB_DOORBELL_RANGE_LOWER ff  # 设置指定寄存器的值
+```
+
+#### 读取 indirect buffer
+
+```sh
+# IB_BASE_HI, IB_BASE_LO: GTT 的虚拟内存地址
+# IB_SIZE: 大小
+# IB_VMID: 虚拟内存 id
+Opcode 0x3f [PKT3_INDIRECT_BUFFER] (3 words, type: 3, hdr: 0xc0023f00)
+|---> IB_BASE_LO=0x0, SWAP=0
+|---> IB_BASE_HI=0x1
+|---> IB_SIZE=16, IB_VMID=1, CHAIN=0, PRE_ENA=0, CACHE_POLICY=0, PRE_RESUME=0, PRIV=0
+```
+
+```sh
+# umr -di <IB_VMID>@<IB_BASE_HI><IB_BASE_LO> <IB_SIZE>
+sudo umr -di 0x1@0x100000000 16
+```
+
+#### 读写 GTT 内存
+
+```sh
+# 查看 VMID=1 的内存地址 0x100000400，长度为 4 字节
+> sudo umr -vr 0x001@0x100000400 0x4 | xxd -e
+# 不能显示为可见字符的 ascii 值显示为 .
+00000000: 00000000                              ....
+```
+
+```sh
+# 1 的 ASCII 码为 49，即 0x31
+> echo 1111 | sudo umr -vw 0x001@0x100000400 0x4
+> sudo umr -vr 0x001@0x100000400 0x4 | xxd -e
+00000000: 31313131                             1111
+
+# 借助 python 可以输入不可见字符
+> python -c 'print(chr(0)*4)' | sudo umr -vw 0x001@0x100000400 0x4
+> sudo umr -vr 0x001@0x100000400 0x4 | xxd -e
+00000000: 00000000                             ....
+```

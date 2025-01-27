@@ -2,6 +2,7 @@
 # VS-Code
 
 [插件官网](https://marketplace.visualstudio.com/vscode)
+[vsix-hub](https://www.vsixhub.com)
 
 ## 制作插件
 

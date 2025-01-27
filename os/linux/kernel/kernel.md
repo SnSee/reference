@@ -24,7 +24,13 @@
 |APU    |Accelerated Processing Units
 |BO     |Buffer Object
 |CP     |Command Processor
+|CPC    |Command Processor Compute
+|CPF    |Command Processor Frontend
+|CPG    |Command Processor Graphics
 |CS     |Command Submission
+|CSB    |Clear State Block
+|CSIB   |Clear State Indirect Buffer
+|CU     |Compute Unit
 |DMA    |Direct Memory Access
 |DRM    |Direct Rendering Manager
 |EOF    |End of Pipe
@@ -34,22 +40,29 @@
 |GRBM   |Graphics Register Base Map
 |GTT    |Graphics Translation Table, alias GART
 |HQD    |Hardware Queue Descriptor
+|HSA    |Heterogeneous System Architecture
 |IB     |Indirect Buffer
+|IFPO   |Inter-Frame Power-Off
 |IH     |Interrupt Handler
 |IP     |Intellectual Property
 |IRQ    |Interrupt Request
+|KCQ    |Kernel Compute Queue
+|KGQ    |Kernel Graphics Queue
 |KIQ    |Kernel Interface Queue
 |KMD    |Kernel Mode Driver
 |KMS    |Kernel Mode Setting
+|MES    |MicroEngine Scheduler
+|MQD    |Map Queues Descriptor
 |MQD    |Memory Queue Descriptor
 |PBA    |Page Base Address
 |PM4    |Programmable Multiplexer 4
+|RLC    |Real-Time Low-Power Controller
 |SA     |Sub Alloc
 |SDMA   |System DMA
-|TTM    |Translation Table Manager
+|SRIOV  |Single Root I/O Virtualization
+|SRM    |Save Restore Machine
+|TTM    |(Memory) Translation Table Manager
 |UVD    |Unified Video Decoder
-|VA     |Virtual Address
-|VMA    |Virtual Memory Area
 
 ### Engine
 
@@ -67,11 +80,29 @@
 
 [GMC,IH,PSP,SMU,DCN,SDMA,GC,VCN,CP,MEC,MES,RLC,KIQ,IB](https://docs.kernel.org/gpu/amdgpu/driver-core.html)
 
-## 固件
+### MES
+
+manual: **Exploring-AMD-GPU-Scheduling**
+
+The Micro-Engine Scheduler (MES) is a hardware engine used by AMD Graphics IP, GFX, for GPU workload scheduling. The MES FW interacts with the kernel driver via a ring buffer to schedule user queues to the hardware queues of each engine.
+
+### task_struct
+
+Linux 内核通过一个被称为进程描述符的 task_struct 结构体来管理进程，这个结构体包含了一个进程所需的所有信息
+
+## firmware(固件)
 
 [缺少固件](https://www.cnblogs.com/long5683/p/13830021.html)
+[amdgpu-firmware](https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/tree/amdgpu)
+
+```sh
+# 使用 git clone 后搜索
+git clone https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git
+```
 
 ## GRUB
+
+[kernel 启动项](https://www.kernel.org/doc/html/latest/admin-guide/kernel-parameters.html)
 
 安装多个系统内核时进入内核选择界面
 
@@ -225,6 +256,18 @@ lsof /dev/dri/card0
 lsof /dev/dri/card1
 ```
 
+## dkms
+
+```sh
+dkms status                 # 查看已安装的 dkms module
+# 内容格式如下:
+# 模块名称及版本                内核版本
+# amdgpu/6.8.5-2044426.22.04, 6.8.0-51-generic, x86_64: installed
+
+# 卸载指定内核的 dkms module
+sudo dkms remove amdgpu/6.8.5-2044426.22.04 -k 6.8.0
+```
+
 ## SysRq
 
 ```sh
@@ -267,6 +310,14 @@ sudo ls /sys/kernel/debug/dri/129
 ```
 
 ## 调试内核
+
+### printk
+
+[dmesg日志等级](#dmesg)
+
+* 使用 printk 在代码中打印日志，使用 dmesg 查看日志
+* 有的模块会把 printk 做到宏里，使用相应的宏即可
+* 直接使用 printk 时最后一次 printk 可能不会打印，加上 \n 换行刷新即可
 
 ### kdb / kgdb
 
@@ -484,23 +535,17 @@ sudo trace-cmd record -e "amdgpu_cs*" -F ./amdgpu_test -s 3 -t 1
 trace-cmd report
 ```
 
-## umr
+## Module
 
-[doc](https://umr.readthedocs.io/en/main/index.html)
+### 安装与卸载
 
 ```sh
-umr -c                                      # 查看显卡配置
-umr -lb                                     # 查看当前显卡的 IP blocks
-
-sudo umr --read .*.mmUVD_CGC_.*             # 读取 register
-sudo umr --vm-read 0x1000 10 | xxd -e       # 读取 virtual memory
-sudo umr --ring-stream gfx[0:9]             # 读取 gfx ring 前 10 个 dword
-sudo umr --ring-stream gfx[.]               # 读取 gfx ring 中直到读指针位置的内容
-
-sudo umr -w .*.gfx800.mmCP_RB_DOORBELL_RANGE_LOWER ff  # 设置指定寄存器的值
+lsmod                           # 查看当前 modules
+sudo rmmod amdgpu               # 卸载指定 module，不会自动卸载依赖，需要 module 未被使用
+sudo rmmod -f amdgpu            # 卸载正被使用的 module，需要内核支持，man 查看编译选项
+sudo modprobe amdgpu            # 安装 /lib/modules 下的 module，会自动安装依赖的 module
+sudo insmod ./amdgpu.ko         # 安装指定路径的 module，不会自动安装依赖的 module
 ```
-
-## Module
 
 ### drm
 
@@ -513,134 +558,7 @@ sudo umr -w .*.gfx800.mmCP_RB_DOORBELL_RANGE_LOWER ff  # 设置指定寄存器�
 
 ### amdgpu
 
-[drm/amdgpu AMDgpu driver](https://docs.kernel.org/gpu/amdgpu/index.html)
-[amdgpu Dirver Notes](https://wiki.huangxt.cn/gpu/amdgpu-Driver-Notes)
-[AMD GPU 手册](https://www.x.org/docs/AMD/old/R5xx_Acceleration_v1.5.pdf)
-[AMD GPU 任务调度1 - 用户态](https://blog.csdn.net/huang987246510/article/details/106658889)
-[AMD GPU 任务调度2 - 内核态](https://blog.csdn.net/huang987246510/article/details/106737570)
-[AMD GPU 任务调度3 - fence 机制](https://blog.csdn.net/huang987246510/article/details/106865386)
-[GPU submission strategies](https://gpuopen.com/presentations/2022/gpuopen-gpu_submission-reboot_blue_2022.pdf)
-
-#### amdgpu ring buffer
-
-[PM4 packet format](https://www.jianshu.com/p/0eedbd58162b)
-[PM4 packet spec](https://www.amd.com/content/dam/amd/en/documents/radeon-tech-docs/programmer-references/si_programming_guide_v2.pdf)
-
-* amdgpu 使用 PM4 packet 作为 ring buffer 中数据的格式，PM4 packet 通过 PCIe bus 传递
-* gfx 使用的是 type-3 类型
-
-##### fence
-
-* fence 对象是共用的，但是有不同类型的 fence，通过 dma_fence_get 获取对象引用并增加引用计数
-* 需要通过 amdgpu_ctx_add_fence 添加 fence，该函数会返回一个 sequence 表示当前 fence 编号，该编号是递增的
-* 通过 PM4 packet 将 PACKET3 命令添加到 ring buffer 中时，会在最后添加一个 fence 命令(PACKET3_EVENT_WRITE_EOP)，该 fence 有一个 sequence 值
-* GPU 执行该条指令时会将 seq 值写入命令中的地址，然后发送一个中断通知 CPU，CPU 获取地址中的 seq 值并于当前维护的 cur_seq 值比较，如果不一致说明执行了 fence，即有任务完成，然后发出 signal，解除 dma_fence_wait 函数的阻塞并调用通过 dma_fence_add_callback 注册的回调
-* 记录 GPU 实际完成的 seq 的地址只有一个，当 seq 值和 cur_seq 不一致时，说明 [cur_seq, seq] 间的所有 fence 都已经执行
-
-```c
-// 将 fence 写入 ring 流程
-amdgpu_ring_write(ring, PACKET3(PACKET3_EVENT_WRITE_EOP, 4));
-amdgpu_ring_write(ring, EVENT_INDEX(5) | (exec ? EOP_EXEC : 0)));
-amdgpu_ring_write(ring, addr & 0xfffffffc);
-amdgpu_ring_write(ring, (upper_32_bits(addr) & 0xffff) | DATA_SEL(1) | INT_SEL(2));
-amdgpu_ring_write(ring, lower_32_bits(seq));
-amdgpu_ring_write(ring, upper_32_bits(seq));
-```
-
-#### 内存管理
-
-```c
-GEM {               // 通过 GEM 与 user space 交互
-    TTM {           // 将 GEN 转换为 TTM，实际使用 TTM 管理，GEM 只是接口
-        AMDGPU_BO   // Buffer Object，实际的 buffer 内容
-    }
-}
-```
-
-#### CS (Command submit)
-
-##### 调度器数据结构
-
-* **amdgpu_ring** (hardware ring) 中有一个任务调度器 **drm_gpu_scheduler**
-* drm_gpu_scheduler 管理多个调度队列 **drm_sched_rq**
-* drm_sched_rq 管理多个调度实体 **drm_sched_entity**，不同 entity 具有不同的优先级 drm_sched_priority
-* drm_sched_entity 管理多个调度任务 **drm_sched_job**
-* **amdgpu_job** 相当于继承了 drm_sched_job，增加了 **Indirect Buffer** 信息用来存储命令
-
-```mermaid
-classDiagram
-    amdgpu_ring *-- amdgpu_ring_funcs
-    amdgpu_ring o-- drm_gpu_scheduler
-
-    class amdgpu_ring {
-        const struct amdgpu_ring_funcs  *funcs;     // 操作 ring buffer 的函数
-        struct drm_gpu_scheduler        sched;      // 任务调度器
-        struct amdgpu_bo                *ring_obj;  // buffer objects
-        volatile uint32_t               *ring;
-    }
-```
-
-```c
-// 任务调度器，用于调度特定实例，每个 hardware ring 都有一个调度器
-struct drm_gpu_scheduler {
-    const struct drm_sched_backend_ops  *ops;           // 操作 job 的回调函数，用于提交 job 的是 ops->run_job
-    u32                                 credit_limit;   // 能够同时提交的任务数量
-    atomic_t                            credit_count;   // 已经提交的任务数量
-    long                                timeout;        // 超时后从调度器移除 job
-    const char                          *name;          // 该调度器操作的 ring buffer 名称
-    u32                                 num_rqs;        // run-queues 数量
-    struct drm_sched_rq                 **sched_rq;     // run-queues，每个 run-queue 有一个或多个 entity，每个 entity 有一个或多个 job
-    wait_queue_head_t                   job_scheduled;  // 其他线程等待一个 entity 中所有 job 完成，完成后调度器会唤醒该线程
-    atomic64_t                          job_id_count;   // 为每个 job 赋予一个唯一的 id
-    struct workqueue_struct             *submit_wq;     // workqueue used to queue @work_run_job and @work_free_job
-    struct workqueue_struct             *timeout_wq;    // workqueue used to queue @work_tdr
-    struct work_struct                  work_run_job;   // work which calls run_job op of each scheduler
-    struct work_struct                  work_free_job;  // work which calls free_job op of each scheduler
-    struct delayed_work                 work_tdr;       // schedules a delayed call to @drm_sched_job_timedout after the timeout interval is over
-    struct list_head                    pending_list;   // the list of jobs which are currently in the job queue
-    spinlock_t                          job_list_lock;  // lock to protect the pending_list
-    int                                 hang_limit;     // once the hangs by a job crosses this limit then it is marked guilty and 
-                                                        // it will no longer be considered for scheduling.
-    atomic_t                            *score;         // 选取空闲调度器时用于帮助负载均衡
-    atomic_t                            _score;         // driver 不提供时使用的 score
-    bool                                ready;          // 标记底层硬件是否 ready
-    bool                                free_guilty;    // A hit to time out handler to free the guilty job
-    bool                                pause_submit;   // pause queuing of @work_run_job on @submit_wq
-    bool                                own_submit_wq;  // 当前调度器是否管理 @submit_wq 的内存
-    struct device                       *dev;           // system &struct device
-};
-```
-
-##### CS 流程
-
-|func |step
-|- |-
-|amdgpu_cs_parser_init  |init parser (amdgpu_device，drm_file，context等)
-|amdgpu_cs_pass1        |获取或创建 entity;<br>遍历 chunks，创建 job，将渲染数据从用户态拷贝到内核态，设置 job 的 entity
-|amdgpu_cs_pass2        |遍历 chunks，初始化 job->ibs
-|amdgpu_cs_parser_bos   |设置 parser->bo_list
-|amdgpu_cs_patch_jobs   |依据 bo_va_map 拷贝 job->ibs 数据
-|amdgpu_cs_vm_handling  |
-|amdgpu_cs_sync_rings   |同步 fence
-|trace_amdgpu_cs_ibs    |tracing_fs 日志
-|amdgpu_cs_submit       |
-|--drm_sched_job_arm    |设置 job 的调度器及 s_fence 等
-|--drm_sched_job_add_dependency |设置 job 依赖的 fence
-|--amdgpu_ctx_add_fence |为 ctx 添加 fence，并将 handle 传回 UMD
-|--amdgpu_cs_post_dependencies|
-|amdgpu_cs_parser_fini  |清理工作，释放各种引用
-
-1. 解析用户态渲染命令并存储到 chunks 中
-初始化 job
-从 chunks 中拷贝渲染命令到 IB 中
-初始化 entity
-将 job 加入 entity
-GFX scheduler 选择一个 entity，以 FIFO 方式取出 job
-执行 job->amdgpu_job_run，提交存放渲染命令的 IB
-
-#### 命令传递
-
-CPU 和 GPU 的渲染命令传递通过 Ring Buffer 来实现
+[amdgpu](drivers/amdgpu.md)
 
 ## 命令
 
@@ -653,6 +571,8 @@ dmesg | grep amdgpu
 
 # 查看日志等级，第一个表示 console_loglevel
 cat /proc/sys/kernel/printk
+# 设置日志等级
+sudo dmesg -n debug
 ```
 
 ```yml
@@ -734,4 +654,16 @@ struct kfifo {
 ```sh
 # 向 ring buffer 写入数据
 sudo sh -c 'echo test > /dev/kmsg'
+```
+
+## tips
+
+### 无显示器启动
+
+[设置 BIOS](https://askubuntu.com/questions/1052310)
+
+```sh
+# 无屏幕启动，修改 /etc/default/grub 后更新
+GRUB_CMDLINE_LINUX_DEFAULT="biosdevname=0 nomodeset"
+sudo update-grub
 ```
