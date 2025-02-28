@@ -23,6 +23,7 @@
 |- |-
 |APU    |Accelerated Processing Units
 |BO     |Buffer Object
+|CGCG   |Coarse Grain Clock Gating
 |CP     |Command Processor
 |CPC    |Command Processor Compute
 |CPF    |Command Processor Frontend
@@ -34,11 +35,16 @@
 |DMA    |Direct Memory Access
 |DRM    |Direct Rendering Manager
 |EOF    |End of Pipe
+|FGCG   |Fine Grain Clock Gating
 |GART   |Graphics Address Remapping Table，alias GTT
+|GC     |Graphics Core
+|GC     |Graphics and Compute
 |GEM    |Graphics Execution Manager
 |GMC    |Graphics Memory Controller
 |GRBM   |Graphics Register Base Map
+|GRBM   |Graphics Register Bus Manager
 |GTT    |Graphics Translation Table, alias GART
+|HAL    |Hardware Abstraction Layer
 |HQD    |Hardware Queue Descriptor
 |HSA    |Heterogeneous System Architecture
 |IB     |Indirect Buffer
@@ -51,18 +57,28 @@
 |KIQ    |Kernel Interface Queue
 |KMD    |Kernel Mode Driver
 |KMS    |Kernel Mode Setting
+|LRU    |Least Recently Used
 |MES    |MicroEngine Scheduler
+|MGCG   |Medium Grain Clock Gating
 |MQD    |Map Queues Descriptor
 |MQD    |Memory Queue Descriptor
 |PBA    |Page Base Address
 |PM4    |Programmable Multiplexer 4
+|PSP    |Platform Security Processor
+|RB     |Ring Buffer
+|RB     |Render Backend
 |RLC    |Real-Time Low-Power Controller
+|RLC    |RunList Controller
 |SA     |Sub Alloc
 |SDMA   |System DMA
+|SMU    |System management Unit
 |SRIOV  |Single Root I/O Virtualization
 |SRM    |Save Restore Machine
+|TMR    |Trusted Memory Region
 |TTM    |(Memory) Translation Table Manager
+|TTM    |(Memory) Translation Table Maps
 |UVD    |Unified Video Decoder
+|WGP    |Workgroup Processor
 
 ### Engine
 
@@ -89,6 +105,47 @@ The Micro-Engine Scheduler (MES) is a hardware engine used by AMD Graphics IP, G
 ### task_struct
 
 Linux 内核通过一个被称为进程描述符的 task_struct 结构体来管理进程，这个结构体包含了一个进程所需的所有信息
+
+### efuse
+
+[efuse](https://zhuanlan.zhihu.com/p/653516447)
+
+electronic fuse 是一种可编程电子保险丝，通过熔断形成永久开路进行编程，因此是一次性的。
+可用于存储序列号，安全密钥，特定硬件参数等。
+在 amdgpu 中 efuse 可能存储了 SA,CU 等 disable bitmap 以禁用有缺陷硬件单元
+
+### DMA address
+
+[dma-api](https://docs.kernel.org/core-api/dma-api-howto.html)
+
+### DMA mapping
+
+DMA（Direct Memory Access，直接内存访问）映射主要用于让设备能够直接访问系统内存。分为一致性映射（consistent mapping）和流式映射（streaming mapping）
+
+1. 应用场景
+
+* Consistent Mapping 适用于那些需要频繁、随机访问内存的场景
+* Streaming Mapping 适用于数据以流的形式进行传输的场景，设备通常按照顺序对内存进行读写操作，数据传输具有方向性，要么是从内存到设备（写操作），要么是从设备到内存（读操作）
+
+2. 缓存处理
+
+* Consistent Mapping 保证了 CPU 缓存和设备看到的内存内容始终是一致的。为了实现这一点，内核会将映射的内存区域标记为非缓存（uncached）或写合并（write-combining）。
+* Streaming Mapping 不保证 CPU 缓存和设备之间的一致性。在进行流式映射时，内核需要在数据传输前后进行额外的操作来确保数据的一致性。
+例如，在数据从内存传输到设备之前，需要将 CPU 缓存中的数据刷新到内存中；在数据从设备传输到内存之后，需要使 CPU 缓存中对应的部分失效，以保证 CPU 下次访问时能获取到最新的数据。
+
+3. 生命周期
+
+* Consistent Mapping 通常是长期有效的，在 driver 初始化时 map，退出时 unmap
+* Streaming Mapping 是短期的，通常是在每次数据传输之前 map，传输完成后 unmap
+
+4. API
+
+* Consistent Mapping 使用 dma_alloc_coherent/dma_free_coherent 分配/释放 内存
+* Streaming Mapping 使用 dma_map_single/dma_unmap_single 或 dma_map_page/dma_unmap_page 映射/解除映射
+
+### DMA scatterlist
+
+scatter list 是 Linux 内核中用于描述一组非连续内存块的数据结构。在 DMA 操作里，有时候需要传输的数据可能分散存于内存的不同位置，无法用一个连续的内存区域来表示。scatterlist 就可以把这些分散的内存块组织起来，让 DMA 设备能够将它们当作一个整体进行访问。
 
 ## firmware(固件)
 
@@ -439,7 +496,7 @@ cat /sys/kernel/debug/tracing/trace             # 查看追踪结果
 
 ```sh
 cat tracing_on                  # 1
-cat current_trace               # function / function_graph
+cat current_tracer              # function / function_graph
 cat set_ftrace_filter           # 包含追踪函数
 cat set_ftrace_pid              # no pid / 要追踪的 pid
 ```

@@ -2115,11 +2115,17 @@ ls **/*.txt
 
 ## QA
 
-文件具有执行权限但是无法执行，报错: Permission denied
+### 文件具有执行权限但是无法执行，报错: Permission denied
 
 ```text
 通过mount命令查看挂载的文件系统
 查看挂载的目录是否有noexec标志，如果有这个标志即使加了执行权限仍然不可执行
+```
+
+### 鼠标中键无法粘贴选中内容
+
+```sh
+echo 'XTerm*selectToClipboard: true' > ~/.Xdefaults
 ```
 
 ## XCB 图形界面

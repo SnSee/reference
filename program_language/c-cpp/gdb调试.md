@@ -362,6 +362,10 @@ ptype <变量或表达式>: 显示变量所有成员(不能是指针)
 
 查看 [gdb.py](gdb.py)
 
+```sh
+gdb> source gdb.py
+```
+
 ### 执行 python 代码
 
 ```sh

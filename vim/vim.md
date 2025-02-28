@@ -128,6 +128,49 @@ nnoremap <S-F10> :w<CR>:!./%<CR>
 inoremap <S-F10> <C-\><C-n>:w<CR>:!./%<CR>
 ```
 
+## vim 编程
+
+### if
+
+```vim
+if cond1
+elseif cond2
+else
+endif
+```
+
+```vim
+" 判断是否是gvim
+if has("gui_running")
+```
+
+### for
+
+```sh
+# 命令模式下为每行行首插入数字
+for i in range(0, 9)
+  exe '.s/^/'.i       # 前一个 . 指当前行，后一个是字符串连接符
+  normal! j
+endfor
+```
+
+### normal
+
+```sh
+# 执行 normal 模式的命令，对于被 noremap 的指令，执行 mapping 后的
+:normal j
+# 不受 mapping 影响
+:normal! j
+```
+
+### getreg
+
+```sh
+# insert 模式下 Ctrl-R 然后按 = 可以计算寄存器内容后粘贴
+# 如: 对上次输入的数字自增后输出，可搭配宏使用
+=getreg('.') + 1
+```
+
 ## 分屏（多窗口）
 
 打开为两个窗口
@@ -429,20 +472,6 @@ set fileencoding=UTF-8
 查看/隐藏不可见字符
     :set list
     :set nolist
-```
-
-## 条件判断
-
-```vim
-if cond1
-elseif cond2
-else
-endif
-```
-
-```vim
-" 判断是否是gvim
-if has("gui_running")
 ```
 
 ## shell终端交互

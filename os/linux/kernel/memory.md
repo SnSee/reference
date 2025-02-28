@@ -8,6 +8,7 @@
 |Abbr |Full
 |- |-
 |BAR    |(PICe) Base Address Register
+|CAM    |Content Addressable Memory
 |GEM    |Graphics Execution Manager
 |MM     |Memory Manager
 |MMU    |(Page) Memory Management Unit
@@ -68,6 +69,8 @@ TTBR(Page Table Base Address) -> PGD -> P4D -> PUD -> PMD -> PTE -> Physical Add
 
 pfn identifies the physical page for the memory
 
+在计算机的虚拟内存管理体系中，内存会被划分成固定大小的块。虚拟内存中的这些块被叫做页面（Page），而物理内存里对应的块则称为页帧（Page Frame）。PFN 就是用来唯一标识每个页帧的编号。
+
 ### DMA
 
 [bus-master DMA](https://blog.csdn.net/qq_16390523/article/details/43014971)
@@ -82,7 +85,25 @@ DMA 通常包括 system dma 和 bus-master dma。他们的区别在于system dma
 
 使用场景: DMA 适合需要 **高性能** 传输数据的场景，如磁盘 IO 和 网络通信；IOMMU 适合需要 **保护内存、隔离地址** 的场景，如具有多个 IO 设备的系统或虚拟化环境
 
+### CAM
+
+[CAM](https://blog.csdn.net/qq_42322644/article/details/109170011)
+
+RAM 是通过地址查找数据，而 CAM 是通过数据查找地址，在 GPU 中，CAM 可能用于实现 TLB
+
+### VIMD and HUB
+
+[amdgpu VMID](https://xxlnx.github.io/2020/10/25/amdgpu/AMD_GPU_VMID_HW)
+
+GFX HUB 上有 8/16 个 VMID(0-15)，最多可以有 8/16 个虚拟内存地址空间
+
+* VMID 0 是 KMD 专用的
+* GART 地址空间在 0 上, KMD 提交 Command 是在 0 上
+* VMID 0 提供 System Aperature 概念，简化内核态的物理地址翻译过程
+
 ## Page Table
+
+[Page Tables](https://docs.kernel.org/mm/page_tables.html)
 
 [addr 和 page index对应关系](https://zhuanlan.zhihu.com/p/108425561)
 
@@ -106,6 +127,8 @@ printk("walk_to_pmd with addr=%ld, pgd=%ld, p4d=%ld, pud=%ld, pmd=%ld, pte=%ld",
 
 [MMU](https://zhuanlan.zhihu.com/p/596039345)
 [MMU,TLB,TWU](https://blog.csdn.net/weixin_65286359/article/details/135577694)
+[TLB原理](https://zhuanlan.zhihu.com/p/108425561)
+[TLB,TWU原理](https://www.cnblogs.com/alantu2018/p/9000777.html)
 
 MMU 是专门用于处理虚拟内存地址到物理内存地址转换的硬件模块。MMU模块包含了TLB和TWU两个子模块。TLB是一个高速缓存，用于缓存虚拟地址到物理地址的转换结果。页表的查询过程是由TWU硬件自动完成的，但是页表的维护是需要操作系统实现的，页表存放在主存中
 

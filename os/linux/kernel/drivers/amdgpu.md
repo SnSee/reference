@@ -1,6 +1,7 @@
 
 # amdgpu
 
+[AMD search](https://www.amd.com/en/search/documentation/hub.html)
 [Glossary](https://docs.kernel.org/gpu/amdgpu/amdgpu-glossary.html)
 [drm/amdgpu AMDgpu driver](https://docs.kernel.org/gpu/amdgpu/index.html)
 [amdgpu Dirver Notes](https://wiki.huangxt.cn/gpu/amdgpu-Driver-Notes)
@@ -23,6 +24,63 @@
 # 查看 gfx mqd 设置
 sudo cat /sys/kernel/debug/dri/1/amdgpu_mqd_gfx_0.0.0 | xxd -c 4 -e
 ```
+
+### SE, SH, CU
+
+* SE(Shader Engine): 着色器引擎是GPU中的一个主要模块，负责处理图形和计算任务，每个 SE 包含多个 SH
+* SH(Shader Array): 着色器阵列，是SE中的一个子模块。每个SE可以包含多个SH，每个SH又包含多个 CU(Compute Unit)
+* 在 RDNA 架构中，一个 shader array 可能由多个 WGP(Workgroup Processor) 构成，而每个 WGP 又包含两个 CU
+
+### TCC
+
+Texture Cache Controller（纹理缓存控制器）。它是 GPU 中负责管理纹理数据缓存的关键硬件模块，主要用于优化纹理数据的访问效率，从而提升图形渲染和计算任务的性能。
+
+* L1 Cache：每个计算单元（CU）都有自己的 L1 缓存，用于存储局部数据。
+* L2 Cache：多个 CU 共享 L2 缓存，TCC 通常与 L2 缓存协同工作。
+* 显存（VRAM）：当缓存未命中时，TCC 会从显存中加载纹理数据。
+
+### Clock Gating
+
+时钟门控是一种硬件级别的电源管理技术，通过动态关闭或启用某个硬件模块的时钟信号来降低功耗。
+
+当需要节能时（如GPU空闲），调用 set_clockgating_state 函数启用时钟门控，关闭模块的时钟信号。
+
+当模块需要工作时（如GPU进入高负载状态），调用此函数禁用时钟门控，恢复时钟信号。
+
+每个IP模块（如GFX、UVD、VCN等）可能有自己的时钟门控实现，因此该函数的行为因硬件模块而异。
+
+```sh
+# 查看 clock-gating state
+cat /sys/kernel/debug/dri/<N>/amdgpu_pm_info
+```
+
+### AMD KFD
+
+[amdkfd](https://zhuanlan.zhihu.com/p/655989037)
+
+AMD Kernel Fusion Driver 驱动用于支持 GPU 和 CPU 之间的协同工作，以实现异构系统架构（Heterogeneous System Architecture，HSA）
+
+KFD 功能: 硬件抽象，内存管理，任务调度与执行，事件通知和同步，数据传输等
+
+### APU
+
+Accelerated Processing Unit 将 CPU，GPU 集成于同一芯片上的处理器，融合了 x86 处理器核心与 AMD 的图形核心（GPU 核心），通过统一的内存控制器和高速内部总线连接两者，让 CPU 和 GPU 能够更紧密协作、共享资源，打破了传统 CPU 与独立 GPU 之间数据传输的瓶颈。
+
+### dummy page
+
+在AMDGPU驱动中，dummy page（虚拟页/占位页） 是一个特殊的内存页面，用于在图形地址重映射表（GART）中充当占位符，确保系统在内存动态分配和释放时的稳定性和安全性。
+
+1. 为什么需要dummy page？
+
+* 防止非法访问：当GPU通过GART访问内存时，某些条目可能因内存释放或未分配而无效。若直接保留空指针或无效地址，GPU访问这些条目会导致崩溃或数据损坏。dummy page提供了一个安全的“虚拟”目标，所有无效的GART条目均指向此页，避免非法访问。
+* 内存管理一致性：GPU内存管理需要动态分配和释放物理页（如显存或系统内存）。在页被释放后，GART条目不能立即清空（可能仍有未完成的操作），此时用dummy page填充，保持GART结构的完整性。
+* 避免未初始化数据泄漏：dummy page通常被初始化为全零或固定值，防止通过无效地址读取到随机内存内容（可能包含敏感数据）。
+
+### AGP
+
+[agp-aperture-size](https://www.lenovo.com/us/en/glossary/agp-aperture-size)
+
+AGP (Accelerated Graphics Port) aperture size is the amount of system memory allocated to the AGP for graphics operations. It serves as a buffer for the graphics card, allowing it to temporarily store textures and other graphical data. This allocation affects graphics performance by determining how much memory the graphics card can access, impacting tasks like rendering complex 3D graphics or high-resolution textures. Adjusting the aperture size can optimize performance based on system capabilities and application requirements.
 
 ## amdgpu ring buffer
 
@@ -174,10 +232,28 @@ sudo umr -r *.*.mm.*                # 查看所有寄存器
 sudo umr -r *.*.mmCP.*              # 查看所有 CP 寄存器
 ```
 
-|Name |Desc
-|- |-
-|CP_RB.*_BASE       |当前 ring buffer
-|CP_IB.*_BASE       |当前 indirect buffer
+amdgpu 中对寄存器的定义在 **drivers/gpu/drm/amd/include/asic_reg** 下，其中
+offset.h 定义寄存器，
+sh_mask.h 定义寄存器中各个字段对应位域(SHIFT + MASK)
+
+```C
+// 如 32 位寄存器中某个字段范围为 [11:8] 共占 4 位，则
+// 读该字段时需要先使用 MASK(0xf00) 移除其他字段，再右移位 8 位
+uint32_t val_r = (REG_R & MASK) >> SHIFT;
+// 写该字段时需要左移位 8 位
+uint32_t val_w = val_new << SHIFT;
+uint32_t val_other = REG_R & ~MASK;
+REG_W = (val_w | val_other);
+```
+
+|Name |File |Desc
+|- |- |-
+|mmCP_RB.*_BASE         |   |当前 ring buffer
+|mmCP_IB.*_BASE         |   |当前 indirect buffer
+|mmRLC_CNTL             |gc_10_3_0_sh_mask.h    |
+|mmGRBM_STATUS          |sid.h                  |CP_BUSY,CB_BUSY,GPU_ACTIVE 等
+|mmGRBM_STATUS2         |gc_10_3_0_sh_mask.h    |RLC_BUSY,CPG_BUSY 等
+|mmGRBM_GFX_CNTL        | gc_10_3_0_sh_mask.h   |其中的 PIPEID,MEID,VMID,QUEUEID 表示当前选中的 queue
 
 ## debug
 

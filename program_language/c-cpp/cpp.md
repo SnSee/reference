@@ -23,9 +23,19 @@
 #elif
 #else
 #endif
+```
 
+宏函数
+
+* 使用 # 将宏函数参数转换为字符串
+* 使用 ## 连接参数
+
+```c
 #define PRINT(var) printf("%s=%d", #var, var);  // 使用 # 打印变量名
 int a = 1; PRINT(a);                            // output: a=1
+
+#define CONCAT(a, b) a##b
+int num1=10; printf("num1=%d", CONCAT(num, 1));
 ```
 
 ### 大小端法

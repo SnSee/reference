@@ -25,6 +25,24 @@
 * **Shift + F10**: 运行(Run Code)
 * **Shift + F9**: 调试(Start Debugging)
 
+* 按快捷键搜索 **Ctrl + J**，删除原有绑定
+* **Ctrl + J H**: 切换焦点到 Explorer / Editor
+* **Ctrl + J L**: 切换焦点到 Explorer / Editor
+
+### Ctrl + P
+
+[tips](https://code.visualstudio.com/docs/getstarted/tips-and-tricks)
+
+```txt
+default : 当前项目 文件名
+?       : 查看所有支持操作
+@       : 当前文件 symbol, 宏如 函数名、类名、变量名等，按出现顺序排序
+@:      : 会将相同类型 symbol 放在一起
+#       : 当前项目 symbol
+!       : Errors / Warnings
+>       : 等同于 Ctrl + Shift + P
+```
+
 ## 针对某个文件类型设置
 
 用 vscode 打开文件时，右下角会显示文件类型，在 settings.json 中全小写即可，空格不需要。
