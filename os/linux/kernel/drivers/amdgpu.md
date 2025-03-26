@@ -82,6 +82,33 @@ Accelerated Processing Unit 将 CPU，GPU 集成于同一芯片上的处理器�
 
 AGP (Accelerated Graphics Port) aperture size is the amount of system memory allocated to the AGP for graphics operations. It serves as a buffer for the graphics card, allowing it to temporarily store textures and other graphical data. This allocation affects graphics performance by determining how much memory the graphics card can access, impacting tasks like rendering complex 3D graphics or high-resolution textures. Adjusting the aperture size can optimize performance based on system capabilities and application requirements.
 
+### gang
+
+gang 用于管理一组需要协同调度的GPU作业（jobs）。
+
+1. Gang（作业组）的概念
+
+* 协同调度需求：GPU任务（如计算、渲染）可能需要多个作业协同执行。例如，多个作业需共享资源、同步执行或按特定顺序提交。
+* 原子性保障：通过将作业捆绑为gang，驱动确保它们被调度器视为一个整体，避免部分作业执行导致资源竞争或状态不一致。
+* 硬件队列管理：某些GPU硬件可能要求相关作业必须提交到同一队列或按特定顺序处理，gang机制简化了这种复杂调度。
+
+2. Gang Leader（领导者）的角色
+
+* 调度协调：调度器可能优先处理gang_leader，其状态可能影响整个gang的调度（如阻塞或完成事件）。
+* 同步点：其他作业可能依赖gang_leader的执行结果，例如通过硬件信号或软件同步机制。
+* 资源管理：gang_leader可能负责分配共享资源（如内存、寄存器），确保组内作业一致性。
+* 错误处理：若gang_leader执行失败，整个gang可能被标记为失败，触发统一回滚或恢复机制。
+
+3. 典型应用场景
+
+* 多队列依赖：如计算任务依赖渲染结果，需将两个作业捆绑为gang，确保渲染作业（gang_leader）先执行。
+* 资源共享：多个作业共享同一缓冲区，通过gang确保它们被连续调度，避免中间插入其他作业导致资源冲突。
+* 硬件约束：某些GPU架构要求特定操作序列必须原子提交，gang机制保证这些作业被整体处理。
+
+4. 示例流程
+
+用户提交一组作业 → 驱动创建gang并设置gang_size → 指定gang_leader及其索引 → 将作业填入jobs[]，绑定调度实体到entities[] → 调度器将gang作为单元处理，优先提交gang_leader → 根据硬件反馈更新整个gang状态。
+
 ## amdgpu ring buffer
 
 [PM4 packet format](https://www.jianshu.com/p/0eedbd58162b)

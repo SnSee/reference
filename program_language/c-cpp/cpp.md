@@ -360,6 +360,31 @@ try {
 }
 ```
 
+#### ofstream
+
+```cpp
+#include <iostream>
+#include <fstream>
+#include <string>
+
+int main() {
+    std::ofstream outFile("example.txt");
+
+    if (outFile.is_open()) {
+        outFile << "Hello, World!" << std::endl;
+        std::string message = "This is a test.";
+        outFile << message << std::endl;
+
+        outFile.close();
+        std::cout << "File written successfully." << std::endl;
+    } else {
+        std::cerr << "Unable to open file." << std::endl;
+    }
+
+    return 0;
+}
+```
+
 ### algorithm
 
 #### upper_bound/lower_bound

@@ -626,6 +626,16 @@ g<        查看上一条命令的输出
 :command! Pwd echo expand('%:p')
 ```
 
+### 插入文件
+
+```vim
+" 在光标处插入文件内容
+:r file.txt
+
+" 在光标处插入命令输出
+:r! command
+```
+
 ## 插件
 
 [插件查找网站](https://vimawesome.com/)

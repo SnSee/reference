@@ -17,6 +17,8 @@
 
 [GPU Driver Developer's Guide](https://www.kernel.org/doc/html/latest/gpu/drm-uapi.html)
 
+[深入理解 Linux 内存管理](https://blog.csdn.net/orangeboyye/article/details/125998574?spm=1001.2014.3001.5501)
+
 ## Abbr
 
 |Abbr |Full
@@ -146,6 +148,86 @@ DMA（Direct Memory Access，直接内存访问）映射主要用于让设备能
 ### DMA scatterlist
 
 scatter list 是 Linux 内核中用于描述一组非连续内存块的数据结构。在 DMA 操作里，有时候需要传输的数据可能分散存于内存的不同位置，无法用一个连续的内存区域来表示。scatterlist 就可以把这些分散的内存块组织起来，让 DMA 设备能够将它们当作一个整体进行访问。
+
+### Memory Mapping Register(mm)
+
+Memory Mapping Register（MMR） 是指将硬件设备的寄存器映射到系统的内存地址空间，使CPU可以通过内存访问指令（如load/store）直接与硬件设备通信，而不需要专用的I/O指令。
+
+### pci power management
+
+PCI/PCIe 设备的电源状态由 PCI Power Management (PCI-PM) 和 PCI Express Power Management (PCIe-PM) 规范定义：
+
+* ​D0（Active）​：设备完全供电，正常运行。
+* ​D1/D2（Low Power）​：中间低功耗状态，保留部分功能（如寄存器状态），可通过软件快速唤醒。
+* ​D1：比 D0 省电，但唤醒延迟较短（微秒级）。
+* ​D2：比 D1 更省电，但唤醒延迟稍长（毫秒级）。
+* ​D3hot（Hot Standby）​：深度低功耗状态，主电源（Vcc）仍供电，设备保留基础状态，但需要重新初始化才能恢复。
+* ​D3cold（Off）​：最深省电状态，主电源（Vcc）可能被切断，设备完全断电，需硬件复位或冷启动。
+
+PCI 设备的配置空间中包含 ​PCI Power Management Capability (PMC) 结构。
+
+```c
+// drivers/pci/pci.c
+/**
+ * pci_find_capability - query for devices' capabilities
+ * @dev: PCI device to query
+ * @cap: capability code
+ *
+ * Tell if a device supports a given PCI capability.
+ * Returns the address of the requested capability structure within the
+ * device's PCI configuration space or 0 in case the device does not
+ * support it.  Possible values for @cap include:
+ *
+ *  %PCI_CAP_ID_PM           Power Management
+ *  %PCI_CAP_ID_AGP          Accelerated Graphics Port
+ *  %PCI_CAP_ID_VPD          Vital Product Data
+ *  %PCI_CAP_ID_SLOTID       Slot Identification
+ *  %PCI_CAP_ID_MSI          Message Signalled Interrupts
+ *  %PCI_CAP_ID_CHSWP        CompactPCI HotSwap
+ *  %PCI_CAP_ID_PCIX         PCI-X
+ *  %PCI_CAP_ID_EXP          PCI Express
+ */
+u8 pci_find_capability(struct pci_dev *dev, int cap);
+```
+
+#### pci bridge
+
+```sh
+# lspci 桥接器输出
+Bus: primary=01, secondary=02, subordinate=03, sec-latency=0
+# 描述了 ​PCI 桥接器（PCI Bridge）的总线拓扑关系。
+
+primary=01      : 桥接器所在的 ​主总线号​（连接上游的总线，通常是 CPU 或上级桥接器）。
+secondary=02    : 桥接器下游的 ​起始总线号​（分配给下游设备的第一个总线）。
+subordinate=03  : 桥接器下游的 ​最大总线号​（下游总线的结束范围）。
+​sec-latency=0   : 次总线的 ​延迟时间​（单位是 PCI 时钟周期，通常无需调整）。
+```
+
+### ACPI
+
+ACPI（Advanced Configuration and Power Interface）​ 是一种计算机行业标准，用于管理硬件设备的电源状态、温度监控、性能调节以及操作系统与硬件之间的通信。
+
+​ACPI 的核心作用
+
+1. ​电源管理
+
+* 控制设备休眠/唤醒（如睡眠模式、休眠模式）。
+* 调整 CPU/GPU 的功耗状态（例如从高性能切换到省电模式）。
+* 管理电池（笔记本电脑）和外围设备（如 USB、PCIe 设备）的供电。
+
+2. ​硬件资源分配
+
+* 告诉操作系统硬件设备的地址、中断请求（IRQ）等资源信息。
+* 协调硬件冲突（例如多个设备共享同一资源时）。
+
+3. ​热管理
+
+* 监控硬件温度，触发风扇调速或过热保护机制。
+
+4. ​设备状态控制
+
+* 控制设备的启用/禁用（如禁用独立显卡以省电）。
+* 管理设备的电源状态（如 D0 工作状态、D3cold 深度休眠状态）。
 
 ## firmware(固件)
 
@@ -647,6 +729,9 @@ sudo dmesg -n debug
 
 ```sh
 strace ls
+
+# strace 输出到 stderr，过滤时需要重定向
+strace ls 2>&1 | grep ioctl
 ```
 
 ```yml
@@ -656,6 +741,17 @@ strace ls
 -f: 也统计子进程
 -e: 过滤，strace -e trace=open,read ls
 -y: 显示文件描述符对应文件路径
+```
+
+### lspci
+
+```sh
+# -v, -vv, -vvv: verbose 程度递增
+lspci                       # 查看 PCI 设备信息
+lspci | grep -i vga         # 查看 GPU PCIe 信息，第一列是设备的 PCI 地址
+# 设备地址含义，PCI域通常为 0000，单主机系统可省略
+# PCI域:总线号:设备号.功能号
+lspci -v -s 01:00.0         # 根据设备地址查看详细信息
 ```
 
 ## 函数

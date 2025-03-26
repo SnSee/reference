@@ -100,6 +100,8 @@ Ctrl + Alt + F<N>
 sudo systemctl set-default multi-user.target
 # 恢复图形界面
 sudo systemctl set-default graphical.target
+# 查看图形界面是否被禁用
+sudo systemctl get-default
 
 # 启动后若想进入图形界面启动 gdm 服务
 sudo systemctl start gdm3.service
@@ -113,6 +115,8 @@ sudo systemctl start gdm3.service
 # 查看终端类型
 echo $TERM          # 如：xterm-256color
 ```
+
+### 光标
 
 光标([csh可能需要自定义快捷键](./cshell.md#光标))
 [bind命令](https://blog.csdn.net/cnds123321/article/details/124815867)
@@ -132,6 +136,8 @@ Alt  + d: 删除光标后一个单词
 ctrl + 方向键: 光标按单词移动
 ```
 
+### 设置快捷键
+
 设置快捷键(可通过 [showkey](#showkey) 命令查看\<key\>的值)
 
 ```sh
@@ -146,7 +152,7 @@ bind '"<key>":<option>'     # 绑定操作到快捷键
 bind -f /etc/inputrc        # 绑定一些配置号的快捷键
 ```
 
-历史命令
+### 历史命令
 
 ```text
 # 通过输入关键字查找, 再按一次显示下一个匹配项
@@ -160,6 +166,16 @@ Ctrl + p：历史中的上一条命令(上方向键)
 Ctrl + n：历史中的下一条命令(下方向键)
 
 Alt + .：使用上一条命令的最后一个参数
+```
+
+### Ctrl-Z
+
+暂停将一个前台命令
+
+```sh
+jobs            # 查看所有挂起的命令
+fg $index       # 将指定编号的命令恢复到前台执行
+bg $index       # 后台执行
 ```
 
 ## man
@@ -274,6 +290,9 @@ ps --ppid $pid
 pgrep -P $pid
 # 递归查看
 pstree -p $pid
+
+# 显示全用户名
+ps -o ruser=user9wei9 -e -o pid,ppid,c,stime,tty,time,cmd
 ```
 
 进程状态(man ps：搜索 STATE)
@@ -365,6 +384,11 @@ O: 基于表达式过滤
 ```bash
 # 查看单一进程资源使用情况
 top -p <PID>    # PID 可通过ps获取
+
+# 显示全用户名
+    X5<Enter>
+# 显示全命令
+    c
 ```
 
 ## 驱动
@@ -1167,7 +1191,7 @@ awk 'BEGIN {print "Start processing file"}
 
 #### awk 格式化输出
 
-参考[c-printf](../program_language/c-cpp/c-cpp.md#printf-format)
+参考[c-printf](../program_language/c-cpp/cpp.md#printf-format)
 
 ```bash
 # 使用printf
@@ -2100,6 +2124,12 @@ arch
 # 查看操作系统详情
 uname -a
 lsb_release -a
+```
+
+### make
+
+```sh
+make -j$(nproc)         # 编译时使用所有 CPU
 ```
 
 ## tips

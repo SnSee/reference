@@ -17,17 +17,25 @@
 2. 输入关键字搜索，选中 Record Keys 时可根据快捷键搜索
 ```
 
-* **Alt + H**   : 切换到左侧tab页(View: Open Previous Editor)
-* **Alt + L**   : 切换到右侧tab页(View: Open Next Editor)
-* **Alt + ]**   : 跳转到声明或引用(使用vim默认即可：extension.vim_ctrl+])
-* **Alt + O**   : 回退(Go Back)
-* **Alt + I**   : 前进(Go Forward)
-* **Shift + F10**: 运行(Run Code)
-* **Shift + F9**: 调试(Start Debugging)
+### 窗口/文件切换
 
 * 按快捷键搜索 **Ctrl + J**，删除原有绑定
 * **Ctrl + J H**: 切换焦点到 Explorer / Editor
 * **Ctrl + J L**: 切换焦点到 Explorer / Editor
+* **Alt + H**   : 切换到左侧tab页(View: Open Previous Editor)
+* **Alt + L**   : 切换到右侧tab页(View: Open Next Editor)
+
+### 代码跳转
+
+* **Alt + ]**   : 跳转到声明或引用(使用vim默认即可：extension.vim_ctrl+])
+* **Alt + O**   : 回退(Go Back)
+* **Alt + I**   : 前进(Go Forward)
+* **Ctrl + Shift + O**: 显示当前文件所有函数，默认会选中当前函数，按 Enter 跳转到函数名位置
+
+### 运行/调试
+
+* **Shift + F10**: 运行(Run Code)
+* **Shift + F9**: 调试(Start Debugging)
 
 ### Ctrl + P
 
@@ -91,6 +99,7 @@ code --install-extension <extension-name>   # 安装指定插件
 互换快捷键
 
 ```json
+// ctrl + shift + p 搜索 User Settings (JSON)
 {
     "vim.normalModeKeyBindingsNonRecursive": [
         {

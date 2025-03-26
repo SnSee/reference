@@ -37,6 +37,14 @@
 
 [跳转到html链接](#html-jump-mark)
 
+## 格式
+
+### 缩进
+
+&emsp;全角
+&ensp;半角
+默认不缩进
+
 ## 数学公式
 
 [数学公式](https://www.cnblogs.com/xiaostudy/p/16351659.html)

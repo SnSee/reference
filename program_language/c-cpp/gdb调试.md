@@ -58,6 +58,47 @@ help command_name
     ignore <断点编号> <次数>
 ```
 
+### 条件断点
+
+检查 gdbinit 中是否提前定义
+
+```sh
+# int
+b test if num == 1
+# char *
+b test if strcmp(char *, "test") == 0
+# std::string
+b test if strcmp(str._M_dataplus._M_p, "test") == 0
+# 正则表达式
+b test if $_regex(char *, "regex_pattern")
+
+# 多条件
+b test if num == 1 || num == 2
+b test if num >= 1 && num <= 2
+```
+
+```sh
+# 注意为重载函数设置条件断点时需要确认形参名在所有函数中都存在
+# 否则需要显式指定为具体的哪一个函数设置条件断点
+void test(int val) {}
+void test(float) {}
+b test(int) if val == 1
+```
+
+### 重载函数断点
+
+```sh
+# 只为接收一个 int 参数的函数打断点
+b test(int)
+
+# 对于 string 等 typedef 出来的复杂类型
+# 先使用 info 查看实际的函数参数，直接复制完整函数声明后打断点
+# 然后使用 info 检查是否只有目标函数打上了断点
+info functions test     # i func test
+b $copied_name
+info b
+```
+
 ### 设置第 N 次触发断点才调试
 
 ```c
@@ -174,9 +215,9 @@ p /r xxx
 set print pretty on
 set print object on
 set print static-members on
-set vtbl on
+# set vtbl on
 set print demangle on
-set demangle on
+# set demangle on
 set print sevenbit-strings off
 
 python
