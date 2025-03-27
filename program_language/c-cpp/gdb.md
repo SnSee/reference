@@ -24,6 +24,20 @@ help command_name
 7.退出： quit
 ```
 
+## 命令
+
+|command |desc
+|- |-
+|shell      |执行 shell 命令
+|pipe       |将输出发送给 shell 管道
+
+### pipe
+
+```sh
+# 使用管道进行过滤，较低版本 gdb 不支持
+(gdb) pipe info breaks | grep func_name
+```
+
 ## 断点
 
 ```gdb
@@ -56,6 +70,13 @@ help command_name
     不指定断点编号时默认为最后一个断点
 忽略断点
     ignore <断点编号> <次数>
+```
+
+### rbreak
+
+```sh
+# 使用正则表达式为所有匹配的函数打断点
+rb test_.*
 ```
 
 ### 条件断点
@@ -230,9 +251,11 @@ end
 
 ## 日志
 
-```gdb
-# 开启日志，会在当前目录生成 gdb.txt
+```sh
+set logging file test.txt       # 默认 gdb.txt
 set logging on
+gdb_commands                    # 所有输出也会写入日志文件
+set logging off
 ```
 
 ## 缩写
@@ -417,6 +440,8 @@ end
 ```
 
 ### 自定义 gdb 命令
+
+更多命令参考 gdb.py
 
 ```py
 import gdb

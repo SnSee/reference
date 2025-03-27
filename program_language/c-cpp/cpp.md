@@ -408,3 +408,64 @@ upper_bound(left, right, target);
 |code/text  |通常存放执行代码。这部分区域的大小在程序运行前就已经确定，并且通常只读, 可能包含一些只读的常数变量 ，例如字符串常量等。程序段为程序代码在内存中的映射.一个程序可以在内存中多有个副本
 |heap       |堆, 存放进程动态分配的内存
 |stack      |栈/堆栈，存放线程的局部变量，函数堆栈信息
+
+## 汇编
+
+```c
+// 嵌入汇编语言, asm 或 asm volatile
+asm(
+    "assembly code"             // 汇编命令，%0, %1 等表示操作数
+    : output operands           // 输出操作数
+    : input  operands           // 输入操作数，只读，多个操作数用逗号隔开
+    : clobbers                  // 破坏描述，表示哪些寄存器或内存会被修改，可选
+);
+
+asm volatile( /* volatile : 可选，禁止编译器对汇编代码进行优化 */
+  "汇编指令"
+  : "=限制符"(输出参数)
+  : "限制符"(输入参数)
+  : 保留列表
+)
+```
+
+```yml
+assemble:
+input/output 约束:
+    a: 寄存器 EAX/AX/AL
+    i: 立即数(常量)
+    g: 任意通用寄存器、内存或立即数
+    m: 内存地址
+    r: 通知汇编器可以使用任意一个通用寄存器来加载操作数
+    +: 可读可写
+    =: 只写，output 必须有 = 或 + 修饰
+clobbers:
+    memory: 表示会修改内存
+```
+
+### 汇编指令
+
+#### 语法风格
+
+在 x86 中:
+
+* Intel 语法风格使用如 mov 等指令时不需要后缀，操作数大小通过寄存器或内存操作符显式指定
+* AT&T 语法风格添加后缀表示操作数大小: b(8), w(16), l(32), q(64)
+
+#### mov
+
+```c
+#include <stdio.h>
+int main() {
+    int i1 = 1, i2 = 2, o1 = 0, o2 = 0;
+
+    // 将 input 值通过任意寄存器赋值给 output
+    asm volatile("movl %0, %1" : "=r"(o1) : "r"(i1));    
+    // 经 input 值通过任意寄存器赋值给一个内存地址
+    asm volatile("movl %0, %1" : : "r"(i2), "m"(*(volatile int *)&o2) : "memory");    
+    // 另一中写法
+    asm volatile("movl %1, %0" : "=m"(*(volatile int *)&o2) : "r"(i2) : "memory");    
+
+    printf("o1: %d, o2: %d\n", o1, o2);     // o1: 1, o2: 2
+    return 0;
+}
+```
