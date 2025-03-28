@@ -24,6 +24,25 @@ help command_name
 7.退出： quit
 ```
 
+## 命令行参数
+
+```yml
+-help/-h        : help
+-args           : 被调试程序命令行参数
+-cd             : 运行目录
+-command/-x     : 命令文件，启动后执行
+-ex             : 单条命令，可多次
+-core           : core dump 文件
+-pid            : Attach to running process PID
+-directory      : 源文件目录
+-nx             : Do not read any .gdbinit files
+-nh             : Do not read ~/.gdbinit
+-python/-P      : Following argument is Python script file
+-quiet/-q       : No version number on startup
+-tui            : 建议搭配 -quiet 
+-tty            : 指定被调试程序的 IO 终端，默认为当前，通过 tty 命令可以查看
+```
+
 ## 命令
 
 |command |desc
@@ -252,10 +271,16 @@ end
 ## 日志
 
 ```sh
+# 如果需要同时记录被调试程序的日志，可以借助 shell 的 script 命令
 set logging file test.txt       # 默认 gdb.txt
 set logging on
 gdb_commands                    # 所有输出也会写入日志文件
 set logging off
+
+# 关闭分页显示，关闭后会持续输出日志，开启时显示不全的日志会分屏，需要手动翻页
+set pagination off
+# 等同于
+set height 0
 ```
 
 ## 缩写
@@ -291,12 +316,14 @@ Ctrl-F: 右箭头
 
 ## tui 界面
 
-```gdb
+代码错乱时 Ctrl-L 清屏
+
+```yml
 tui reg <寄存器类型>: 打开寄存器窗口，显示处理器的寄存器内容，当寄存器内容发生改变时高亮显示
-源代码窗口: 显示源码及调试标记
-汇编窗口: 显示当前源码的汇编代码
-命令窗口: 和普通的gdb窗口一样
-断点标记
+    源代码窗口  : 显示源码及调试标记
+    汇编窗口    : 显示当前源码的汇编代码
+    命令窗口    : 和普通的gdb窗口一样
+断点标记:
     B: 该断点至少触发了一次
     b: 该断点没触发过
     +: 断点被激活
@@ -422,7 +449,7 @@ ptype <变量或表达式>: 显示变量所有成员(不能是指针)
 在调试控制台使用原生gdb命令：-exec <cmd>
 ```
 
-## 调用 python
+## python
 
 查看 [gdb.py](gdb.py)
 
@@ -460,6 +487,28 @@ PyPrint()
 ```sh
 gdb> source py_print.py
 gdb> py_print value1 value2
+```
+
+### 自定义 gdb 函数
+
+```py
+import gdb
+
+class PyIsTrue(gdb.Function):
+    def __init__(self):
+        super().__init__("is_true")
+
+    # 参数个数可以改变，实际调用时保持一致
+    def invoke(self, value: gdb.Value, *args):
+        val = str(value).replace('"', '').strip()
+        return val not in ['0', 'false', 'False']
+
+PyIsTrue()
+```
+
+```sh
+(gdb) p $is_true(1)
+(gdb) p $is_true(0)
 ```
 
 ## 调试 python

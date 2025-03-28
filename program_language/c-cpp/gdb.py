@@ -1,7 +1,11 @@
 """
-i2b       : int to binary
-i2h       : int to hex
-pipe      : Simulate pipe in an environment without the pipe command
+commands:
+i2b         : int to binary
+i2h         : int to hex
+pipe        : Simulate pipe in an environment without the pipe command
+
+functions:
+py_eval     : Get output of any gdb commands (output is string)
 """
 import gdb
 import subprocess
@@ -49,9 +53,26 @@ class PyPipeCommand(gdb.Command):
         print(stdout.rstrip())
 
 
+class PyEval(gdb.Function):
+    def __init__(self):
+        super().__init__("py_eval")
+
+    def invoke(self, cmd: gdb.Value):
+        c = str(cmd).strip().strip('"').strip("'").strip()
+        try:
+            return str(gdb.execute(c))
+        except gdb.error:
+            return str(gdb.parse_and_eval(c))
+
+
+# commands
 Int2Binary()                # i2b val
 Int2Hex()                   # i2h val
 try:
     gdb.execute('help pipe', to_string=True)
 except gdb.error:
     PyPipeCommand()         # pipe info | grep break | awk '{print $2}'
+
+# functions
+PyEval()                    # p $py_eval("gdb command")
+                            # p $py_eval("any expression")

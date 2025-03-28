@@ -248,6 +248,26 @@ GFX scheduler 选择一个 entity，以 FIFO 方式取出 job
 
 CPU 和 GPU 的渲染命令传递通过 Ring Buffer 来实现
 
+## module options
+
+amdgpu_drv.c 中定义了类似下面这样的代码，表示能够在加载模块时指定参数
+
+```c
+/*
+disable_cu          : insmod 时指定的参数名称
+amdgpu_disable_cu   : 在 amdgpu_drv 中定义的变量
+charp               : 数据类型为 char *，也可以是 uint 等
+0444                : 该数据设置后访问权限，0444 表示只读
+*/
+MODULE_PARM_DESC(disable_cu, "Disable CUs (se.sh.cu,...)");
+module_param_named(disable_cu, amdgpu_disable_cu, charp, 0444);
+```
+
+```sh
+insmode amdgpu.ko disable_cu="0.0.0,0.0.1"  # 禁用指定编号的两个 CU
+sudo dmesg | grep "amdgpu: disabling"       # 查看是否禁用
+```
+
 ## 寄存器
 
 ```yml

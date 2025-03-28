@@ -2132,6 +2132,21 @@ lsb_release -a
 make -j$(nproc)         # 编译时使用所有 CPU
 ```
 
+### script
+
+```sh
+# 新开启一个 shell 并将 stdin/stdout 同时记录到 session.log
+# 执行 exit 退出
+script session.log
+
+# 有的不支持 -I,-O,-B
+-I <file>   : 记录 stdin 到指定文件
+-O <file>   : 记录 stdout 到指定文件，可以用来记录终端输出
+-B <file>   : 记录 stdin, stdout
+
+-c <cmd>    : 执行指定命令后自动退出
+```
+
 ## tips
 
 ```bash
