@@ -156,7 +156,11 @@ set completeopt-=preview
 set laststatus=2
 set statusline=\ %<%F[%1*%M%*%n%R%H]%=\ %y\ %0(%{&fileformat}\ %{&fileencoding}\ %c:%l/%L%)\ [%p%%]
 
-" 设置 ctrl + / 自动注释当前行，目前只支持 #,",// 三种注释符号
+""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" FUNCTION START
+""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+""" 设置 ctrl + / 自动注释当前行，目前只支持 #,",// 三种注释符号
 nnoremap <C-_> ^:call Auto_comment() <CR>j
 inoremap <C-_> <ESC> <C-_>
 function Auto_comment()
@@ -183,6 +187,39 @@ function Auto_comment()
 	let b:new_line=substitute(b:cur_line, b:fir_chr, printf("%s %s", b:comment_mark, b:fir_chr), "")
 	call setline(b:line_num, b:new_line)
 endfunction
+
+
+""" <leader>f 跳转到光标处文件
+nnoremap <leader>f :call Strict_gf()<CR>
+function! Strict_gf()
+    let cur_line = getline('.')
+    let col_idx = col('.') - 1
+    let f_pat = '[./a-zA-Z0-9_~-]\+'
+    if match(cur_line[col_idx], f_pat)
+        return
+    endif
+
+    let start = col_idx
+    while match(cur_line[start - 1], f_pat) != -1
+        let start = start - 1
+    endwhile
+    let end = matchend(cur_line, f_pat, col_idx)
+
+    let file_name = strpart(cur_line, start, end - start)
+    if match(file_name[0], '[/~]') == -1
+        let file_dir = fnamemodify(expand('%:p'), ':h')
+        let file_name = file_dir . '/' . file_name
+    endif
+    if filereadable(file_name)
+        execute 'edit ' . file_name
+    else
+        echo "File not found: " . file_name
+    endif
+endfunction
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" FUNCTION END
+""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 augroup Format-Options
     autocmd!

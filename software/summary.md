@@ -32,3 +32,5 @@ fastGithub(加速github)
 [qpdf破解加密pdf](https://github.com/qpdf/qpdf)
 
 [aria2下载工具](https://aria2.github.io/manual/en/html/index.html#)
+
+[WinDirStat(磁盘占用分析)](https://windirstat.net)

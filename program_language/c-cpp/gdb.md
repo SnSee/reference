@@ -50,6 +50,15 @@ help command_name
 |shell      |执行 shell 命令
 |pipe       |将输出发送给 shell 管道
 
+### help
+
+```sh
+(gdb) h all                     # 查看所有命令
+(gdb) h print                   # 查看指定命令
+(gdb) h function                # 查看所有内置函数，abbr: fu
+(gdb) h func _regex             # 查看指定内置函数
+```
+
 ### pipe
 
 ```sh
@@ -57,7 +66,7 @@ help command_name
 (gdb) pipe info breaks | grep func_name
 ```
 
-## 断点
+## break
 
 ```gdb
 添加断点
@@ -435,12 +444,23 @@ ptype <变量或表达式>: 显示变量所有成员(不能是指针)
 
 ## 内置函数
 
-库函数都可以试一试
+```sh
+(gdb) h func                        # 查看有哪些内置函数
+(gdb) h func _streq                 # 查看内置函数
+(gdb) p $_streq(char*, char*)       # 调用内置函数
+```
 
 |function |usage |desc
 |- |- |-
-|strcmp     |strcmp(char *, char *)     |比较字符串
-|$_regex    |$_regex(char *, "regex_pattern") |正则表达式比较，匹配返回 1，否则 0
+|_as_string         |$_as_string(VALUE)                         |将变量转为为字符串
+|_streq             |$_streq(A, B)                              |比较字符串，RET: 1/0
+|_strlen            |$_strlen(A)                                |字符串长度
+|_memeq             |$_memeq(A, B, LEN)                         |二进制比较
+|_regex             |$_regex(STRING, REGEX)                     |正则表达式比较，RET: 1/0
+|_caller_is         |$_caller_is(NAME [, FRAME_NUMBER])         |检查指定栈号函数名称，默认上一级栈号
+|_caller_matches    |$_caller_matches(REGEX [, FRAME_NUMBER])   |正则方式检查
+|_any_caller_is     |$_any_caller_is(NAME [, BACK_FRAMES])      |检查上 N 级函数栈是否包含指定函数，默认 N=1
+|_any_caller_matches|$_any_caller_matches(REGEX [, BACK_FRAMES])|正则方式检查
 
 ## vscode
 

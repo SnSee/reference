@@ -130,6 +130,23 @@ inoremap <S-F10> <C-\><C-n>:w<CR>:!./%<CR>
 
 ## vim 编程
 
+### 内置函数
+
+```sh
+help function-list        # 查看内置函数
+```
+
+|func |通常用法 |desc
+|- |- |-
+|line         |line('.')                    |光标所在行号，从 1 开始
+|col          |col('.')                     |光标所在列号，从 1 开始
+|getline      |getline('.')                 |当前行内容
+|setline      |setline(10, 'ABC')           |修改第10行
+|match        |match('testing', 'ing')      |返回的索引从 0 开始
+|match        |matchend('testing', 'ing')   |返回最后一个匹配位置的索引
+|matchstr     |matchstr('testing', 'ing')   |返回匹配的字符串而不是索引
+|strpart      |strpart('12345', 1, 3)       |截取 3 个字符(索引从 0 开始)
+
 ### if
 
 ```vim
@@ -722,3 +739,19 @@ git submodule update --init --recursive
 ```
 
 ### vim-autoformat
+
+```vim
+function! strict_gf()
+    let saved_isfname = &isfname
+    set isfname-=,;()"
+    let filename = expand("<cfile>")
+    let &isfname = saved_isfname
+    if filereadable(filename)
+        execute 'edit ' . fnameescape(filename)
+    else
+        echo "File not found: " . filename
+    endif
+endfunction
+
+nnoremap ngf :call strict_gf()<CR>
+```

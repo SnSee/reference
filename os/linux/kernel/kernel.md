@@ -743,7 +743,9 @@ strace ls 2>&1 | grep ioctl
 -y: 显示文件描述符对应文件路径
 ```
 
-### lspci
+### pci
+
+#### lspci
 
 ```sh
 # -v, -vv, -vvv: verbose 程度递增
@@ -752,6 +754,30 @@ lspci | grep -i vga         # 查看 GPU PCIe 信息，第一列是设备的 PCI
 # 设备地址含义，PCI域通常为 0000，单主机系统可省略
 # PCI域:总线号:设备号.功能号
 lspci -v -s 01:00.0         # 根据设备地址查看详细信息
+
+sudo lspci -x -s 01:00.0    # 查看 PCI 配置空间
+    -x      : hex dump of the standard PCI configuration space(64/128 bytes)
+    -xxx    :
+    -xxxx   : the extended (4096-bytes) PCI configuration space
+```
+
+#### setpci
+
+```sh
+setpci --dumpregs       # 查看
+    # cap pos w name
+    #      00 W VENDOR_ID
+    #      02 W DEVICE_ID
+    #      04 W COMMAND
+    cap     : capability id
+    pos     : 在配置空间内地址偏移
+    w       : 字节数，b/w/l -> 1/2/4
+    name    : 名称
+```
+
+```sh
+setpci -s 01:00.0 0x24.l            # 读取配置空间，地址偏移为 0x24，(b/w/l 分别表示 1/2/4 字节)
+setpci -s 01:00.0 BASE_ADDRESS_5    # 也可以直接用 dumpregs 查到的值，可以不加宽度
 ```
 
 ## 函数
