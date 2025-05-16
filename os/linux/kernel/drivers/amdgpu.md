@@ -268,6 +268,71 @@ insmode amdgpu.ko disable_cu="0.0.0,0.0.1"  # 禁用指定编号的两个 CU
 sudo dmesg | grep "amdgpu: disabling"       # 查看是否禁用
 ```
 
+### amdgpu_fw_load_type
+
+设置固件加载方式:
+
+0: direct
+1: psp
+2: smu
+3: rlc backdoor
+-1: auto
+
+### amdgpu_vm_update_mode
+
+控制更新 page table 方式，2 bit，即取值范围为 [0, 3]，默认 -1 时会自动设置:
+
+* 0: 使用 SDMA 更新
+* 1: 使用 CPU 更新
+
+```c
+/* controls how VM page tables are updated for Graphics and Compute.
+ * BIT0[= 0] Graphics updated by SDMA [= 1] by CPU
+ * BIT1[= 0] Compute  updated by SDMA [= 1] by CPU
+ */
+int vm_update_mode;
+```
+
+### amdgpu_emu_mode
+
+开发环境中的调试选项，默认为 0 表示关闭，设置为 1 表示开启
+
+开启后:
+
+* 跳过 power-gating, clock-gating
+* 跳过 asic reset
+* 跳过 golden registers 初始化
+* 硬件 timeout *= 10
+* 使用 direct 方式加载 gfx 固件时强制刷新 hdp
+
+### amdgpu_discovery
+
+设置获取包含硬件信息的 binary 的方式:
+
+* 2: 从 amdgpu/ip_discovery.bin 中获取
+* 非2: discover hardware IPs from IP Discovery table at the top of VRAM
+
+### amdgpu_virtual_display
+
+```c
+/**
+ * Set to enable virtual display feature. This feature provides a virtual display hardware on headless boards
+ * or in virtualized environments. It will be set like xxxx:xx:xx.x,x;xxxx:xx:xx.x,x. It's the pci address of
+ * the device, plus the number of crtcs to expose. E.g., 0000:26:00.0,4 would enable 4 virtual crtcs on the pci
+ * device at 26:00.0. The default is NULL.
+ */
+```
+
+### amdgpu_dpm
+
+```c
+/**
+ * Override for dynamic power management setting
+ * (0 = disable, 1 = enable)
+ * The default is -1 (auto).
+ */
+```
+
 ## 寄存器
 
 ```yml
@@ -315,12 +380,12 @@ REG_W = (val_w | val_other);
 umr -c                                      # 查看显卡配置
 umr -lb                                     # 查看当前显卡的 IP blocks
 
-sudo umr --read .*.mmUVD_CGC_.*             # 读取 register
+sudo umr --read *.*.mmUVD_CGC_.*            # 读取 register
 sudo umr --vm-read 0x1000 10 | xxd -e       # 读取 virtual memory
 sudo umr --ring-stream gfx[0:9]             # 读取 gfx ring 前 10 个 dword
 sudo umr --ring-stream gfx[.]               # 读取 gfx ring 中直到读指针位置的内容
 
-sudo umr -w .*.gfx800.mmCP_RB_DOORBELL_RANGE_LOWER ff  # 设置指定寄存器的值
+sudo umr -w *.*.mmCP_RB_DOORBELL_RANGE_LOWER ff  # 设置指定寄存器的值
 ```
 
 #### 读取 indirect buffer

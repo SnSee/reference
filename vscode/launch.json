@@ -17,6 +17,8 @@
             "MIMode": "gdb",
             "miDebuggerPath": "/usr/local/bin/gdb",
             "miDebuggerArgs": "",
+            // 远程调试
+            "miDebuggerServerAddress": "localhost:1234",
             "preLaunchTask": "g++",
             "setupCommands": [
                 {

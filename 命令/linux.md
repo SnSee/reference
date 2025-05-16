@@ -107,13 +107,29 @@ sudo systemctl get-default
 sudo systemctl start gdm3.service
 ```
 
+### ANSI
+
+[ANSI转义代码(ansi escape code)](https://zhuanlan.zhihu.com/p/570148970)
+[ANSI_escape_code](https://handwiki.org/wiki/ANSI_escape_code)
+
+```py
+# 清空屏幕，不同于 clear 刷新屏幕，删除的内容不能通过滚动屏幕查看
+# \033[{i};1H   将光标移动到第 i 行
+# \033[2K       清空光标所在行
+for i in range(100):
+    print(f"\033[{i};1H\033[2K", end="", flush=True)
+# 将光标移动到屏幕左上角
+print("\033[H", end="", flush=True)
+```
+
 ## 快捷键
 
 终端
 
 ```sh
 # 查看终端类型
-echo $TERM          # 如：xterm-256color
+echo $TERM                          # 如：xterm-256color
+export TERM=xterm-256color          # 设置终端类型
 ```
 
 ### 光标
@@ -292,7 +308,8 @@ pgrep -P $pid
 pstree -p $pid
 
 # 显示全用户名
-ps -o ruser=user9wei9 -e -o pid,ppid,c,stime,tty,time,cmd
+# man 手册 ^STANDARD FORMAT SPECIFIERS 查看可用列名
+ps -o ruser=user20wei9 -e -o pid,ppid,%cpu,%mem,s,stime,tty,time,cmd
 ```
 
 进程状态(man ps：搜索 STATE)
@@ -446,6 +463,8 @@ fi
 
 # 数值比较
 if [ $num -eq 10 ]; then
+fi
+if [ $num -ne 10 ]; then
 fi
 
 # 文件测试
@@ -729,7 +748,8 @@ done < test.txt
 # 括号里不能有参数
 function test() {
     fir_arg=$1  # 获取参数
-    return 1    # 返回(只能返回整数)
+    #return 1   # 不能用 return ???
+    echo 1    
     # 使用echo返回字符串:
     # echo $fir_arg
     # return
@@ -818,10 +838,11 @@ temp=`echo  "helloworld20180719" | tr -cd "[0-9]" `     # 提取数字
 字符串判断
 
 ```bash
-if [[ $s1 == $s2 ]] # 注意: 空格不能省略
+if [[ $s1 == $s2 ]]     # 注意: 空格不能省略
 if [[ $s1 != $s2 ]]
-if [[ $s1 == ab* ]] # 可使用正则表达式
+if [[ $s1 == ab* ]]     # 可使用通配符
 if [[ $s1 == ab"*" ]]   # *作为普通字符
+if [[ $s1 =~ "abc" ]]   # 正则，相当于 search
 ```
 
 富文本
@@ -1333,6 +1354,17 @@ apt download <package>                      # 下载 .deb 包
 sudo dpkg --instdir=/install/dir tmp.deb    # 安装到指定目录
 ```
 
+### dpkg
+
+debian 系统的包管理器
+
+```sh
+dpkg [option...] action
+    --instdir <directory>       : 指定安装目录，默认 /
+    -s <package-name>           : 是否已安装
+    -L <package-name>           : 安装了哪些文件
+```
+
 ### pkg-config
 
 * 查看已安装的库信息，库名为元文件 *.pc 去掉 .pc，元文件一般在下列位置
@@ -1351,11 +1383,16 @@ sudo dpkg --instdir=/install/dir tmp.deb    # 安装到指定目录
 --modversion <lib_name>         :只显示版本号
 ```
 
-## 其他
+### ssh
 
-[去除Window行尾标记^M](https://www.cnblogs.com/rsapaper/p/15697099.html)
+```sh
+sudo apt install openssh-server     # 安装 SSH 服务
+sudo systemctl status ssh           # 查看服务状态
+sudo systemctl start ssh            # 启动服务
+sudo systemctl enable ssh           # 设置开机自启
+```
 
-### ssh密钥登录
+#### ssh密钥登录
 
 ```bash
 ssh-keygen     # 生成密钥，需要输入直接回车就行
@@ -1366,6 +1403,10 @@ cat ~/.ssh/id-rsa.pub   # 然后将复制内容添加到要登录主机的 ~/.ss
 
 # 注意：要登陆的主机.ssh 及 authorized_keys只能自己有 读写 权限，家目录只能自己有 写 权限
 ```
+
+## 其他
+
+[去除Window行尾标记^M](https://www.cnblogs.com/rsapaper/p/15697099.html)
 
 ### 等待/获取用户输入
 
@@ -1628,6 +1669,7 @@ echo "example" | cut -c -2                  # ex
 echo 'example' | rev | cut -c 4- | rev      # exam
 
 # 使用空格作为分隔符拆分字符串并提取第2,4个part
+# 分隔符仍会显示
 echo '1 2 3 4' | cut -d ' ' -f 2,4
 # 提取第2到4个part
 echo '1 2 3 4' | cut -d ' ' -f 2-4
@@ -1814,6 +1856,10 @@ rsync -av --exclude 'skipped_sub_dir/' source_dir target_dir
 file test.so        # 有 with debug_info 表示是 debug 模式
 ```
 
+#### gdb
+
+* 查看全局变量时只要加载了符号表，直接 print 即可
+
 #### readelf
 
 readelf 是一个用于分析 ELF 文件的命令行工具，可以查看各个节（section）的详细内容。
@@ -1830,6 +1876,14 @@ readelf -V app_or_so
 # 查看 .comment 节
 # 当 test.so 依赖于多个库且编译这些库由GCC版本不同时，可能会显示多个版本 GCC
 readelf -p .comment test.so
+```
+
+```sh
+readelf -s a.out                # 查看符号表
+# 第一列是 symbol 编号
+# value 可能是内存地址
+Num:    Value          Size Type    Bind   Vis      Ndx Name
+ 24: 0000000000004010     4 OBJECT  GLOBAL DEFAULT   25 abc
 ```
 
 #### nm
@@ -1862,6 +1916,31 @@ nm [options, ...] file
 
 ```sh
 objdump -h          # 查看是否有 debug 相关字段，如 .debug_info
+```
+
+通过符号表查看全局/静态变量默认值:
+
+1. 查看符号表获取变量内存地址
+2. 查看指定 section 对应内存地址中内容
+
+```sh
+objdump -t a.out        # 查看符号表，如函数，变量等
+# SYMBOL TABLE 如下
+# 第一列表示 symbol's value，对于变量是内存地址
+# symbol 是 global(g) 还是 local(l)
+# symbol 类型，O 表示对象/变量，F 表示函数
+# symbol 所在内存区域
+# symbol alignment 或 size
+# symbol 名称
+0000000000004010    g     O .data  0000000000000004    i_val
+0000000000001149    g     F .text  000000000000002b    main
+
+# 根据不同 section(内存区域) 查看变量默认值
+objdump -s -j .data a.out
+# 输出的第一列就是内存地址，后面是对应地址中实际的内容
+# 地址 0x4010 对应的内容是 0x63000000，在小端法下是 99
+ 4000 00000000 00000000 08400000 00000000  .........@......
+ 4010 63000000                             c...
 ```
 
 ### xclip
@@ -2145,6 +2224,38 @@ script session.log
 -B <file>   : 记录 stdin, stdout
 
 -c <cmd>    : 执行指定命令后自动退出
+```
+
+### xxd
+
+```sh
+xxd file            # 以十六进制形式显示文件内容
+    -p      : 精简显示，只显示十六进制字符
+    -c<N>   : 每行显示 N 字节
+```
+
+### hexdump
+
+以十六进制(默认)，十进制，八进制或 ascii 形式显示文件
+
+```sh
+hexdump [options] file
+    -C              : 同时输出十六进制和 ascii，逐字节显示
+    -e <format>     : 指定显示格式
+    -v              : 禁止压缩内容相同的行
+    -n <N>          : 只输出前 N 个字节
+
+    # 不指定 -e 时默认 2 字节为一组
+    format: '<itreation_cnt>/<byte_cnt> "<format>"'
+        itreation_cnt: 表示 format 被应用次数，默认 1
+        byte_cnt     : 表示一次迭代处理字节数，默认 1
+        format       : printf 风格的输出格式
+
+# 每 4 字节为一组，按系统字节序输出
+hexdump -v -e '/4 "%08x\n"' file
+
+# 按 ipv4 格式显示
+hexdump -e '1/4 "%u." 1/4 "%u." 1/4 "%u." 1/4 "%u\n"' ip.bin
 ```
 
 ## tips

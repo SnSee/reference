@@ -11,7 +11,7 @@ set fileencoding=UTF-8
 set number
 set autoindent
 set smartindent
-set cindent
+" set cindent
 set scrolloff=5
 set backspace=2
 

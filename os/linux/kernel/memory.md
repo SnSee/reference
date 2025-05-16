@@ -73,11 +73,16 @@ pfn identifies the physical page for the memory
 
 ### DMA
 
+[DMA](https://zhuanlan.zhihu.com/p/618143764)
 [bus-master DMA](https://blog.csdn.net/qq_16390523/article/details/43014971)
 
 DMA 是计算机系统的一种特性，它允许某些硬件子系统能够不使用 CPU 直接访问系统内存
 
 DMA 通常包括 system dma 和 bus-master dma。他们的区别在于system dma 是依赖于系统，device 本身并没有 dma 控制传输的能力，而 bus-master 则相反，device 有 dma 控制传输的能力。
+
+### IOMMU
+
+[IOMMU](https://zhuanlan.zhihu.com/p/18100038357)
 
 ### IOMMU vs. DMA
 

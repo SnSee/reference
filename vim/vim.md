@@ -128,6 +128,13 @@ nnoremap <S-F10> :w<CR>:!./%<CR>
 inoremap <S-F10> <C-\><C-n>:w<CR>:!./%<CR>
 ```
 
+### z
+
+```sh
+zt          # 将当前行置于屏幕顶部，受 scrolloff 影响
+zb          # 将当前行置于屏幕底部
+```
+
 ## vim 编程
 
 ### 内置函数
@@ -500,6 +507,14 @@ set fileencoding=UTF-8
 nnoremap <C-P> :set paste<CR>:read !xsel --output --clipboard<CR>:set nopaste<CR>
 ```
 
+## visual mode
+
+```sh
+# 将选中的内容写入文件/写出到文件
+# 选中后直接进入命令模式，输入 w 命令即可
+:'<,'>w output
+```
+
 ## 寄存器
 
 ```vim
@@ -582,6 +597,12 @@ set cpo-=<letter>
 ```
 
 ## 命令
+
+### set
+
+```sh
+set scrolloff=0           # 设置光标到屏幕上下边缘最小行数
+```
 
 ### his/history
 

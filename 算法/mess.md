@@ -7,7 +7,7 @@
 
 特殊字符
 
-```text
+```yml
 \      : 转义字符，将后面的字符当作普通字符而不是特殊字符
 ^      : 行首
 $      : 行尾
@@ -62,4 +62,7 @@ re.match('pre[A-Z|1-9]post', 'preApost')            # 可以匹配
 re.match('pre[A-Z|1-9]post', 'pre1post')            # 可以匹配
 re.match('pre(ABC|123)post', 'preABCpost')          # 可以匹配
 re.match('pre(ABC|123)post', 'pre123post')          # 可以匹配
+
+# 匹配不包含指定格式的内容
+re.match('pre(?!.*ABC|123).*post', 'pre123post')      # 不可以匹配
 ```

@@ -105,6 +105,7 @@ void func() { printf("Current function name: %s\n", __func__); }
 ```text
 %d  ：以十进制形式输出整数。
 %f  ：以浮点数形式输出实数。
+%x  : 十六进制
 %c  ：输出字符。
 %s  ：输出字符串。
 %p  ：以指针的形式输出内存地址。
@@ -468,4 +469,13 @@ int main() {
     printf("o1: %d, o2: %d\n", o1, o2);     // o1: 1, o2: 2
     return 0;
 }
+```
+
+## tips
+
+### 遍历枚举值
+
+```cpp
+enum class Type: uint8_t { ONE, TWO, THREE };
+for (const auto &type : Type()) { }
 ```

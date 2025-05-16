@@ -1,6 +1,7 @@
 
 # VS-Code
 
+[doc](https://code.visualstudio.com/docs)
 [插件官网](https://marketplace.visualstudio.com/vscode)
 [vsix-hub](https://www.vsixhub.com)
 
@@ -51,7 +52,25 @@ default : 当前项目 文件名
 >       : 等同于 Ctrl + Shift + P
 ```
 
-## 针对某个文件类型设置
+## settings.json
+
+```yml
+files.exclude       : 不显示指定 pattern 文件
+search.exclude      : 搜索时跳过指定 pattern 文件，继承 files.exclude
+```
+
+```json
+{
+    "files.exclude": {
+        "**/*.o": true
+    },
+    "search.exclude": {
+        "**/*.cmd": true
+    }
+}
+```
+
+### 针对某个文件类型设置
 
 用 vscode 打开文件时，右下角会显示文件类型，在 settings.json 中全小写即可，空格不需要。
 

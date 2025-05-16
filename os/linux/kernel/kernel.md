@@ -122,6 +122,8 @@ electronic fuse 是一种可编程电子保险丝，通过熔断形成永久开�
 
 ### DMA mapping
 
+[DMA](https://zhuanlan.zhihu.com/p/618143764)
+
 DMA（Direct Memory Access，直接内存访问）映射主要用于让设备能够直接访问系统内存。分为一致性映射（consistent mapping）和流式映射（streaming mapping）
 
 1. 应用场景
@@ -163,6 +165,19 @@ PCI/PCIe 设备的电源状态由 PCI Power Management (PCI-PM) 和 PCI Express 
 * ​D2：比 D1 更省电，但唤醒延迟稍长（毫秒级）。
 * ​D3hot（Hot Standby）​：深度低功耗状态，主电源（Vcc）仍供电，设备保留基础状态，但需要重新初始化才能恢复。
 * ​D3cold（Off）​：最深省电状态，主电源（Vcc）可能被切断，设备完全断电，需硬件复位或冷启动。
+
+```sh
+# 查看电源状态
+sudo lspci -vv -s 03:00.0 | grep Status
+
+# 第 0,1 bit 表示电源状态
+# 0: D0
+# 1: D1
+# 2: D2
+# 3: D3hot
+# D3cold 时查看不到 pci 设备?
+sudo setpci -s 03:00.0 CAP_PM+4.w
+```
 
 PCI 设备的配置空间中包含 ​PCI Power Management Capability (PMC) 结构。
 
@@ -270,6 +285,8 @@ sudo reboot                                 # 重启
 ```
 
 ## 编译内核
+
+[build kernel](https://phoenixnap.com/kb/build-linux-kernel)
 
 ### GRUB: out of memory
 
@@ -448,7 +465,7 @@ sudo ls /sys/kernel/debug/dri/129
 --raw_output: 显示更多细节
 ```
 
-## 调试内核
+## debugging
 
 ### printk
 
@@ -458,10 +475,39 @@ sudo ls /sys/kernel/debug/dri/129
 * 有的模块会把 printk 做到宏里，使用相应的宏即可
 * 直接使用 printk 时最后一次 printk 可能不会打印，加上 \n 换行刷新即可
 
+```c
+// 控制输出频率
+// 查看输出频率: cat /proc/sys/kernel/printk_ratelimit
+if (printk_ratelimit()) {
+    printk(KERN_NOTICE "The printer is still on fire\n");
+}
+```
+
+### gdb
+
+```sh
+scripts/config --disable CONFIG_RANDOMIZE_BASE  # 关闭 KASLR
+
+cat /proc/modules | grep amdgpu                 # 查看 module 基地址，即 .text
+# 如果 module 基地址是 0，执行下面的命令
+# sudo sh -c 'echo 0 > /proc/sys/kernel/kptr_restrict'
+sudo cat /sys/module/amdgpu/sections/.text      # 查看 section 地址
+
+sudo gdb vmlinux /proc/kcore
+(gdb) p jiffies                                 # 查看系统运行时间
+(gdb) core-file /proc/kcore                     # 刷新 core
+(gdb) add-symbol-file amdgpu.ko <.text_addr> \  # 加载 module debugging sections
+    -s .bss  0xFFFFFFFF \
+    -s .data 0xFFFFFFFF
+(gdb) p amdgpu_discovery                        # 查看 amdgpu 中的全局变量或函数
+# 校验实际函数地址确认是否一致
+cat /proc/kallsyms | grep amdgpu_discovery
+```
+
 ### kdb / kgdb
 
 [参考](https://zhuanlan.zhihu.com/p/546416941)
-[参考](https://docs.kernel.org/dev-tools/kgdb.html)
+[参考](https://www.kernel.org/doc/html/latest/process/debugging/kgdb.html)
 [参考](https://www.kernel.org/pub/linux/kernel/people/jwessel/kdb/EnableKGDB.html)
 
 ```sh
@@ -479,7 +525,6 @@ console=ttyS0,115200 kgdboc=ttyS0,115200 nokaslr
 # OR
 # Configure kgdboc after the kernel has booted
 sudo sh -c 'echo ttyS0 > /sys/module/kgdboc/parameters/kgdboc'
-# sudo echo ttyS0 > /sys/module/kgdboc/parameters/kgdboc
 
 # 中断 kernel 进入 kdb
 sudo sh -c 'echo g > /proc/sysrq-trigger'
@@ -493,10 +538,78 @@ kgdboc=kbd
 sudo echo kbd > /sys/module/kgdboc/parameters/kgdboc
 ```
 
+### VFIO
+
+[VFIO](https://docs.kernel.org/driver-api/vfio.html)
+
+```sh
+# /etc/default/grub 中关闭 pcie 的电源管理功能，防止自动进入 D3cold
+GRUB_CMDLINE_LINUX_DEFAULT="pcie_port_pm=off"
+
+# 查看 iommu group
+readlink /sys/bus/pci/devices/0000:03:00.0/iommu_group
+
+# 加载 vfio
+sudo modprobe vfio-pci
+lsmod | grep vfio_pci
+
+# 查看 vendor & device id，即 1003:743f
+lspci -n -s 03:00.0         # 03:00.0 0300: 1002:743f (rev c7)
+# 将设备从当前系统解绑，显卡和声卡都解绑
+# lspci -v -s 03:00.0 可以看到 Kernel driver in use 已经没了
+sudo sh -c 'echo 0000:03:00.0 > /sys/bus/pci/devices/0000:03:00.0/driver/unbind'
+sudo sh -c 'echo 0000:03:00.1 > /sys/bus/pci/devices/0000:03:00.1/driver/unbind'
+# 绑定到 vfio
+sudo sh -c 'echo 1002 743f > /sys/bus/pci/drivers/vfio-pci/new_id'
+sudo sh -c 'echo 1002 ab28 > /sys/bus/pci/drivers/vfio-pci/new_id'
+# sudo sh -c 'echo vfio-pci > /sys/bus/pci/devices/0000:03:00.0/driver_override'
+# sudo sh -c 'echo vfio-pci > /sys/bus/pci/devices/0000:03:00.1/driver_override'
+# Kernel driver in use 应该是 vfio_pci
+lspci -v -s 03:00.0
+
+# 查看 group 下是否有其他设备，如果有也需要执行上述操作
+ls /sys/bus/pci/devices/0000:03:00.0/iommu_group/devices
+
+# 修改 vfio 设备所有权
+sudo chown $USER /dev/vfio/18
+sudo chown $USER /dev/vfio/19
+```
+
+恢复到原驱动
+
+```sh
+# 从 vfio 解绑并绑定到原驱动，lspci -v 显示的 Kernel modules 就是原驱动
+# 也可以通过这种方式绑定 vfio-pci
+# 确保设备未被虚拟机使用（如关闭相关VM）
+sudo sh -c 'echo 0000:03:00.0  > /sys/bus/pci/devices/0000:03:00.0/driver/unbind'
+sudo sh -c 'echo 0000:03:00.1  > /sys/bus/pci/devices/0000:03:00.1/driver/unbind'
+sudo sh -c 'echo amdgpu        > /sys/bus/pci/devices/0000:03:00.0/driver_override'
+sudo sh -c 'echo snd_hda_intel > /sys/bus/pci/devices/0000:03:00.1/driver_override'
+sudo sh -c 'echo 0000:03:00.0  > /sys/bus/pci/drivers_probe'
+sudo sh -c 'echo 0000:03:00.1  > /sys/bus/pci/drivers_probe'
+```
+
+```sh
+# 查看所有 iommu groups
+for d in /sys/kernel/iommu_groups/*/devices/*; do
+  n=${d#*/iommu_groups/*}; n=${n%%/*}
+  printf 'IOMMU Group %s ' "$n"
+  lspci -nns "${d##*/}"
+done
+```
+
 ### QEMU + gdb
 
-[参考](https://docs.kernel.org/dev-tools/gdb-kernel-debugging.html)
+[参考](https://www.kernel.org/doc/html/latest/process/debugging/gdb-kernel-debugging.html)
 [参考](https://zhuanlan.zhihu.com/p/412604505)
+
+[QEMU](./qemu.md)
+
+```sh
+# 编译内核时禁用优化
+./scripts/config -d CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE
+# 或者直接修改根目录 Makefile 中 KBUILD_CFLAGS
+```
 
 安装环境
 
@@ -506,25 +619,84 @@ sudo echo kbd > /sys/module/kgdboc/parameters/kgdboc
 # install qemu
 apt install qemu-system-x86_64
 # create initramfs
-mkinitramfs -o ./initramfs.img $(uname -r)
+mkinitramfs -v -o ./initramfs.img $(uname -r)
 # 将下面的命令添加到 ~/.gdbinit 中
 add-auto-load-safe-path $kernel_build_path
 ```
 
-启动虚拟机
+[安装/启动虚拟机](./qemu.md#安装-ubuntu)
+
+[使用 GPU 时需要先隔离设备](#vfio)
+
+注意:
+
+* 使用设备时需要 root 权限
+* root= 按照安装好的 ubuntu 虚拟机内 /proc/cmdline 设置
+* 调试 GPU 时不能使用 -enable-kvm
+* 虚拟机内 GPU 的 pci:device.function 可能会变
+* 修改内核或 module 后需要重新生成 initramfs
 
 ```sh
+# -S 启动后会等待 gdb 连接
 # -s 自动使用 1234 端口供 gdb 连接
-qemu-system-x86_64 -kernel arch/x86_64/boot/bzImage -initrd ./initramfs.img -append "root=/dev/sda1 console=ttyS0 nokaslr" -m 2048 -nographic -S -s
+sudo qemu-system-x86_64 \
+    -S -s \
+    -nographic -m 4G -smp 4 \
+    -drive file=nvme_disk.img,format=qcow2,if=none,id=nvme0 \   # 固态硬盘
+    -device nvme,drive=nvme0,serial=deadbeef \                  # 驱动
+    -kernel $kernel_dir/arch/x86_64/boot/bzImage \
+    -initrd ./initramfs.img \
+    -append "root=UUID=xxx ro quiet splash console=ttyS0"
+    -device vfio-pci,host=03:00.0,multifunction=on \                    # 显卡
+    -device vfio-pci,host=03:00.1                               # 声卡
 ```
 
 gdb 连接
 
 ```sh
 gdb vmlinux
-    (gdb) target remote :1234
-    (gdb) b start_kernel
-    (gdb) continue
+(gdb) target remote :1234
+(gdb) b start_kernel
+(gdb) continue
+
+# 使用前面 gdb 章节的方式加载 amdgpu.ko 符号表
+# 注意: 模块加载时的基地址可能会发生变化，如果未触发断点，
+# 需要查看实际函数地址和断点地址，校验是否一致
+
+# gdb 自动获取 amdgpu 基地址，并为 amdgpu 的函数设置断点
+# 设置完成后在虚拟机内使用 modprobe amdgpu 加载驱动以触发断点
+(gdb) tb apply_relocate_add if $_streq(me->name, "amdgpu")
+(gdb) commands
+(gdb)     set $amdgpu_base_addr=sechdrs[sechdrs[relsec].sh_info].sh_addr
+(gdb)     add-symbol-file ./amdgpu.ko $amdgpu_base_addr
+(gdb)     # 后续直接用 amdgpu 函数名打断点即可
+(gdb)     b amdgpu_pci_probe
+(gdb)     continue
+(gdb) end
+```
+
+```sh
+# 比较重要的函数
+(gdb) b load_module             # kernel/module/main.c，加载 module
+```
+
+```sh
+# 内核提供了一些 gdb 命令
+make scripts_gdb                # 生成 scripts/gdb/vmlinux-gdb.py
+gdb vmlinux                     # 会自动加载脚本
+
+(gdb) apropos lx                # 查看有哪些命令及函数
+(gdb) lx-symbols                # 查看 module.ko 及地址
+(gdb) lx-dmesg                  # 查看 dmesg
+```
+
+如果没有设置硬盘，即没有安装 ubuntu，直接从内核启动时会进入 initramfs 的最小系统，没有用户空间，能使用的命令也很少
+
+```sh
+(initramfs) modprobe amdgpu
+# 不借助 lspci 查看设备驱动
+# 注意: 虚拟机内 pci 地址可能会变，如变为 00:04.0
+(initramfs) ls /sys/bus/pci/devices/0000:00:04.0/driver/module/drivers
 ```
 
 退出虚拟机
@@ -681,7 +853,7 @@ trace-cmd report
 ```sh
 lsmod                           # 查看当前 modules
 sudo rmmod amdgpu               # 卸载指定 module，不会自动卸载依赖，需要 module 未被使用
-sudo rmmod -f amdgpu            # 卸载正被使用的 module，需要内核支持，man 查看编译选项
+sudo rmmod -f amdgpu            # 卸载正被使用的 module，需要内核支持，man 查看编译选项(CONFIG_MODULE_FORCE_UNLOAD)
 sudo modprobe amdgpu            # 安装 /lib/modules 下的 module，会自动安装依赖的 module
 sudo insmod ./amdgpu.ko         # 安装指定路径的 module，不会自动安装依赖的 module
 ```
@@ -745,6 +917,40 @@ strace ls 2>&1 | grep ioctl
 
 ### pci
 
+[A Practical Tutorial on PCIe for Total Beginners on Windows (Part 1)](https://ctf.re/windows/kernel/pcie/tutorial/2023/02/14/pcie-part-1)
+
+Peripheral Component Interconnect [Express]，计算机内外围设备互联标准
+
+```sh
+# 查看指定 pci 设备信息
+ls /sys/bus/pci/devices/0000:03:00.0
+
+# 重新扫描 pci 总线
+sudo sh -c 'echo 1 > /sys/bus/pci/rescan'
+```
+
+* PCI registers (configuration space) 使用小端法，如在文件/内存中布局为 0x12 0x34 的占 2 个字节的数据，实际表示的值是 0x3412
+
+#### 配置空间
+
+[pcie configuration space](https://zhuanlan.zhihu.com/p/662317817)
+
+#### BAR
+
+​BAR（Base Address Register，基地址寄存器）用于动态分配和管理硬件设备的地址空间，通过 ioremap 将硬件内存等映射到系统 CPU 虚拟地址空间。
+
+#### interrupt (中断)
+
+```sh
+# PCI 设备的中断请求（IRQ）在系统中的 ​逻辑中断号
+# 注意: INTERRUPT_LINE 仅在传统 INTx 模式下有效，如果设备使用 MSI/MSI-X，该字段可能被 BIOS/OS 设为 0xff 表示未使用
+setpci -s 03:00.0 INTERRUPT_LINE
+
+# 如果支持中断是非 0 值，表示使用哪个 pin 发出中断信号
+# 一个 PCI connector 有 4 个 interrupt pins
+setpci -s 03:00.0 INTERRUPT_PIN
+```
+
 #### lspci
 
 ```sh
@@ -753,12 +959,31 @@ lspci                       # 查看 PCI 设备信息
 lspci | grep -i vga         # 查看 GPU PCIe 信息，第一列是设备的 PCI 地址
 # 设备地址含义，PCI域通常为 0000，单主机系统可省略
 # PCI域:总线号:设备号.功能号
+# Bus:Device.Function 被称为 BDF
 lspci -v -s 01:00.0         # 根据设备地址查看详细信息
 
 sudo lspci -x -s 01:00.0    # 查看 PCI 配置空间
     -x      : hex dump of the standard PCI configuration space(64/128 bytes)
     -xxx    :
     -xxxx   : the extended (4096-bytes) PCI configuration space
+```
+
+Capability
+
+```sh
+# lspci -vv -s 03:00.0 输出如下
+# [50] 表示该配置内存地址从 0x50 开始
+Capabilities: [50] Power Management version 3
+
+# 查看 CAP_PM，两者一样
+sudo setpci -s 03:00.0 0x50.l
+sudo setpci -s 03:00.0 CAP_PM+0.l
+```
+
+```sh
+# 检查 pci 设备 IOMMU
+sudo dmesg | grep iommu     # Adding to iommu group
+find /sys/kernel/iommu_gropus -name "*01:00.0"
 ```
 
 #### setpci
