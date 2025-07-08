@@ -4,6 +4,7 @@
 ## 启动
 
 ```python
+# 自动执行的指令放在 ~/.pdbrc 即当前目录该文件中
 python3 -m pdb test.py -- arg1 arg2
 ```
 

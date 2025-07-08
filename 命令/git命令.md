@@ -67,6 +67,7 @@ git log
     --stat: 只显示修改了哪些文件及改动行数
 # 查看指定版本修改内容，不指定commit_id时默认为HEAD
 git show <commit_id>
+git show --name-status <commit_id>  # 只查看修改了哪些文件，不显示具体内容
 # 查看工作区当前修改, 如果不指定file则显示所有更改
 git diff [file]
 # 查看工作区相对于指定版本区别

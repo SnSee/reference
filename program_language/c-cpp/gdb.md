@@ -174,6 +174,16 @@ set $counter = 0
 b func_name if ((++$counter) == 10)
 ```
 
+### 根据函数地址打断点
+
+```sh
+# 如查看到函数 test 地址
+(gdb) p test
+$1 = {void (void)} 0x5555555551a9 <test()>
+(gdb) b *0x5555555551a9
+Breakpoint 2 at 0x5555555551a9: file a.c, line 3.
+```
+
 ## 流程控制
 
 ```yml

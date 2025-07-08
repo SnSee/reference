@@ -2232,6 +2232,10 @@ script session.log
 xxd file            # 以十六进制形式显示文件内容
     -p      : 精简显示，只显示十六进制字符
     -c<N>   : 每行显示 N 字节
+
+xxd -g 4 -c 16 tmp/vram.dump | awk '{print $1,$2,$3,$4,$5}' | head
+# 显示为如下格式
+# 00000000: 070040d8 150008c4 00008c30 0300c098
 ```
 
 ### hexdump
@@ -2253,6 +2257,8 @@ hexdump [options] file
 
 # 每 4 字节为一组，按系统字节序输出
 hexdump -v -e '/4 "%08x\n"' file
+# 每 4 字节为一组，按系统字节序输出，每行输出 4 组，即 16 字节
+hexdump -v -e '"%08_ax: " 4/4 "%08x " "\n"' file
 
 # 按 ipv4 格式显示
 hexdump -e '1/4 "%u." 1/4 "%u." 1/4 "%u." 1/4 "%u\n"' ip.bin

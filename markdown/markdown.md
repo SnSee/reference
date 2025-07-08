@@ -254,3 +254,15 @@ flowchart TB
 方式二:
 
 <div><img src="./pics/reference_pic.png", width="20%"></div>
+
+## tools
+
+### markitdown
+
+其他文件转 markdown
+
+[github](https://github.com/microsoft/markitdown)
+
+```sh
+markitdown -c UTF-8 -o test.md test.pdf
+```

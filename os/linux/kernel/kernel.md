@@ -271,6 +271,27 @@ git clone https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmwar
 sudo vim /etc/default/grub
 ```
 
+设置默认启动内核
+
+```sh
+# 在 /boot/grub/grub.cfg 中搜索 menuentry，序号从 0 开始
+# 如果 menuentry 在 submenu 中，则序号为 SUBMENU_INDEX>MENUENTRY_INDEX
+
+menuentry 'Kernel1'
+submenu
+    menuentry 'Kernel1'
+    menuentry 'Kernel1 (recover mode)'
+    menuentry 'Kernel2'
+    menuentry 'Kernel2 (recover mode)'
+
+# 上面的顺序，如果要以 Kernel2 作为默认 Kernel
+# 则 /etc/default/grub 中设置为
+GRUB_DEFAULT="1>2"
+
+# 然后更新
+sudo update-grub
+```
+
 ```sh
 grep menuentry /boot/grub/grub.cfg          # 查看内核版本，索引从 0 开始
 # 将 GRUB_DEFAULT 设置为对应内核索引，设置为 saved 时表示使用 grub-set-default 设置的值
@@ -299,6 +320,8 @@ make INSTALL_MOD_STRIP=1 modules_install
 
 # 方式二: 在 /etc/default/grub 中设置低分辨率
 GRUB_GFXMODE=640x480
+
+# 方式三: 修改 /etc/initramfs-tools/initramfs.conf，MODULES=most 改为 dep
 ```
 
 ### basic flow
@@ -364,6 +387,52 @@ sudo systemctl start gdm
 # startx
 ```
 
+### 创建 module
+
+```sh
+# 创建下面的源文件和 Makefile 后直接编译即可
+make
+sudo insmod ./hello.ko
+```
+
+模块源文件
+
+```c
+#include <linux/module.h>
+#include <linux/kernel.h>
+#include <linux/init.h>
+
+static int __init hello_init(void) {
+    printk(KERN_INFO "Hello, World!\n");
+    return 0;
+}
+
+static void __exit hello_exit(void) {
+    printk(KERN_INFO "Goodbye, World!\n");
+}
+
+module_init(hello_init);
+module_exit(hello_exit);
+
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("TEST");
+MODULE_DESCRIPTION("A simple example Linux module");
+```
+
+Makefile
+
+```makefile
+obj-m := hello.o
+KDIR := /lib/modules/$(shell uname -r)/build
+PWD := $(shell pwd)
+
+all:
+    make -C $(KDIR) M=$(PWD) modules
+
+clean:
+    make -C $(KDIR) M=$(PWD) clean
+```
+
 ## 特性
 
 ### (NO)KASLR
@@ -379,7 +448,7 @@ cat /proc/cmdline
 # 查看符号表地址
 cat /boot/System.map-$(uname -r) | grep kmalloc_info
 # 查看实际函数地址
-cat /proc/kallsyms | grep kmalloc_info
+sudo cat /proc/kallsyms | grep kmalloc_info
 ```
 
 关闭 KASLR
@@ -501,8 +570,10 @@ sudo gdb vmlinux /proc/kcore
     -s .data 0xFFFFFFFF
 (gdb) p amdgpu_discovery                        # 查看 amdgpu 中的全局变量或函数
 # 校验实际函数地址确认是否一致
-cat /proc/kallsyms | grep amdgpu_discovery
+sudo cat /proc/kallsyms | grep amdgpu_discovery
 ```
+
+[自动获取 amdgpu 基地址并设置符号表查看 gdb 连接](#qemu--gdb)
 
 ### kdb / kgdb
 
@@ -711,6 +782,20 @@ poweroff
 sudo cat /sys/module/amdgpu/sections/.text
 sudo cat /sys/module/amdgpu/sections/.data
 sudo cat /sys/module/amdgpu/sections/.bss
+```
+
+### Serial Port + gdb
+
+如果主机没有自带串口，可以使用 usb 转串口
+
+gdb 连接
+
+```sh
+gdb vmlinux
+(gdb) set serial baud 115200
+(gdb) target remote /dev/ttyUSB0
+(gdb) b start_kernel
+(gdb) continue
 ```
 
 ### ftrace

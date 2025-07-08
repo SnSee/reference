@@ -614,7 +614,7 @@ logging.debug(), logging.info(), logging.warning(), logging.error(), logging.cri
 # 设置日志等级
 logging.getLogger().setLevel(logging.DEBUG)
 # 一次性设置
-logging.basicConfig(level=logging.DEBUG, format="%(levelname)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S", filename="/tmp/test.log", filemode="w")
+logging.basicConfig(level=logging.DEBUG, format="%(levelname)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S", handlers=[logging.FileHandler("tmp.log"), logging.StreamHandler(sys.stdout)])
 
 logging.getLogger().addHandler(handler)         # 添加 handler
 logging.getLogger().removeHandler(handler)      # 移除 handler
