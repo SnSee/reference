@@ -109,6 +109,47 @@ gang 用于管理一组需要协同调度的GPU作业（jobs）。
 
 用户提交一组作业 → 驱动创建gang并设置gang_size → 指定gang_leader及其索引 → 将作业填入jobs[]，绑定调度实体到entities[] → 调度器将gang作为单元处理，优先提交gang_leader → 根据硬件反馈更新整个gang状态。
 
+### Swizzle Mode
+
+A swizzle mode describes how a resources has its elements organized in memory and therefore specifies th method of calculating a virtual address from the Cartesian coordinate for accessing specific elements of an image/texture resource type.
+
+```yml
+surface             : 暂时理解为画布
+element             : an element in a surface (usually a pixel)
+element_bytes       : size of an element，对于 RGBA 颜色模式就是 4 字节
+width_elements      : width of a 1D/2D/3D resource in elements(行像素数)
+height_elements     : height of a 2D/3D resource in elements(列像素数)
+depth_elements      : depth of a 3D resource in elements
+blk_width           : width of a swizzle block in elements
+blk_height          : height of a swizzle block in elements
+blk_depth           : depth of a swizzle block in elements
+blk_bytes           : size of swizzle block in bytes
+width_pitch         : 暂时理解为每行像素数, = blk_width * ceil(width_elements / blk_width)
+height_pitch        : 暂时理解为每列像素数, = blk_height * ceil(height_elements / blk_height)
+depth_pitch         : 暂时理解为每列像素数, = blk_depth * ceil(depth_elements / blk_depth)
+```
+
+#### SW_LINEAR
+
+```py
+blk_bytes  = 256
+blk_width  = blk_bytes / element_bytes
+blk_height = 1
+blk_depth  = 1
+
+slice_size = width_pitch * height_pitch
+address = base_address + (z * slice_size + (y * width_pitch + x)) * elements_bytes
+```
+
+#### SW_64KB_R_X
+
+```py
+blk_bytes     = 64KB = 65536
+element_bytes = 4 (RGBA)
+blk_width     = 128
+blk_height    = 128
+```
+
 ## amdgpu ring buffer
 
 [PM4 packet format](https://www.jianshu.com/p/0eedbd58162b)

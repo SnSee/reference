@@ -168,15 +168,26 @@ bind '"<key>":<option>'     # 绑定操作到快捷键
 bind -f /etc/inputrc        # 绑定一些配置号的快捷键
 ```
 
+### 搜索
+
+```yml
+Ctrl + Shift + F: 搜索终端历史输出
+```
+
 ### 历史命令
 
-```text
+```sh
 # 通过输入关键字查找, 再按一次显示下一个匹配项
 # 回车直接执行
 # ctrl + g 退出（清空已有内容）
 # ctrl + c 强制退出（新命令行）
 # esc 退出（保留命令行内容但不执行）
 Ctrl + r：逆向搜索命令历史
+# Ctrl-S 需要先禁用终端锁定
+stty -ixon
+Ctrl + s: 正向搜索命令历史
+# 也可以绑定到其他快捷键
+bind '"\C-f":forward-search-history'
 
 Ctrl + p：历史中的上一条命令(上方向键)
 Ctrl + n：历史中的下一条命令(下方向键)
@@ -1840,12 +1851,23 @@ diff结果如果有多出不一样会显示多次以下介绍内容
 ### rsync
 
 ```sh
+# 只同步指定扩展名的文件
+--include='*.{ext1,ext2}' --exclude='*'
+```
+
+```sh
 # 删除大文件夹
 # 文件夹后的 / 不能去掉
 mkdir empty && rsync --delete -d ./empty/ ./dir_to_delete/ && rm -r empty
 
 # 复制目录时跳过指定子目录
 rsync -av --exclude 'skipped_sub_dir/' source_dir target_dir
+
+# 将本地目录同步到远程（需SSH访问权限）
+# --delete 会删除多出来的文件
+rsync -avz --delete /local/dir/ user@ip:/remote/dir/
+# 从远程同步到本地
+rsync -avz --delete user@ip:/remote/dir/ /local/dir/
 ```
 
 ### 分析二进制文件

@@ -433,6 +433,17 @@ clean:
     make -C $(KDIR) M=$(PWD) clean
 ```
 
+### 添加编译选项
+
+```sh
+make EXTRA_CFLAGS="-DDEBUG -O2"
+```
+
+```makefile
+ccflags-y := -DDEBUG -O2
+ccflags-y += -g
+```
+
 ## 特性
 
 ### (NO)KASLR
@@ -500,6 +511,8 @@ sudo dkms remove amdgpu/6.8.5-2044426.22.04 -k 6.8.0
 sysctl -n kernel.sysrq          # 查看允许使用的按键类型
 # 1 表示所有请求都支持
 sudo sysctl -w kernel.sysrq=1   # 设置允许使用的按键类型
+# OR
+sudo sh -c 'echo 1 > /proc/sys/kernel/sysrq'
 ```
 
 ## 测试内核
@@ -535,6 +548,16 @@ sudo ls /sys/kernel/debug/dri/129
 ```
 
 ## debugging
+
+### QA
+
+#### gdb 无法单步执行
+
+```sh
+# dmesg 报错: BP remove failed
+# 关闭这个配置即可
+./scripts/config -d CONFIG_STRICT_KERNEL_RWX
+```
 
 ### printk
 
@@ -583,7 +606,7 @@ sudo cat /proc/kallsyms | grep amdgpu_discovery
 
 ```sh
 # 配置 .config
-./scripts/config -d CONFIG_STRICT_KERNEL_RWX -e CONFIG_FRAME_POINTER -e CONFIG_KGDB -e CONFIG_KGDB_SERIAL_CONSOLE -e CONFIG_KGDB_KDB -e CONFIG_KDB_KEYBOARD -e CONFIG_MAGIC_SYSRQ -e CONFIG_MAGIC_SYSRQ_SERIAL
+./scripts/config -d CONFIG_STRICT_KERNEL_RWX -d CONFIG_STRICT_MODULE_RWX -e CONFIG_FRAME_POINTER -e CONFIG_KGDB -e CONFIG_KGDB_SERIAL_CONSOLE -e CONFIG_KGDB_KDB -e CONFIG_KDB_KEYBOARD -e CONFIG_MAGIC_SYSRQ -e CONFIG_MAGIC_SYSRQ_SERIAL
 ```
 
 进入 kdb (目前仅在 QEMU 中成功)
@@ -598,6 +621,7 @@ console=ttyS0,115200 kgdboc=ttyS0,115200 nokaslr
 sudo sh -c 'echo ttyS0 > /sys/module/kgdboc/parameters/kgdboc'
 
 # 中断 kernel 进入 kdb
+sudo sh -c 'echo 1 > /proc/sys/kernel/sysrq'
 sudo sh -c 'echo g > /proc/sysrq-trigger'
 ```
 
@@ -631,10 +655,10 @@ lspci -n -s 03:00.0         # 03:00.0 0300: 1002:743f (rev c7)
 sudo sh -c 'echo 0000:03:00.0 > /sys/bus/pci/devices/0000:03:00.0/driver/unbind'
 sudo sh -c 'echo 0000:03:00.1 > /sys/bus/pci/devices/0000:03:00.1/driver/unbind'
 # 绑定到 vfio
-sudo sh -c 'echo 1002 743f > /sys/bus/pci/drivers/vfio-pci/new_id'
-sudo sh -c 'echo 1002 ab28 > /sys/bus/pci/drivers/vfio-pci/new_id'
-# sudo sh -c 'echo vfio-pci > /sys/bus/pci/devices/0000:03:00.0/driver_override'
-# sudo sh -c 'echo vfio-pci > /sys/bus/pci/devices/0000:03:00.1/driver_override'
+# sudo sh -c 'echo 1002 743f > /sys/bus/pci/drivers/vfio-pci/new_id'
+# sudo sh -c 'echo 1002 ab28 > /sys/bus/pci/drivers/vfio-pci/new_id'
+sudo sh -c 'echo vfio-pci > /sys/bus/pci/devices/0000:03:00.0/driver_override'
+sudo sh -c 'echo vfio-pci > /sys/bus/pci/devices/0000:03:00.1/driver_override'
 # Kernel driver in use 应该是 vfio_pci
 lspci -v -s 03:00.0
 
@@ -683,6 +707,8 @@ done
 ```
 
 安装环境
+
+[其他 config 设置最好也加上](#kdb--kgdb)
 
 ```sh
 # build kernel，-e 开启设置，-d 关闭设置
@@ -741,6 +767,7 @@ gdb vmlinux
 (gdb)     set $amdgpu_base_addr=sechdrs[sechdrs[relsec].sh_info].sh_addr
 (gdb)     add-symbol-file ./amdgpu.ko $amdgpu_base_addr
 (gdb)     # 后续直接用 amdgpu 函数名打断点即可
+(gdb)     # 如果软件断点无法使用 next，使用硬件断点 hbreak
 (gdb)     b amdgpu_pci_probe
 (gdb)     continue
 (gdb) end
@@ -773,7 +800,8 @@ gdb vmlinux                     # 会自动加载脚本
 退出虚拟机
 
 ```sh
-poweroff
+(initramfs) poweroff
+bash: sudo shutdown -h now
 ```
 
 ### 查看 module 地址

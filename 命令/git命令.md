@@ -98,6 +98,11 @@ git checkout -- <file>
 git reset --hard
 ```
 
+```sh
+# 将文件从版本管理中移除，-f 表示删除本地文件，--cached 保留
+git rm --cached file
+```
+
 ## 回退
 
 ```sh

@@ -27,7 +27,7 @@ wget https://mirrors.tuna.tsinghua.edu.cn/ubuntu-releases/22.04/ubuntu-22.04.5-d
 
 ```sh
 # 创建硬盘
-qemu-img create -f qcow2 nvme_disk.img 20G
+qemu-img create -f qcow2 nvme_disk.img 50G
 # 安装，安装完成后去掉 ubuntu.iso 一行即可启动
 qemu-system-x86_64 \
   -enable-kvm \
@@ -100,6 +100,9 @@ scp user@host_ip:/file/to/copy .
 ### 共享目录
 
 ```sh
+# 将 /lib/modules/6.12.5 打包, 用 scp 拷贝到虚拟机，放到相应位置
+sudo modprobe 9p
+
 # 虚拟机安装 9p 支持
 sudo apt install 9mount
 # 虚拟机设置挂载目录
@@ -117,11 +120,24 @@ sudo mount -t 9p -o trans=virtio,version=9p2000.L host0 $shared_dir
 # -S 启动后会等待 gdb 连接
 # -s 自动使用 1234 端口供 gdb 连接
 # 注意: 使用设备时需要 root 权限
-#       root= 按照安装好的 ubuntu 虚拟机内 /proc/cmdline 设置
+#       root= 按照安装好的 ubuntu 虚拟机内 /proc/cmdline 设置，如果不行参考下面的查看 UUID
 sudo qemu-system-x86_64 \
     -kernel $kernel_dir/arch/x86_64/boot/bzImage \
     -initrd ./initramfs.img \
     -append "root=UUID=xxx ro quiet splash console=ttyS0"
+```
+
+查看 UUID
+
+```sh
+# 如果 UUID 不对会进入 busybox
+# 查看有哪些 block
+(initramfs) blkid
+# 查看每个 block 大小，bytes = size * 512
+(initramfs) cat /sys/class/block/nvme0n1p3/size
+# 复制实际的 block UUID 后退出
+(initramfs) poweroff
+# 修改 qemu 中的 UUID 后重新运行虚拟机
 ```
 
 #### 错误处理
