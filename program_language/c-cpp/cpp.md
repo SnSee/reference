@@ -100,7 +100,7 @@ void func() { printf("Current function name: %s\n", __func__); }
 
 <a id="printf-format"></a>
 
-### printf格式化输出
+### printf 格式化输出
 
 ```text
 %d  ：以十进制形式输出整数。

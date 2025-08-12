@@ -2,12 +2,14 @@
 commands:
 i2b         : int to binary
 i2h         : int to hex
+h2f         : hex to float
 pipe        : Simulate pipe in an environment without the pipe command
 
 functions:
 py_eval     : Get output of any gdb commands (output is string)
 """
 import gdb
+import struct
 import subprocess
 
 
@@ -27,6 +29,16 @@ class Int2Hex(gdb.Command):
     def invoke(self, args: str, from_tty):
         val = hex(gdb.parse_and_eval(args))[2:]
         print(''.join(reversed([f'{c},' if i%4==0 else c for i, c in enumerate(val[::-1])])))
+
+
+class Hex2Float(gdb.Command):
+    def __init__(self):
+        super().__init__("h2f", gdb.COMMAND_USER)
+
+    def invoke(self, args: str, from_tty):
+        val = hex(gdb.parse_and_eval(args))[2:]
+        float_value = struct.unpack('!f', bytes.fromhex(val))[0]
+        print(float_value)
 
 
 class PyPipeCommand(gdb.Command):
@@ -68,6 +80,7 @@ class PyEval(gdb.Function):
 # commands
 Int2Binary()                # i2b val
 Int2Hex()                   # i2h val
+Hex2Float()                 # h2f val
 try:
     gdb.execute('help pipe', to_string=True)
 except gdb.error:

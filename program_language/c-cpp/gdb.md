@@ -585,6 +585,19 @@ python
 end
 ```
 
+### 执行 gdb 命令
+
+```sh
+# 写成一行
+python gdb.parse_and_eval("val = 1")
+
+# 写成多行
+python
+    # 修改变量
+    gdb.parse_and_eval("val = 1")
+end
+```
+
 ### 自定义 gdb 命令
 
 更多命令参考 gdb.py

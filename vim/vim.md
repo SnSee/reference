@@ -29,7 +29,7 @@ endif
 
 ## 外观
 
-自定义主题
+### 主题
 
 ```text
 将主题配色文件(xxx.vim)放到~/.vim/colors下即可引用
@@ -45,15 +45,31 @@ syntax on
 
 " 查看当前主题
 colorscheme
-" 设置主题
+" 设置主题，可用 tab 补全
 colorscheme default
 ```
 
-查看当前颜色配置
+[sublimemonokai](./colors/sublimemonokai.vim)
+[monokai](https://github.com/ku1ik/vim-monokai/blob/master/colors/monokai.vim)
+
+### 高亮
 
 ```vim
+" 查看当前颜色配置
 :hi
 :hightligth
+" 设置搜索高亮配色
+:highlight Search gui=NONE guibg=yellow guifg=black
+```
+
+### 光标
+
+```vim
+" 设置 nvc 模式下块状光标，i 模式下竖线光标
+" 光标闪烁，亮灭各 650 毫秒，等待 600 毫秒后开始闪烁
+set guicursor=n-v-c:block-blinkon650-blinkoff650-blinkwait600
+set guicursor+=i:ver25-blinkon650-blinkoff650
+set guicursor+=r:hor20-blinkon650-blinkoff650
 ```
 
 ## 模式

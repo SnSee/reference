@@ -1851,11 +1851,16 @@ diff结果如果有多出不一样会显示多次以下介绍内容
 ### rsync
 
 ```sh
+rsync [OPTION]... SRC [SRC]... DEST
+
 # 只同步指定扩展名的文件
 --include='*.{ext1,ext2}' --exclude='*'
 ```
 
 ```sh
+# 同步本地目录
+rsync -av /path/to/source/ /path/to/destination/
+
 # 删除大文件夹
 # 文件夹后的 / 不能去掉
 mkdir empty && rsync --delete -d ./empty/ ./dir_to_delete/ && rm -r empty

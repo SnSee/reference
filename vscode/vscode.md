@@ -21,8 +21,8 @@
 ### 窗口/文件切换
 
 * 按快捷键搜索 **Ctrl + J**，删除原有绑定
-* **Ctrl + J H**: 切换焦点到 Explorer / Editor
-* **Ctrl + J L**: 切换焦点到 Explorer / Editor
+* **Ctrl + J H**: 切换焦点到 Explorer(View: Show Explorer)
+* **Ctrl + J L**: 切换焦点到 Editor(View: Focus Active Editor Group)
 * **Alt + H**   : 切换到左侧tab页(View: Open Previous Editor)
 * **Alt + L**   : 切换到右侧tab页(View: Open Next Editor)
 

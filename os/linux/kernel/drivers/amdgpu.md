@@ -204,6 +204,154 @@ kernel tells the the ring what VMID to use for that command buffer. VMIDs are al
 The userspace drivers maintain their own address space and the kernel sets up their pages tables accordingly when they submit
 their command buffers and a VMID is assigned.
 
+### GART Table
+
+```mermaid
+flowchart LR
+        gmc_v10_0_sw_init
+    --> gmc_v10_0_mc_init
+    --> gmc_v10_0_vram_gtt_location
+    --> amdgpu_gmc_gart_location
+
+        gmc_v10_0_sw_init
+    --> gmc_v10_0_gart_init
+    --> amdgpu_gart_init
+    --> amdgpu_gart_dummy_page_init
+        gmc_v10_0_gart_init
+    --> amdgpu_gart_table_vram_alloc
+
+        gmc_v10_0_hw_init
+    --> gmc_v10_0_gart_enable
+    --> amdgpu_gart_table_vram_pin
+    --> amdgpu_bo_kmap
+    
+```
+
+#### 创建 GART Table
+
+1. 确定 GTT domain 的大小(gmc.gart_size)和地址范围(gmc.gart_start ~ gmc.gart_end)
+
+```c
+void amdgpu_gmc_gart_location(struct amdgpu_device *adev, struct amdgpu_gmc *mc) {
+    adev->gmc.gart_size = 512 * 1024 * 1024;
+    // GTT domain 地址范围通常在整个 GMC 地址范围的开头或末尾
+    mc->gart_start = 0;
+    mc->gart_start = max_mc_address - mc->gart_size + 1;
+    mc->gart_end = mc->gart_start + mc->gart_size - 1;
+}
+```
+
+2. 创建 dummy dma_address 作为 GART Table 中默认值，防止使用未申请的地址访问 GART Table 时获取到非法值，然后用非法值访问 system memory
+
+```c
+static int amdgpu_gart_dummy_page_init(struct amdgpu_device *adev) {
+    struct page *dummy_page = ttm_glob.dummy_read_page;
+    adev->dummy_page_addr = dma_map_page(&adev->pdev->dev, dummy_page, 0, PAGE_SIZE, DMA_BIDIRECTIONAL);
+}
+```
+
+3. 在 vram 上申请内存用于存储 GART Table
+
+```c
+// 每个 PTE 占 8 字节
+// 对于 512M 的 gart_size，GART Table 本身大小为 512M / 4K * 8 = 1M
+adev->gart.num_gpu_pages = adev->gmc.gart_size / AMDGPU_GPU_PAGE_SIZE;
+adev->gart.table_size    = adev->gart.num_gpu_pages * 8;
+
+// 在 vram 上为 GART Table 申请内存，维护在 adev->gart.bo 中
+int amdgpu_gart_table_vram_alloc(struct amdgpu_device *adev) {
+    struct amdgpu_bo_param bp;
+    bp.size = adev->gart.table_size;
+    bp.byte_align = PAGE_SIZE;
+    bp.domain = AMDGPU_GEM_DOMAIN_VRAM;
+    bp.flags = AMDGPU_GEM_CREATE_CPU_ACCESS_REQUIRED | AMDGPU_GEM_CREATE_VRAM_CONTIGUOUS;
+    bp.type = ttm_bo_type_kernel;
+    bp.bo_ptr_size = sizeof(struct amdgpu_bo);
+    amdgpu_bo_create(adev, &bp, &adev->gart.bo);
+}
+```
+
+4. 将 gart.bo 映射到 gart.ptr，使得 CPU 可以使用 gart.ptr 访问 GART Table
+
+```c
+int amdgpu_gart_table_vram_pin(struct amdgpu_device *adev) {
+    amdgpu_bo_kmap(adev->gart.bo, &adev->gart.ptr);
+}
+```
+
+5. 将 GTT domain 地址范围和 GART Table 起始地址通过寄存器发送给 GPU
+
+```c
+// 设置 GTT domain 地址范围
+WREG32_SOC15(GC, 0, mmGCVM_CONTEXT0_PAGE_TABLE_START_ADDR_LO32, (u32)(adev->gmc.gart_start >> 12));
+WREG32_SOC15(GC, 0, mmGCVM_CONTEXT0_PAGE_TABLE_START_ADDR_HI32, (u32)(adev->gmc.gart_start >> 44));
+WREG32_SOC15(GC, 0, mmGCVM_CONTEXT0_PAGE_TABLE_END_ADDR_LO32,   (u32)(adev->gmc.gart_end   >> 12));
+WREG32_SOC15(GC, 0, mmGCVM_CONTEXT0_PAGE_TABLE_END_ADDR_HI32,   (u32)(adev->gmc.gart_end   >> 44));
+
+// 设置 GART Table 在 vram 中的地址
+struct amdgpu_vmhub *hub = &adev->vmhub[AMDGPU_GFXHUB_0];
+uint64_t pt_base = amdgpu_gmc_pd_addr(adev->gart.bo);       // 获取 GART Table 在 vram 中的地址
+WREG32_SOC15_OFFSET(GC, 0, mmGCVM_CONTEXT0_PAGE_TABLE_BASE_ADDR_LO32, hub->ctx_addr_distance * vmid, lower_32_bits(page_table_base));
+WREG32_SOC15_OFFSET(GC, 0, mmGCVM_CONTEXT0_PAGE_TABLE_BASE_ADDR_HI32, hub->ctx_addr_distance * vmid, upper_32_bits(page_table_base));
+```
+
+#### 使用 GART Table
+
+1. 当在 GTT domain 申请 BO 时，驱动会申请一个用于 dma 访问的 dma_address 和一个供 GPU 访问的虚拟地址 gpu_addr
+
+```c
+// 在 GTT 上创建 BO，domain 为 AMDGPU_GEM_DOMAIN_GTT
+// gpu_addr 为 GPU 访问 system memory 的地址，这个地址需要经过 GART Table 转换为 dma_address
+// cpu_addr 为 CPU 访问 system memory 的地址
+int amdgpu_bo_create_kernel(struct amdgpu_device *adev, unsigned long size, int align, u32 domain,
+                            struct amdgpu_bo **bo_ptr, u64 *gpu_addr, void **cpu_addr);
+```
+
+2. 驱动将 gpu_addr 到 dma_address 的映射关系写入 GART Table
+
+```c
+// 当 CPU 写入 adev->gart.ptr 时，就是写入 vram 中的 GART Table，即更新 PTE
+int amdgpu_gart_bind(struct amdgpu_device *adev, uint64_t offset, int pages, dma_addr_t *dma_addr, uint64_t flags) {
+    return amdgpu_gart_map(adev, offset, pages, dma_addr, flags, adev->gart.ptr);
+}
+
+// 将在 GTT domain 上的 BO 记录到 GART Table 中
+int amdgpu_gart_map(struct amdgpu_device *adev, uint64_t offset, int pages, dma_addr_t *dma_addr, uint64_t flags, void *dst) {
+    unsigned t = offset / AMDGPU_GPU_PAGE_SIZE;
+    for (unsigned i = 0; i < pages; i++) {
+        uint64_t dma_address = dma_addr[i];
+        for (unsigned j = 0; j < AMDGPU_GPU_PAGES_IN_CPU_PAGE; j++) {
+            amdgpu_gmc_set_pte_pde(adev, dst, t, dma_address, flags);
+            dma_address += AMDGPU_GPU_PAGE_SIZE;
+            ++t;
+        }
+    }
+}
+```
+
+3. 当 GPU 接收到 gpu_addr 时，发现 gpu_addr 在 gart_start ~ gart_end 范围内，就会去查 GART Table，从而获取 dma_address，再用 dma_address 访问 system memory
+
+4. 当释放 BO 后，从 GART Table 中解除映射关系，并映射到 dummy dma_address
+
+```c
+int amdgpu_gart_unbind(struct amdgpu_device *adev, uint64_t offset, int pages) {
+    unsigned t = offset / AMDGPU_GPU_PAGE_SIZE;
+    for (unsigned i = 0; i < pages; i++) {
+        // 映射到 dummy dma_address，防止对这块地址进行访问（释放后理论上不应该再访问）
+        u64 dma_address = adev->dummy_page_addr;
+        for (unsigned j = 0; j < AMDGPU_GPU_PAGES_IN_CPU_PAGE; j++) {
+            amdgpu_gmc_set_pte_pde(adev, adev->gart.ptr, t, u64 dma_address, flags);
+            u64 dma_address += AMDGPU_GPU_PAGE_SIZE;
+            ++t;
+        }
+    }
+    // 刷新缓存
+    amdgpu_device_flush_hdp(adev, NULL);
+    for (i = 0; i < adev->num_vmhubs; i++)
+        amdgpu_gmc_flush_gpu_tlb(adev, 0, i, 0);
+}
+```
+
 ## CS (Command submit)
 
 ### 调度器数据结构
@@ -465,4 +613,35 @@ sudo umr -di 0x1@0x100000000 16
 > python -c 'print(chr(0)*4)' | sudo umr -vw 0x001@0x100000400 0x4
 > sudo umr -vr 0x001@0x100000400 0x4 | xxd -e
 00000000: 00000000                             ....
+```
+
+## rgp
+
+[download](https://gpuopen.com/rgp/)
+
+```yml
+rgp: Radeon GPU Profiler
+rdp: Radeon Developer Panel
+```
+
+```sh
+# 下载后解压即可直接使用
+# help/rdp/index.html 中有关于 rdp 的介绍
+
+# RadeonDeveloperPanel 是 rdp gui
+# 0. 打开 gpu 后会动 connect 到本地
+# 1. Available features 窗口的 ... 选择 Load Profiling
+# 2. Applications 窗口的 ... 保持默认的 Any application 即可
+# 3. System Information 窗口检查有没有 GPU 信息
+# 4. 此时 Profiling 窗口显示 Status: Offline，表示没有使用 GPU 的进程
+# 5. 运行使用 GPU 的程序，如 VulkanDemo
+# 6. 此时 Profiling 窗口显示 Status: Ready
+# 7. Profiling output path 面板设置 .rgp 记录文件路径
+# 8. 点击 Capture 窗口的 Capture profile，生成 .rgp
+# 9. 退出使用 GPU 的程序
+./RadeonDeveloperPanel
+
+# RadeonGPUProfiler 是 rgp gui
+# Start -> Open 打开 rdp 生成的 .rgp 文件
+./RadeonGPUProfiler
 ```

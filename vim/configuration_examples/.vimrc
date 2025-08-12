@@ -2,6 +2,10 @@
 
 if has("gui_running")
 	set guifont=Monospace\ 14	" gvim 设置字体
+    colorscheme monokai
+    set guicursor=n-v-c:block-blinkon650-blinkoff650
+    set guicursor+=i:ver25-blinkon650-blinkoff650
+    set guicursor+=r:hor20-blinkon650-blinkoff650
 else
 	set mouse-=a 				" vim下鼠标左键不进入visual模式,gvim下进入
 endif
@@ -12,7 +16,7 @@ set number
 set autoindent
 set smartindent
 " set cindent
-set scrolloff=5
+set scrolloff=5             " 移动光标时上下至少有 5 行
 set backspace=2
 
 let loaded_matchparen = 1  "设置不高亮显示配对的括号

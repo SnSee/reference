@@ -183,6 +183,8 @@ class Flight {
 
 [官方用法介绍](https://mermaid-js.github.io/mermaid/#/flowchart)
 
+[tutorials](https://mermaid.js.org/ecosystem/tutorials.html)
+
 [在线编辑器](https://mermaid-js.github.io/mermaid-live-editor/edit)
 
 ```text
@@ -234,6 +236,37 @@ flowchart TB
     subgraph three
       c1-->c2
     end
+```
+
+#### class Diagram
+
+```mermaid
+---
+title: Animal example
+---
+classDiagram
+    note "From Duck till Zebra"
+    Animal <|-- Duck
+    note for Duck "can fly\ncan swim\ncan dive\ncan help in debugging"
+    Animal <|-- Fish
+    Animal <|-- Zebra
+    Animal : +int age
+    Animal : +String gender
+    Animal: +isMammal()
+    Animal: +mate()
+    class Duck{
+        +String beakColor
+        +swim()
+        +quack()
+    }
+    class Fish{
+        -int sizeInFeet
+        -canEat()
+    }
+    class Zebra{
+        +bool is_wild
+        +run()
+    }
 ```
 
 ## 转pdf
