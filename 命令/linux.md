@@ -1044,15 +1044,15 @@ q: 退出
 <a id='sed-regexp'></a>
 正则表达式(非通用正则表达式)
 
-**支持\w**
+**支持\w, \s**
 **不支持\d**
 
 ```text
-不支持 +
 ^           : 行开始
 $           : 行结束
 .           : 任意非换行符的字符
-*           : 0或多个字符
+*           : 0 或多个字符
+\+          : 1 或多个字符
 []          : 匹配范围内任意字符
 [^]         : 匹配不在范围内的任意字符
 \|          : 或，如 's/\(aa\|bb\)/NEW/gi'
@@ -1943,6 +1943,7 @@ nm [options, ...] file
 
 ```sh
 objdump -h          # 查看是否有 debug 相关字段，如 .debug_info
+    -d      : 显示程序汇编代码
 ```
 
 通过符号表查看全局/静态变量默认值:
@@ -2193,6 +2194,7 @@ mount -o remount,rw,relatime /path/to/mount
 
 ### who
 
+[loginctl](#loginctl)
 查看所有登录用户，一个终端为一个登录
 
 ```sh
@@ -2205,6 +2207,15 @@ user3       pts/2       2023-10-11 09:51 (172.168.1.100)            # ssh登录�
 
 # 查看当前终端的pts值
 tty         # /dev/pts/2
+```
+
+### loginctl
+
+```sh
+# 显示所有登录用户名
+loginctl list-users
+# 显示所有会话
+loginctl list-sessions
 ```
 
 ### apropos
@@ -2300,6 +2311,20 @@ hexdump -e '1/4 "%u." 1/4 "%u." 1/4 "%u." 1/4 "%u\n"' ip.bin
 # 关闭：shopt -u globstar
 # 查看是否开启：shopt globstar
 ls **/*.txt
+```
+
+### 脚本重启后只能执行一次
+
+```sh
+#!/bin/bash
+FLAG_FILE="/var/run/my_script.lock"
+if [ -f "$FLAG_FILE" ]; then
+    echo "This script has already been executed."
+    exit -1
+fi
+touch "$FLAG_FILE" || { echo "Cannot create flag file!"; exit 1; }
+
+echo "command to be executed"
 ```
 
 ## QA

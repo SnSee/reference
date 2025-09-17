@@ -102,14 +102,14 @@ nnoremap <S-F10> :w<CR>:!./%<CR>
 inoremap <S-F10> <C-\><C-n>:w<CR>:!./%<CR>
 
 " 设置自动补全括号
-inoremap { {<Enter>}<Esc>O
-inoremap { {}<Esc>i
-inoremap ( ()<Esc>i
-inoremap [ []<Esc>i
-
-inoremap } <c-r>=ClosePair('}')<CR>
-inoremap ) <c-r>=ClosePair(')')<CR>
-inoremap ] <c-r>=ClosePair(']')<CR>
+" inoremap { {<Enter>}<Esc>O
+" inoremap { {}<Esc>i
+" inoremap ( ()<Esc>i
+" inoremap [ []<Esc>i
+" 
+" inoremap } <c-r>=ClosePair('}')<CR>
+" inoremap ) <c-r>=ClosePair(')')<CR>
+" inoremap ] <c-r>=ClosePair(']')<CR>
 " inoremap <c-r>=ClosePair
 
 " 复制光标所在位置单词到系统粘贴板

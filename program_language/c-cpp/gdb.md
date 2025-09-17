@@ -189,6 +189,7 @@ Breakpoint 2 at 0x5555555551a9: file a.c, line 3.
 ```yml
 run(r)              : 开始调试，在触发的第一个断点处暂停
 start               : 开始调试，在main函数第一行暂停
+starti              : 在汇编级代码第一行暂停
 continue(c)         : 运行至下一个触发的断点处暂停
 step(s)             : 从断点位置一行一行运行，遇到函数进入，可加数值参数，表示运行行数
 next(n)             : 从断点位置一行一行运行，遇到函数 不 进入，可加数值参数，表示运行行数
@@ -374,7 +375,11 @@ Ctrl-F: 右箭头
 
 ## tui 界面
 
-代码错乱时 Ctrl-L 清屏
+* 代码错乱时 Ctrl-L 清屏
+* 鼠标无法选中问题：
+    1. set tui mouse-events 使用终端控制鼠标，但有的版本不可用
+    2. 按住 shift 使用鼠标左键选中内容，有的终端点击已选中内容时会取消选择，此时可重选
+    3. 如果单击无法取消已选中内容，可以先添加新内容，然后反选不需要的部分
 
 ```yml
 tui reg <寄存器类型>: 打开寄存器窗口，显示处理器的寄存器内容，当寄存器内容发生改变时高亮显示
@@ -386,6 +391,15 @@ tui reg <寄存器类型>: 打开寄存器窗口，显示处理器的寄存器�
     b: 该断点没触发过
     +: 断点被激活
     -: 断点被禁用
+```
+
+通过 [快捷键](#快捷键) 进入 tui，也可通过 layout 命令进入
+
+```sh
+(gdb) layout asm
+(gdb) layout src
+(gdb) layout regs
+(gdb) layout split
 ```
 
 ## 自动化测试
@@ -646,3 +660,30 @@ PyIsTrue()
 ## 调试 python
 
 [教程](https://devguide.python.org/development-tools/gdb/index.html)
+
+## 调试汇编
+
+[Assembly](../assembly/assembly.md)
+[gdb调试汇编](https://zhuanlan.zhihu.com/p/259625135)
+
+```sh
+# 查看汇编代码，能看到函数名
+objdump -d a.out
+gdb a.out
+
+# ctrl-x 2 查看汇编代码
+# 打断点
+(gdb) b function_name       # 函数断点
+(gdb) b *0xffff             # 代码地址断点
+# 如果想对指定的汇编指令打断点，可以使用 objdump 查看指令地址
+# 注意这个地址只是偏移量，实际运行后需要加上基地址
+objdump -d a.out | egrep "mov\s+%rsp,%rbp"
+# 基地址一般是 0x555555554000，通过 info 命令可以查看
+(gdb) info proc mappings
+
+(gdb) run
+(gdb) i r                   # 查看所有寄存器
+(gdb) i r rip               # 查看指定寄存器
+(gdb) ni                    # 单步执行汇编代码
+(gdb) si
+```

@@ -99,6 +99,8 @@ code --install-extension <extension-name>   # 安装指定插件
 
 ### Vim
 
+#### vim 快捷键
+
 修改快捷键
 
 ```text
@@ -135,11 +137,17 @@ code --install-extension <extension-name>   # 安装指定插件
 
 <h1 id="vim-foldopen"></h1>
 
+#### 折叠
+
 按 j 时自动打开折叠问题
 
 ```text
 打开设置，搜索 foldfix，勾选即可
 ```
+
+#### 中文有问题
+
+切换到 insert mode 输入中文有问题，设置搜索 editor.experimentalEditContextEnabled，关闭 Editor: Edit Context
 
 ### Qt Configure
 
@@ -151,6 +159,26 @@ ctrl + shift + p: QtConfigure: New Project 根据提示配置项目后就会在�
 ### WSL
 
 [WSL + vscode](https://zhuanlan.zhihu.com/p/409547049)
+
+### clangd
+
+[clangd](../program_language/c-cpp/clang.md#clangd)
+
+.vscode/settings.json 中设置禁止在 include 下加下划线(其他链接也不会被识别为链接)
+[issue](https://github.com/clangd/clangd/issues/630)
+
+```json
+{
+    "[h]": {
+        "editor.links": false
+    },
+    "[c]": {
+    },
+    "[cpp]": {
+        "editor.links": false
+    }
+}
+```
 
 ## Debug
 

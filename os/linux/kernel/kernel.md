@@ -258,6 +258,8 @@ git clone https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmwar
 
 [kernel 启动项](https://www.kernel.org/doc/html/latest/admin-guide/kernel-parameters.html)
 
+[屏蔽内核模块](https://zhuanlan.zhihu.com/p/653064228)
+
 安装多个系统内核时进入内核选择界面
 
 ```sh
@@ -355,6 +357,10 @@ sudo reboot
 ```sh
 # 只编译指定模块，如 amdgpu.ko
 make M=drivers/gpu/drm/amd/amdgpu -j5
+if [[ $? != 0 ]]; then
+    echo "Build ERROR"
+    exit -1
+fi
 # 关闭使用 amdgpu 驱动的进程
 sudo systemctl stop display-manager
 sudo systemctl stop gdm
@@ -559,7 +565,9 @@ sudo ls /sys/kernel/debug/dri/129
 ./scripts/config -d CONFIG_STRICT_KERNEL_RWX
 ```
 
-### printk
+### log
+
+#### printk
 
 [dmesg日志等级](#dmesg)
 
@@ -573,6 +581,22 @@ sudo ls /sys/kernel/debug/dri/129
 if (printk_ratelimit()) {
     printk(KERN_NOTICE "The printer is still on fire\n");
 }
+```
+
+#### dump_stack
+
+```c
+// 打印函数堆栈
+dump_stack();
+```
+
+#### dmesg
+
+```sh
+# 查看本次内核日志 /var/log/dmesg
+dmesg
+# 查看历史内核日志
+cat /var/log/kern.log
 ```
 
 ### gdb
@@ -971,6 +995,28 @@ sudo modprobe amdgpu            # 安装 /lib/modules 下的 module，会自动�
 sudo insmod ./amdgpu.ko         # 安装指定路径的 module，不会自动安装依赖的 module
 ```
 
+#### 强制卸载
+
+当加载 module 报错时，使用 -f 也无法卸载，可以参考下面的方式
+
+[force_unload.c](src/modules/force_unload/force_unload.c)
+
+```sh
+# 查看引用计数，大于 0 需要重置
+cat /sys/module/amdgpu/refcnt
+# 如果显示为 coming 表示正在初始化，此时不仅要重置引用计数，还要重置状态
+cat /sys/module/amdgpu/initstate
+
+# 在 force_unload.c 所在目录
+make
+sudo insmod force_unload.ko
+sudo rmmod force_unload
+# 然后尝试卸载出错模块
+sudo rmmod amdgpu
+
+# 卸载后无法重新安装，待解决
+```
+
 ### drm
 
 [drm-gem](https://www.systutorials.com/docs/linux/man/7-drm-gem)
@@ -1062,6 +1108,10 @@ setpci -s 03:00.0 INTERRUPT_LINE
 # 如果支持中断是非 0 值，表示使用哪个 pin 发出中断信号
 # 一个 PCI connector 有 4 个 interrupt pins
 setpci -s 03:00.0 INTERRUPT_PIN
+
+# 查看系统已经处理的中断数量
+# 第一列是中断编号
+cat /proc/interrupts
 ```
 
 #### lspci

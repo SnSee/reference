@@ -618,6 +618,8 @@ set cpo-=<letter>
 
 ```sh
 set scrolloff=0           # 设置光标到屏幕上下边缘最小行数
+set wrap                  # 自动换行
+set nowrap                # 不自动换行
 ```
 
 ### his/history
@@ -775,20 +777,6 @@ git submodule update --init --recursive
 # 编译
 ```
 
-### vim-autoformat
+## vscode
 
-```vim
-function! strict_gf()
-    let saved_isfname = &isfname
-    set isfname-=,;()"
-    let filename = expand("<cfile>")
-    let &isfname = saved_isfname
-    if filereadable(filename)
-        execute 'edit ' . fnameescape(filename)
-    else
-        echo "File not found: " . filename
-    endif
-endfunction
-
-nnoremap ngf :call strict_gf()<CR>
-```
+[vscode-vim](../vscode/vscode.md)

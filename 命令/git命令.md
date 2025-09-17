@@ -25,6 +25,18 @@ git config --global user.name "Your Name"   # 设置用户名
 git config --global core.editor "vim"
 ```
 
+### 推荐配置
+
+```sh
+git config --global user.name       "tmp"
+git config --global user.email      "tmp@example.com"
+git config --global core.editor     "vim"
+git config --global core.quotepath  false
+git config --global core.autocrlf   input
+
+# git config core.protectNTFS false
+```
+
 ## 编码
 
 ```bash
@@ -177,6 +189,26 @@ git config --global url."https://new.git".insteadOf https://old.git
 git config --global push.default "current"
 ```
 
+## 本地服务器
+
+```sh
+# 添加 git 用户
+sudo adduser git
+# 创建仓库
+sudo mkdir /repo && cd /repo
+git init --bare test.git
+sudo chown git:git /repo/test.git
+
+# 同一个主机其他用户 clone
+git config --global --add safe.directory /repo/test.git
+git clone /repo/test.git        
+# 需要加入到 git 用户组才能 push
+sudo usermod -aG git username
+
+# 在其他主机上 clone
+git clone git@server_ip:/opt/git/project.git
+```
+
 ## submodule
 
 ```sh
@@ -261,4 +293,23 @@ dbg
 # 忽略目录下所有文件，但保留指定格式的文件
 folder/*
 !folder/*.txt
+```
+
+## QA
+
+### 仓库损坏修复
+
+[修复损坏的松散对象](https://jishuzhan.net/article/1953848054045519873)
+
+现象: 使用 git status 等命令时报错对象文件为空
+
+```sh
+git fsck --full                 # 检查仓库完整性，会报错对象为空
+git remote -v                   # 确保远程仓库存在
+cp -r .git .git_backup          # 备份
+find .git/objects/ -size 0 -exec rm -f {} \;    # 删除所有空对象
+git fsck --full                 # 再次检查，会报错无效指针及悬空对象
+git fetch origin                # 从远程仓库更新
+git reset --hard origin/branch_name     # 重置本地分支
+git fsck --full                 # 再次检查，报告正常
 ```

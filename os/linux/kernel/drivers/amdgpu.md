@@ -237,7 +237,23 @@ void amdgpu_gmc_gart_location(struct amdgpu_device *adev, struct amdgpu_gmc *mc)
     // GTT domain 地址范围通常在整个 GMC 地址范围的开头或末尾
     mc->gart_start = 0;
     mc->gart_start = max_mc_address - mc->gart_size + 1;
+
+    // GART 起始地址要 4GB 对齐
+    const uint64_t four_gb = 0x100000000ULL;
+    mc->gart_start &= ~(four_gb - 1);
     mc->gart_end = mc->gart_start + mc->gart_size - 1;
+}
+
+// 打印 gpu_addr 验证是否在 [gart_start, gart_end]
+// domain=AMDGPU_GEM_DOMAIN_GTT
+int amdgpu_bo_create_kernel(struct amdgpu_device *adev,
+            unsigned long size, int align,
+            u32 domain, struct amdgpu_bo **bo_ptr,
+            u64 *gpu_addr, void **cpu_addr) {
+    amdgpu_bo_create_reserved(adev, size, align, domain, bo_ptr, gpu_addr, cpu_addr);
+    if (gpu_addr) {
+        printk("amdgpu_bo_create_kernel domain=%u, size=%lx, gpu_addr=%llx\n", domain, size, *gpu_addr);
+    }
 }
 ```
 
@@ -290,7 +306,9 @@ WREG32_SOC15(GC, 0, mmGCVM_CONTEXT0_PAGE_TABLE_END_ADDR_HI32,   (u32)(adev->gmc.
 
 // 设置 GART Table 在 vram 中的地址
 struct amdgpu_vmhub *hub = &adev->vmhub[AMDGPU_GFXHUB_0];
-uint64_t pt_base = amdgpu_gmc_pd_addr(adev->gart.bo);       // 获取 GART Table 在 vram 中的地址
+// 获取 GART Table PDE 在 vram 中的物理地址
+// 由于 GART Table 是一个一级页表，所以 PDE 地址就是整个 GART Table 的入口
+uint64_t pt_base = amdgpu_gmc_pd_addr(adev->gart.bo);
 WREG32_SOC15_OFFSET(GC, 0, mmGCVM_CONTEXT0_PAGE_TABLE_BASE_ADDR_LO32, hub->ctx_addr_distance * vmid, lower_32_bits(page_table_base));
 WREG32_SOC15_OFFSET(GC, 0, mmGCVM_CONTEXT0_PAGE_TABLE_BASE_ADDR_HI32, hub->ctx_addr_distance * vmid, upper_32_bits(page_table_base));
 ```
@@ -349,6 +367,52 @@ int amdgpu_gart_unbind(struct amdgpu_device *adev, uint64_t offset, int pages) {
     amdgpu_device_flush_hdp(adev, NULL);
     for (i = 0; i < adev->num_vmhubs; i++)
         amdgpu_gmc_flush_gpu_tlb(adev, 0, i, 0);
+}
+```
+
+### VRAM Page Table
+
+```mermaid
+flowchart LR
+        amdgpu_driver_open_kms
+    --> amdgpu_vm_init
+    --> amdgpu_vm_pt_create
+    --> amdgpu_bo_create_vm
+```
+
+```c
+int amdgpu_vm_init(struct amdgpu_device *adev, struct amdgpu_vm *vm, int32_t xcp_id) {
+    struct amdgpu_bo_vm *root;
+    amdgpu_vm_pt_create(adev, vm, adev->vm_manager.root_level, false, &root, xcp_id);
+    struct amdgpu_bo *root_bo = amdgpu_bo_ref(&root->bo);
+    amdgpu_vm_bo_base_init(&vm->root, vm, root_bo);
+}
+```
+
+```c
+// vram_start，对应 mmGCMC_VM_FB_LOCATION_BASE
+u64 base = adev->gfxhub.funcs->get_fb_location(adev);
+// page table 中存储的物理地址相对于 vram_start 的 offset，对应 mmGCMC_VM_FB_OFFSET
+// 如果放在 vram 中，该值一般为 0
+adev->vm_manager.vram_base_offset = adev->gfxhub.funcs->get_mc_fb_offset(adev);
+```
+
+```c
+// calculate vram buffer's physical address from MC address
+uint64_t amdgpu_gmc_vram_mc2pa(struct amdgpu_device *adev, uint64_t mc_addr) {
+    return mc_addr - adev->gmc.vram_start + adev->vm_manager.vram_base_offset;
+}
+```
+
+```c
+// 获取 page table 入口 vm->root
+void amdgpu_vm_pt_start(struct amdgpu_device *adev,
+                   struct amdgpu_vm *vm, uint64_t start,
+                   struct amdgpu_vm_pt_cursor *cursor) {
+    cursor->pfn = start;
+    cursor->parent = NULL;
+    cursor->entry = &vm->root;
+    cursor->level = adev->vm_manager.root_level;
 }
 ```
 
