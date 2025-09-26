@@ -35,6 +35,9 @@ git config --global core.quotepath  false
 git config --global core.autocrlf   input
 
 # git config core.protectNTFS false
+# 优先使用 fast-forward 进行合并
+git config --global merge.ff        true
+git config --global pull.ff         true
 ```
 
 ## 编码
@@ -66,6 +69,110 @@ git checkout -b <new_branch_name>
 
 # 检出单个文件的历史版本(版本不变，仅仅是文件内容变成检出版本)
 git checkout <commit_id> test.txt
+```
+
+### git log
+
+```sh
+# 查看提交记录 graph
+git log --graph
+    --oneline       : 精简显示
+    --date-order    : 按时间排序
+```
+
+### rebase / merge
+
+```yml
+merge               : 会保留原始的提交记录，并产生一个合并记录
+rebase              : 会将当前分支从分叉位置开始的修改全部放到另一个分支之后并产生新的提交记录
+merge fast-forward  : 如果另一个分支包含当前分支的全部提交，则使用 ff 合并后不会产生记录
+```
+
+```sh
+# branch_A: 在 M 提交之后有两次提交
+M1 -> A1 -> A2
+# branch_B
+M1 -> B1 -> B2
+# 假设提交时间顺序为 A1, B1, A2, B2
+```
+
+#### git rebase
+
+```sh
+git checkout branch_A
+git rebase branch_B
+# 注意 A1，A2 只是内容相同，但是 commit_id 变了
+# 和 merge 的 commit_id 对比能看出来
+git log --graph --oneline
+* 23bdc6f (HEAD -> A) A2
+* 6747068 A1
+* 333fe9c (B) B2
+* 81099ef B1
+* 0bbb5af (master) M1
+```
+
+#### git merge
+
+```sh
+git checkout branch_A
+git merge branch_B
+# 默认情况下同一分支的所有提交会在一起
+git log --graph --oneline
+*   ff1d322 (HEAD -> A) Merge branch 'B' into A
+|\
+| * 333fe9c (B) B2
+| * 81099ef B1
+* | 11f096e A2
+* | 43e5354 A1
+|/
+* 0bbb5af (master) 0
+
+# 按时间排序后不同分支的提交可能交叉
+git log --graph --oneline --date-order
+*   ff1d322 (HEAD -> A) Merge branch 'B' into A
+|\
+| * 333fe9c (B) B2
+* | 11f096e A2
+| * 81099ef B1
+* | 43e5354 A1
+|/
+* 0bbb5af (master) 0
+```
+
+#### fast-forward merge
+
+```sh
+git checkout branch_A
+# 使用 fast-forward 方式合并
+git merge --ff-only branch_B
+# 由于分支 A 和分支 B 在相同节点之后都有修改，所以会失败
+# fatal: Not possible to fast-forward, aborting.
+
+git checkout -b branch_C
+# branch_C
+M1 -> A1 -> A2 -> C1 -> C2
+
+# 1. fast-forward 方式不会产生 merge 记录
+# 此时和 rebase 看起来没有区别
+git merge --ff-only C
+git log --graph --oneline
+* c8b0b28 (HEAD -> A, C) C2
+* 2e3056d C1
+* 11f096e A2
+* 43e5354 A1
+* 0bbb5af (master) 0
+
+# 2. 非 fast-forward 方式会产生 merge 记录
+git merge --no-ff C
+git log --graph --oneline
+*   ab2e2f0 (HEAD -> A) Merge branch 'C' into A
+|\
+| * c8b0b28 (C) C2
+| * 2e3056d C1
+|/
+* 11f096e A2
+* 43e5354 A1
+* 0bbb5af (master) 0
 ```
 
 ## 查看
@@ -198,6 +305,8 @@ sudo adduser git
 sudo mkdir /repo && cd /repo
 git init --bare test.git
 sudo chown git:git /repo/test.git
+# 为用户组添加目录写权限
+# find /repo/test.git -type d -exec chmod g+w {} +
 
 # 同一个主机其他用户 clone
 git config --global --add safe.directory /repo/test.git

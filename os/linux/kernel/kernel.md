@@ -244,6 +244,20 @@ ACPI（Advanced Configuration and Power Interface）​ 是一种计算机行业
 * 控制设备的启用/禁用（如禁用独立显卡以省电）。
 * 管理设备的电源状态（如 D0 工作状态、D3cold 深度休眠状态）。
 
+### 内存屏障
+
+[什么是内存屏障](https://www.cnblogs.com/Chary/p/18112934)
+[mfence, lfence, sfence](https://blog.csdn.net/liuhhaiffeng/article/details/106493224)
+
+内存屏障（Memory Barriers）用来保证在此指令之后的内存访问肯定在指令之前的内存访问之后（如果不设置，内存访问可能被重排序）
+x86_64 架构中提供了 3 个屏障指令
+
+```c
+#define mb()    asm volatile("mfence":::"memory")       // 读写 fence
+#define rmb()   asm volatile("lfence":::"memory")       // 读 fence
+#define wmb()   asm volatile("sfence" ::: "memory")     // 写 fence
+```
+
 ## firmware(固件)
 
 [缺少固件](https://www.cnblogs.com/long5683/p/13830021.html)
@@ -981,6 +995,30 @@ sudo trace-cmd record -p function_graph -g amdgpu_cs_ioctl -F ./amdgpu_test -s 3
 # 追踪 drm cs 单元测试中和 amdgpu_cs 有关事件
 sudo trace-cmd record -e "amdgpu_cs*" -F ./amdgpu_test -s 3 -t 1
 trace-cmd report
+```
+
+### pcie_debug
+
+[github](https://github.com/Martoni/pcie_debug)
+
+pcie_debug 是读取 PCIe BARx 地址空间的命令行工具
+
+```c
+#include <stdint.h>
+// 需要将 struct device_t 的属性修改类型，否则只能访问 256M
+size_t size;
+size_t offset;
+// 改为
+uint64_t size;
+uint64_t offset;
+```
+
+```sh
+sudo pcie_debug
+    -s  : 指定 pci 设备编号
+    -b  : 指定 BAR 编号，如 -b 0
+    -f  : 执行文件中命令
+    -q  : 执行文件中命令后退出
 ```
 
 ## Module

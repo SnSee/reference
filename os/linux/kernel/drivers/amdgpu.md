@@ -204,7 +204,7 @@ kernel tells the the ring what VMID to use for that command buffer. VMIDs are al
 The userspace drivers maintain their own address space and the kernel sets up their pages tables accordingly when they submit
 their command buffers and a VMID is assigned.
 
-### GART Table
+### GART
 
 ```mermaid
 flowchart LR
@@ -370,50 +370,207 @@ int amdgpu_gart_unbind(struct amdgpu_device *adev, uint64_t offset, int pages) {
 }
 ```
 
-### VRAM Page Table
+### VRAM
 
-```mermaid
-flowchart LR
-        amdgpu_driver_open_kms
-    --> amdgpu_vm_init
-    --> amdgpu_vm_pt_create
-    --> amdgpu_bo_create_vm
-```
+1. vram manager 初始化
 
 ```c
-int amdgpu_vm_init(struct amdgpu_device *adev, struct amdgpu_vm *vm, int32_t xcp_id) {
-    struct amdgpu_bo_vm *root;
-    amdgpu_vm_pt_create(adev, vm, adev->vm_manager.root_level, false, &root, xcp_id);
-    struct amdgpu_bo *root_bo = amdgpu_bo_ref(&root->bo);
-    amdgpu_vm_bo_base_init(&vm->root, vm, root_bo);
+// 获取 pcie BAR0（vram BAR）地址及大小，该地址经过映射后供 CPU 访问 vram
+adev->gmc.aper_base = pci_resource_start(adev->pdev, 0);
+adev->gmc.aper_size = pci_resource_len(adev->pdev, 0);
+// 在 ttm 中映射 vram 地址空间
+adev->mman.aper_base_kaddr = ioremap_wc(adev->gmc.aper_base, adev->gmc.visible_vram_size);
+
+// 获取 vram 基地址，该地址是 GPU 访问 vram 时使用的地址
+u64 base = RREG32_SOC15(GC, 0, mmGCMC_VM_FB_LOCATION_BASE);
+adev->gmc->vram_start = base;
+
+// 初始化 drm buddy system，buddy system 只需要知道 vram 大小即可
+drm_buddy_init(&mgr->mm, man->size, PAGE_SIZE);
+/* 如 4G 大小的 vram，可能被分成如下 blocks:
+    buddy block 0: start=00000000, size: 80000000
+    buddy block 1: start=80000000, size: 40000000
+    buddy block 2: start=c0000000, size: 20000000
+    buddy block 3: start=e0000000, size: 10000000
+    buddy block 4: start=f0000000, size: 8000000
+    buddy block 5: start=f8000000, size: 4000000
+    buddy block 6: start=fc000000, size: 2000000
+    buddy block 7: start=fe000000, size: 1000000
+    当申请内存时，buddy system 会从最小的 block 查询剩余空间是否足够，如果足够就返回对应地址，注意这个地址需要加上 vram_start 才是 gpu 可用地址（mc_address）
+*/
+```
+
+2. KMD 向 vram domain 申请内存
+
+```c
+// ttm 会调用之前注册的 vram manager 回调函数(amdgpu_vram_mgr_new)申请 vram
+// ttm_bo_alloc_resource
+struct ttm_resource_manager *man = ttm_manager_type(bo->bdev, place->mem_type);
+man->func->alloc(man, bo, place, res_ptr);
+
+// amdgpu_vram_mgr_new 中调用 buddy system 申请内存
+// 申请到的地址最终保存到 bo->tbo.resource->start
+drm_buddy_alloc_blocks(...);
+// 获取 gpu address 时需要加上 vram domain 基地址
+gpu_addr = (bo->tbo.resource->start << PAGE_SHIFT) + amdgpu_ttm_domain_start(adev, TTM_PL_VRAM);
+```
+
+3. UMD 向 vram domain 申请内存
+
+UMD 申请内存时不仅需要 KMD 的步骤，还需要将虚拟地址到物理地址的映射关系写入 page table
+
+```c
+// 1. UMD 通过 ioctl 申请 vram
+// UMD 不能直接持有 gpu_addr，只能通过 handle 访问 BO
+int amdgpu_bo_alloc(...) {
+    drmCommandWriteRead(dev->fd, DRM_AMDGPU_GEM_CREATE,
+&args, sizeof(args));
+    u32 handle = args.out.handle;
 }
+
+// 2. UMD 通过 ioctl 更新 page table
+// 申请虚拟地址，虚拟地址范围从 KMD gpu_info 获取，但分配完全由 libdrm 管理
+amdgpu_va_range_alloc(...);
+// amdgpu_bo_va_op(buf_handle, 0, size, *vmc_addr, 0, AMDGPU_VA_OP_MAP);
+drmCommandWriteRead(dev->fd, DRM_AMDGPU_GEM_VA, &va, sizeof(va));
+
+// 3. KMD 更新 vm page table
 ```
 
-```c
-// vram_start，对应 mmGCMC_VM_FB_LOCATION_BASE
-u64 base = adev->gfxhub.funcs->get_fb_location(adev);
-// page table 中存储的物理地址相对于 vram_start 的 offset，对应 mmGCMC_VM_FB_OFFSET
-// 如果放在 vram 中，该值一般为 0
-adev->vm_manager.vram_base_offset = adev->gfxhub.funcs->get_mc_fb_offset(adev);
+4. alloc vram function_graph
+
+```sh
+# DRM_AMDGPU_GEM_CREATE
+amdgpu_gem_create_ioctl BEGIN
+  amdgpu_bo_create_user BEGIN
+    amgpu_bo_create domain: 4, BEGIN
+      ttm_bo_init_reserved BEGIN
+        ttm_bo_validate BEGIN
+          ttm_bo_alloc_resource BEGIN
+            amdgpu_vram_mgr_new BEGIN
+              ttm_resource_init
+              # 由 drm buddy system 分配地址
+              amdgpu_vram_mgr_new drm_buddy_alloc_blocks fpfn: 0, lpfn: ff000000
+              amdgpu_vram_mgr_new resource.start: feadc
+            amdgpu_vram_mgr_new SUC END
+            ttm_bo_alloc_resource new resource.start: feadc
+          ttm_bo_alloc_resource SUC END
+          ttm_bo_handle_move_mem new_use_tt: 0, BEGIN
+            amdgpu_bo_move
+          ttm_bo_handle_move_mem SUC END
+        ttm_bo_validate SUC END
+      ttm_bo_init_reserved END
+      amdgpu_bo_create resource.start: feadc
+      gmc_v10_0_get_vm_pde
+      # drm buddy system 分配的地址需要加上 vram_start
+      amdgpu_bo_create gpu_addr: 80feadc000
+    amgpu_bo_create END
+  amdgpu_bo_create_user END
+  amgpu_gem_object_create gpu_addr: 80feadc000
+amdgpu_gem_create_ioctl END
 ```
 
-```c
-// calculate vram buffer's physical address from MC address
-uint64_t amdgpu_gmc_vram_mc2pa(struct amdgpu_device *adev, uint64_t mc_addr) {
-    return mc_addr - adev->gmc.vram_start + adev->vm_manager.vram_base_offset;
-}
+```sh
+# DRM_AMDGPU_GEM_VA
+amdgpu_gem_va_ioctl BEGIN
+  amdgpu_gem_va_ioctl gpu_addr: 80feadc000
+  amdgpu_gem_va_ioctl va_address: 100001000, offset_in_bo: 0
+  amdgpu_vm_bo_map saddr: 100001000
+  amdgpu_gem_va_update_vm BEGIN
+    amdgpu_vm_bo_update BEGIN
+      amdgpu_vm_ptes_update start: 100001, dst: feadc000, BEGIN
+        # 获取 page table 总起始地址
+        amdgpu_vm_pt_start entry gpu_addr=80fecf9000
+        # 申请 page table 节点(4 级 page table)
+        # PDB2 (包含 512 个 PDB1 节点)
+        amdgpu_vm_pt_alloc
+        # PDB1 (包含 512 个 PDB0 节点)
+        amdgpu_vm_pt_alloc
+        # PDB0 (包含 512 个 PTB 节点)
+        amdgpu_vm_pt_alloc
+        # PTB (包含 512 个 PTE 节点)
+        amdgpu_vm_pt_alloc
+        amdgpu_vm_pte_update_flags pe: 8, addr: feadc000
+        amdgpu_vm_sdma_update pe: 8, addr: feadc000, BEGIN
+          amdgpu_vm_sdma_set_ptes pe: 8, addr: feadc000, BEGIN
+            # pe = PTB_gpu_addr + pte_index(8)
+            # value = gpu_addr | flags
+            sdma_v5_2_vm_write_pte pe: 80fecf4008, value: feadc071
+          amdgpu_vm_sdma_set_ptes END
+        amdgpu_vm_sdma_update END
+      amdgpu_vm_ptes_update END
+      amdgpu_vm_sdma_commit
+    amdgpu_vm_bo_update END
+    # pde 在首次使用时也需要通过 amdgpu_vm_sdma_set_ptes 更新 page table
+    amdgpu_vm_update_pdes
+  amdgpu_gem_va_update_vm END
+amdgpu_gem_va_ioctl END
 ```
 
-```c
-// 获取 page table 入口 vm->root
-void amdgpu_vm_pt_start(struct amdgpu_device *adev,
-                   struct amdgpu_vm *vm, uint64_t start,
-                   struct amdgpu_vm_pt_cursor *cursor) {
-    cursor->pfn = start;
-    cursor->parent = NULL;
-    cursor->entry = &vm->root;
-    cursor->level = adev->vm_manager.root_level;
-}
+5. alloc GTT function_graph
+
+```sh
+# DRM_AMDGPU_GEM_CREATE
+amdgpu_gem_create_ioctl BEGIN
+  amdgpu_bo_create_user BEGIN
+    amgpu_bo_create domain: 2, BEGIN
+      ttm_bo_init_reserved BEGIN
+        ttm_bo_validate BEGIN
+          ttm_bo_alloc_resource BEGIN
+            amdgpu_gtt_mgr_new BEGIN
+              ttm_resource_init
+              # 由 drm_mm_insert_node_in_range 分配地址
+              amdgpu_gtt_mgr_new start: 7fffffffffffffff
+            amdgpu_gtt_mgr_new SUC END
+            ttm_bo_alloc_resource new resource.start: 7fffffffffffffff
+          ttm_bo_alloc_resource SUC END
+          ttm_bo_handle_move_mem new_use_tt: 1, BEGIN
+            amdgpu_bo_move
+          ttm_bo_handle_move_mem SUC END
+        ttm_bo_validate SUC END
+      ttm_bo_init_reserved END
+      amdgpu_bo_create resource.start: 7fffffffffffffff
+      # gpu_addr = start + gart_start
+      amdgpu_bo_create gpu_addr: 7ffefffff000
+    amgpu_bo_create END
+  amdgpu_bo_create_user END
+  amgpu_gem_object_create gpu_addr: 7ffefffff000
+amdgpu_gem_create_ioctl END
+```
+
+```sh
+amdgpu_gem_va_ioctl BEGIN
+  amgpu_gem_va_ioctl gpu_addr: 7ffefffff000
+  amgpu_gem_va_ioctl va_address: 100000000, offset_in_bo: 0
+  amdgpu_vm_bo_map BEGIN, saddr: 100000000
+  amdgpu_vm_bo_map END
+  amdgpu_gem_va_update_vm BEGIN
+    amdgpu_vm_bo_update BEGIN
+      amdgpu_vm_update_range BEGIN
+        # addr 是 dma_address，最终记录到 page table 的也是改地址
+        # 该地址保存在 bo->tbo.ttm->dma_address 中
+        amdgpu_vm_update_range cursor.start: 0, addr: 115017000
+        amdgpu_vm_ptes_update start: 100000, dst: 115017000, BEGIN
+          amdgpu_vm_pt_start entry gpu_addr=80fecf9000
+          amdgpu_vm_pt_alloc
+          amdgpu_vm_pt_alloc
+          amdgpu_vm_pt_alloc
+          amdgpu_vm_pt_alloc
+          amdgpu_vm_pte_update_flags BEGIN
+            amdgpu_vm_pte_update_flags pe: 0, addr: 115017000
+            amdgpu_vm_sdma_update pe: 0, addr: 115017000, BEGIN
+              amdgpu_vm_sdma_set_ptes pe: 0, addr: 115017000, BEGIN
+                sdma_v5_2_vm_write_pte pe: 80fecf4000, value: 115017077
+              amdgpu_vm_sdma_set_ptes END
+            amdgpu_vm_sdma_update END
+          amdgpu_vm_pte_update_flags END
+        amdgpu_vm_ptes_update END
+        amdgpu_vm_sdma_commit
+      amdgpu_vm_update_range END
+    amdgpu_vm_bo_update END
+    amdgpu_vm_update_pdes
+  amdgpu_gem_va_update_vm END
+amdgpu_gem_va_ioctl END
 ```
 
 ## CS (Command submit)
