@@ -499,6 +499,7 @@ amdgpu_gem_va_ioctl BEGIN
               amdgpu_vm_sdma_set_ptes pe: 8, addr: 1034dd000, BEGIN
                 # pe = PTB_gpu_addr + pte_index(8)
                 # value = dma_addr | flags
+                # 搜索 AMDGPU_PTE_VALID 查看有哪些 flags
                 sdma_v5_2_vm_write_pte pe: 80fecf4008, value: 1034dd073
               amdgpu_vm_sdma_set_ptes END
             amdgpu_vm_sdma_update END
@@ -543,6 +544,20 @@ drm_buddy_init(&mgr->mm, man->size, PAGE_SIZE);
 */
 ```
 
+#### VM page table
+
+```c
+// 为 page table bo 申请 vram，此时对象中的地址是虚拟地址
+int amdgpu_vm_pt_create(...);
+adev->vm->root.bo;
+
+// calculate vram buffer's physical address from MC address
+uint64_t amdgpu_gmc_vram_mc2pa(struct amdgpu_device *adev, uint64_t mc_addr) {
+    // 虚拟地址偏移加上物理基地址
+    return mc_addr - adev->gmc.vram_start + adev->vm_manager.vram_base_offset;
+}
+```
+
 #### KMD 向 vram domain 申请内存
 
 ```c
@@ -582,8 +597,74 @@ drmCommandWriteRead(dev->fd, DRM_AMDGPU_GEM_VA, &va, sizeof(va));
 
 #### UMD alloc vram function_graph
 
+##### amdgpu_vm_init
+
 ```sh
-# DRM_AMDGPU_GEM_CREATE
+amdgpu_vm_init BEGIN
+  amdgpu_vm_pt_create BEGIN
+    amdgpu_bo_create_vm BEGIN
+      amgpu_bo_create domain: 4, BEGIN
+        ttm_bo_init_reserved BEGIN
+          ttm_bo_validate BEGIN
+            ttm_bo_alloc_resource BEGIN
+              amdgpu_vram_mgr_new BEGIN
+                ttm_resource_init
+                amdgpu_vram_mgr_new drm_buddy_alloc_blocks fpfn: 0, lpfn: ff000000
+                amdgpu_vram_mgr_new resource.start: fecf9
+              amdgpu_vram_mgr_new END
+              ttm_bo_alloc_resource new resource.start: fecf9
+            ttm_bo_alloc_resource END
+            ttm_bo_handle_move_mem new_use_tt: 0, BEGIN
+              amdgpu_bo_move
+            ttm_bo_handle_move_mem END
+          ttm_bo_validate END
+        ttm_bo_init_reserved END
+        amdgpu_bo_create resource.start: fecf9
+        amdgpu_bo_create gpu_addr: 80fecf9000
+      amgpu_bo_create END
+      amdgpu_bo_create_vm gpu_addr=80fecf9000
+    amdgpu_bo_create_vm END
+  amdgpu_vm_pt_create END
+  amdgpu_vm_bo_base_init
+  amdgpu_vm_pt_clear BEGIN
+    ttm_bo_validate
+    amdgpu_vm_pt_clear pe: 0, addr: 0
+    amdgpu_vm_sdma_update pe: 0, addr: 0, BEGIN
+      amdgpu_vm_sdma_set_ptes pe: 0, addr: 0, BEGIN
+        # pde 全部置 0
+        sdma_v5_2_vm_set_pte_pde pe: 80fecf9000, addr: 0, count: 512
+      amdgpu_vm_sdma_set_ptes END
+    amdgpu_vm_sdma_update END
+    amdgpu_vm_sdma_commit BEGIN
+    amdgpu_vm_sdma_commit END
+  amdgpu_vm_pt_clear END
+amdgpu_vm_init END
+```
+
+##### flush vm page table
+
+注意: 在任务被提交到 scheduler 后才会刷新 page table
+
+```sh
+amdgpu_ib_schedule BEGIN
+  amdgpu_vm_flush ring: gfx_0.0.0, BEGIN
+    gfx_v10_0_ring_emit_vm_flush BEGIN
+      gmc_v10_0_emit_flush_gpu_tlb ring: gfx_0.0.0, vmid: 1, pd_addr: fecf9001, BEGIN
+        # 设置 page table 地址，reg 已经加上 GC 基地址，所以和头文件中不一致
+        # mmGCVM_CONTEXT0_PAGE_TABLE_BASE_ADDR_LO32 + vmid * ctx_addr_distance
+        # 0xfecf9001 中的 1 是 flag，即 val = gpu_addr | flags
+        # 搜索 AMDGPU_PTE_VALID 查看有哪些 flags
+        gfx_v10_0_ring_emit_wreg ring: gfx_0.0.0, reg: 28c9, val: fecf9001
+        gfx_v10_0_ring_emit_wreg ring: gfx_0.0.0, reg: 28ca, val: 0
+      gmc_v10_0_emit_flush_gpu_tlb END
+    gfx_v10_0_ring_emit_vm_flush END
+  amdgpu_vm_flush END
+amdgpu_ib_schedule END
+```
+
+##### DRM_AMDGPU_GEM_CREATE
+
+```sh
 amdgpu_gem_create_ioctl BEGIN
   amdgpu_bo_create_user BEGIN
     amgpu_bo_create domain: 4, BEGIN
@@ -613,8 +694,9 @@ amdgpu_gem_create_ioctl BEGIN
 amdgpu_gem_create_ioctl END
 ```
 
+##### DRM_AMDGPU_GEM_VA
+
 ```sh
-# DRM_AMDGPU_GEM_VA
 amdgpu_gem_va_ioctl BEGIN
   amdgpu_gem_va_ioctl gpu_addr: 80feadc000
   amdgpu_gem_va_ioctl va_address: 100001000, offset_in_bo: 0
@@ -638,6 +720,7 @@ amdgpu_gem_va_ioctl BEGIN
           amdgpu_vm_sdma_set_ptes pe: 8, addr: feadc000, BEGIN
             # pe = PTB_gpu_addr + pte_index(8)
             # value = gpu_addr | flags
+            # 搜索 AMDGPU_PTE_VALID 查看有哪些 flags
             sdma_v5_2_vm_write_pte pe: 80fecf4008, value: feadc071
           amdgpu_vm_sdma_set_ptes END
         amdgpu_vm_sdma_update END
