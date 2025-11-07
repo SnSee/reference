@@ -133,26 +133,6 @@ cnoremap <C-BS> <C-W>
 " 设置快捷显示当前文件路径函数
 command! Pwd echo expand('%:p')
 
-" 设置输入右括号时移动到右括号右侧
-function! ClosePair(char)
-    if getline('.')[col('.') - 1] == a:char
-        return "\<Right>"
-    else
-        return a:char
-    endif
-endfunction
-
-" 设置换行时如果在大括号内进行缩进
-imap <CR> <c-r>=ChangeLine('}')<CR>
-function! ChangeLine(char)
-    if getline('.')[col('.') - 1] == a:char
-        return "\<CR>\<Esc>\O"
-    else 
-        return "\<CR>"
-    endif
-endfunction
-
-
 set wildmenu
 set completeopt-=preview
 
@@ -163,35 +143,6 @@ set statusline=\ %<%F[%1*%M%*%n%R%H]%=\ %y\ %0(%{&fileformat}\ %{&fileencoding}\
 """"""""""""""""""""""""""""""""""""""""""""""""""""""
 " FUNCTION START
 """"""""""""""""""""""""""""""""""""""""""""""""""""""
-
-""" 设置 ctrl + / 自动注释当前行，目前只支持 #,",// 三种注释符号
-nnoremap <C-_> ^:call Auto_comment() <CR>j
-inoremap <C-_> <ESC> <C-_>
-function Auto_comment()
-	" 取消注释当前行
-	let b:line_num=line(".")
-	let b:cur_line=getline(b:line_num)
-	let b:fir_chr=strpart(b:cur_line, getcurpos()[2] - 1, 1)	"获取第一个非空字符
-	if match('#', b:fir_chr) > -1 && match(&filetype, "h") != 0 && match(&filetype, "c") != 0
-		" 正则匹配时不支持 (#|/) 这种写法
-		call setline(b:line_num, substitute(b:cur_line, '[#"/]/* *', "", ""))
-		return
-    elseif match('"/', b:fir_chr) > -1
-		call setline(b:line_num, substitute(b:cur_line, '[#"/]/* *', "", ""))
-		return
-	endif
-	" 注释当前行
-	if match(&filetype, "h") == 0 || match(&filetype, "c") == 0
-		let b:comment_mark="//"
-	elseif match(&filetype, "vim") == 0
-		let b:comment_mark='"'
-	else
-		let b:comment_mark="#"
-	endif
-	let b:new_line=substitute(b:cur_line, b:fir_chr, printf("%s %s", b:comment_mark, b:fir_chr), "")
-	call setline(b:line_num, b:new_line)
-endfunction
-
 
 """ <leader>f 跳转到光标处文件
 nnoremap <leader>f :call Strict_gf()<CR>
@@ -241,4 +192,4 @@ augroup END
 "call plug#end()
 
 " 打开关闭nerdtree
-nnoremap <silent> <leader>n :NERDTreeToggle<CR>
+" nnoremap <silent> <leader>n :NERDTreeToggle<CR>

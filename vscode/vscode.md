@@ -33,6 +33,11 @@
 * **Alt + I**   : 前进(Go Forward)
 * **Ctrl + Shift + O**: 显示当前文件所有函数，默认会选中当前函数，按 Enter 跳转到函数名位置
 
+Ctrl-P 在不同 vim 模式下行为:
+
+* Normal | Insert: 搜索 Go to File，将 When 设置为 vim.mode == 'Normal' || vim.mode == 'Insert'
+* Command        : 按键搜索上箭头，找到 Command 为 extension.vim_up 一项，添加 Ctrl-P 快捷键后将 When 修改为 vim.mode == 'CommandlineInProgress'
+
 ### 运行/调试
 
 * **Shift + F10**: 运行(Run Code)
@@ -99,6 +104,10 @@ code --install-extension <extension-name>   # 安装指定插件
 
 ### Vim
 
+#### 使用 vimrc
+
+设置中搜索 vim.vimrc.enable 勾选，vim.vimrc.path 设置路径
+
 #### vim 快捷键
 
 修改快捷键
@@ -131,6 +140,18 @@ code --install-extension <extension-name>   # 安装指定插件
             "before": ["<C-v>"],
             "after": ["v"]
         },
+    ],
+    "vim.insertModeKeyBindingsNonRecursive": [
+        {
+            "before": ["alt+j"],
+            "after": ["<Esc>"]
+        }
+    ],
+    "vim.commandLineModeKeyBindingsNonRecursive": [
+        {
+            "before": ["<Alt>-j"],
+            "after": ["<Esc>"]
+        }
     ]
 }
 ```

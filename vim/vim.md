@@ -27,6 +27,18 @@ endif
 :version
 ```
 
+## 升级
+
+```sh
+# 添加 PPA 仓库安装最新 Vim
+sudo add-apt-repository ppa:jonathonf/vim
+sudo apt update
+sudo apt install vim
+
+# 或者安装 vim-gtk3（功能更完整）
+sudo apt install vim-gtk3
+```
+
 ## 外观
 
 ### 主题
@@ -614,6 +626,17 @@ set cpo-=<letter>
 
 ## 命令
 
+### ! 执行 shell 命令
+
+```vim
+" 将文件内容作为 command 命令的输入，然后将文件内容替换为其输出
+" % 指整个文件，也可指定范围
+:%!command
+
+" 将 2-5 行作为 command 的输入，然后将 2-5 行替换为其输出
+:2,5!command
+```
+
 ### set
 
 ```sh
@@ -699,6 +722,9 @@ g<        查看上一条命令的输出
 [vim-plug](https://github.com/junegunn/vim-plug)
 
 ```sh
+# 安装 vim-plug 插件管理器
+curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+
 # 在线安装插件根据vim-plug教程即可
 # 离线安装插件(使用vim-plug)
 1. mkdir ~/.vim/autoload
@@ -775,6 +801,50 @@ git clone https://github.com/ycm-core/YouCompleteMe
 git submodule update --init --recursive
 # 打包上传到无网环境后解压
 # 编译
+```
+
+### coc
+
+```vim
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+
+:CocInfo                        " 安装后查看是否有异常
+:CocConfig                      " 打开配置文件
+:CocInstall coc-clangd          " 安装 C/C++/Objective-C 扩展
+:CocInstall coc-explorer        " 文件浏览器
+```
+
+C/C++ 配置
+[language-server](https://github.com/neoclide/coc.nvim/wiki/Language-servers)
+
+```json
+"languageserver": {
+  "clangd": {
+    "command": "clangd",
+    "rootPatterns": ["compile_flags.txt", "compile_commands.json"],
+    "filetypes": ["c", "cc", "cpp", "c++", "objc", "objcpp"]
+  }
+}
+```
+
+vimrc 配置
+
+```vim
+" 使用 tab 确认补全
+inoremap <silent><expr> <TAB> coc#pum#visible() ? coc#pum#confirm() : "\<Tab>"
+```
+
+### fzf
+
+快速查找文件
+
+```vim
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'junegunn/fzf.vim'
+
+" 重定向查找快捷键
+nnoremap <silent> <C-p> :Files<CR>
+inoremap <silent> <C-p> <ESC>:Files<CR>
 ```
 
 ## vscode

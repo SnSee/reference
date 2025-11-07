@@ -122,6 +122,14 @@ for i in range(100):
 print("\033[H", end="", flush=True)
 ```
 
+### 终端缩放
+
+[xdotool](#xdotool)
+
+ctrl shift +    : 放大
+ctrl +          : 缩小
+ctrl 0          : 重置缩放
+
 ## 快捷键
 
 终端
@@ -2300,6 +2308,15 @@ hexdump -v -e '"%08_ax: " 4/4 "%08x " "\n"' file
 
 # 按 ipv4 格式显示
 hexdump -e '1/4 "%u." 1/4 "%u." 1/4 "%u." 1/4 "%u\n"' ip.bin
+```
+
+### xdotool
+
+```sh
+xdotool type "hello \n world"           # 自动输入文本
+xdotool key ctrl+l                      # 相当于按下快捷键 ctrl + shift + +
+    # 组合键字符: ctrl, alt, shift
+    # 特殊字符需要用单词表示: plus(+), Return(回车)
 ```
 
 ## tips

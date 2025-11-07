@@ -71,6 +71,26 @@ git checkout -b <new_branch_name>
 git checkout <commit_id> test.txt
 ```
 
+## tag 标签
+
+```sh
+# 为指定节点打标签，默认当前节点
+git tag -a v1.0.0 $commid_id -m "Release version 1.0.0"
+    # -a: 标签名
+    # -m: 标签注释
+
+git tag                                 # 查看所有标签
+git show $tag_name                      # 查看标签详情
+git checkout $tag_name                  # 检出标签
+git checkout -b new_branch $tag_name    # 检出标签并创建新分支
+
+git push origin --tags                  # 推送到远程
+git push origin $tag_name               # 推送指定标签
+
+git tag -d $tag_name                    # 删除本地标签
+git push origin :refs/tags/v1.0.0       # 删除远程标签
+```
+
 ### git log
 
 ```sh
@@ -78,6 +98,9 @@ git checkout <commit_id> test.txt
 git log --graph
     --oneline       : 精简显示
     --date-order    : 按时间排序
+
+# 查看每次提交具体更改
+git log -p -- <file_path>
 ```
 
 ### rebase / merge
