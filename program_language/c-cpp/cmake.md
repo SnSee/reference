@@ -426,9 +426,29 @@ file(GLOB_RECURSE SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
 ### find_package
 
+find_package通过两种模式查找包：
+
+```yml
+Module模式(优先): 查找 Find<PackageName>.cmake文件
+Config模式(备选): 查找 <PackageName>Config.cmake或 <package-name>-config.cmake文件
+```
+
 ```cmake
 # 如查找qt
 find_package(Qt5 COMPONENTS Core Gui Widgets REQUIRED)
+```
+
+[pkg-config](../../命令/linux.md#pkg-config)
+
+```cmake
+# 借助 pkg-config 来查找libdrm
+# 可指定查找路径(搜索 .pc 文件)
+set(ENV{PKG_CONFIG_PATH} "/opt/libdrm/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LIBDRM REQUIRED libdrm)
+message(STATUS "INCLUDE DIRS: ${LIBDRM_INCLUDE_DIRS}")
+message(STATUS "LIBRARY DIRS: ${LIBDRM_LIBRARY_DIRS}")
+message(STATUS "LIBRARIES: ${LIBDRM_LIBRARIES}")
 ```
 
 ### message

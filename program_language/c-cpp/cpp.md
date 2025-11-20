@@ -119,6 +119,37 @@ void func() { printf("Current function name: %s\n", __func__); }
 %-ns: 左对齐输出（默认右对齐）
 ```
 
+```c
+// 指定输出的字符串宽度
+printf("%-*s", fixed_length, s);
+```
+
+### 可变参数
+
+#### va_start, va_end
+
+[Microsoft-Learn](https://learn.microsoft.com/zh-cn/cpp/c-runtime-library/reference/va-arg-va-copy-va-end-va-start)
+
+```c
+#include <stdio.h>
+#include <stdarg.h>
+
+void print_twice(const char *fmt, ...) {
+    char buf[256];
+    va_list args1, args2;
+
+    va_start(args1, fmt);
+    vsnprintf(buf, sizeof(buf), fmt, args1);
+    printf("P1: %s", buf);
+    va_end(args1);                              // va_end 后不可复用
+
+    va_start(args2, fmt);
+    vsnprintf(buf, sizeof(buf), fmt, args2);
+    printf("P2: %s", buf);
+    va_end(args2);
+}
+```
+
 ## 头文件
 
 ### climits

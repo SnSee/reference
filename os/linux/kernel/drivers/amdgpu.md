@@ -951,6 +951,7 @@ umr -c                                      # 查看显卡配置
 umr -lb                                     # 查看当前显卡的 IP blocks
 
 sudo umr --read *.*.mmUVD_CGC_.*            # 读取 register
+sudo umr --read beige_goby.gfx1035.mmGRBM_STATUS$  # 读取指定 block 的指定寄存器，$ 可以防止读取 STATUS2
 sudo umr --vm-read 0x1000 10 | xxd -e       # 读取 virtual memory
 sudo umr --ring-stream gfx[0:9]             # 读取 gfx ring 前 10 个 dword
 sudo umr --ring-stream gfx[.]               # 读取 gfx ring 中直到读指针位置的内容

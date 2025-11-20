@@ -5,6 +5,7 @@
 #include <linux/uaccess.h>
 #include <linux/string.h>
 #include <linux/time.h>
+#include <linux/slab.h>
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("NS");
@@ -91,7 +92,7 @@ static void add_log(const void* msg, size_t size)
         logp.size += write_size;
         remain_size -= write_size;
         offset += write_size;
-        if (logp.size == logp.cap) {
+        if (logp.size == logp.cap || logp.buf[logp.size - 1] == '\n') {
             flush_log();
         }
     }

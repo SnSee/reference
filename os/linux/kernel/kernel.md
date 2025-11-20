@@ -371,6 +371,8 @@ sudo reboot
 ```sh
 # 只编译指定模块，如 amdgpu.ko
 make M=drivers/gpu/drm/amd/amdgpu -j5
+# 指定宏定义
+# make EXTRA_CFLAGS="-DDEBUG -DVERSION=123"
 if [[ $? != 0 ]]; then
     echo "Build ERROR"
     exit -1
@@ -462,6 +464,22 @@ make EXTRA_CFLAGS="-DDEBUG -O2"
 ```makefile
 ccflags-y := -DDEBUG -O2
 ccflags-y += -g
+```
+
+## coding
+
+### container_of
+
+container_of 宏基于成员指针来获取其所属结构体的指针
+
+```c
+// 原理如下，完整宏在 kernel.h 或 stddef.h 中定义
+// ptr:    成员指针
+// type:   成员所属结构体类型
+// member: 成员在结构体中的名称
+#define container_of(ptr, type, member) ({              \
+    ((type *)((void*)(ptr) - offsetof(type, member)));  \
+})
 ```
 
 ## 特性
@@ -602,15 +620,6 @@ if (printk_ratelimit()) {
 ```c
 // 打印函数堆栈
 dump_stack();
-```
-
-#### dmesg
-
-```sh
-# 查看本次内核日志 /var/log/dmesg
-dmesg
-# 查看历史内核日志
-cat /var/log/kern.log
 ```
 
 ### gdb
@@ -1075,12 +1084,11 @@ sudo rmmod amdgpu
 用于显示内核环缓冲区（ring buffer）的内容。内核环缓冲区记录了系统启动以来内核产生的各种信息，包括设备初始化、驱动程序加载、错误信息、警告信息等。
 
 ```sh
-dmesg | grep amdgpu
+dmesg                               # 查看本次内核日志 /var/log/dmesg
+cat /var/log/kern.log               # 查看历史内核日志
 
-# 查看日志等级，第一个表示 console_loglevel
-cat /proc/sys/kernel/printk
-# 设置日志等级
-sudo dmesg -n debug
+cat /proc/sys/kernel/printk         # 查看日志等级，第一个表示 console_loglevel
+sudo dmesg -n debug                 # 设置日志等级
 ```
 
 ```yml

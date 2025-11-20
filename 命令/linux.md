@@ -44,12 +44,13 @@ ps aux | grep X     # 检查是否有相应进程
 ps aux | grep Xorg  # 检查是否有 X server
 ```
 
-### tty
+### tty 虚拟终端
 
 TTY 是 Linux 或 UNIX 的一个子系统，它通过 TTY 驱动程序在内核级别实现进程管理、行编辑和会话管理。
 
 ```sh
 ps aux | grep X     # 查看 tty 编号
+# Ctrl-Alt-数字 切换终端
 ```
 
 ## 终端(terminal)
@@ -1397,6 +1398,9 @@ dpkg [option...] action
 ```
 
 ```sh
+# 设置 pc 查找目录
+export PKG_CONFIG_PATH=/install_dir/lib/x86_64-linux-gnu/pkgconfig
+pkg-config --cflags --libs libdrm
 --list-all                      :查看所有已安装库
 --cflags --libs <lib_name>      :查看编译时如何使用库
 --modversion <lib_name>         :只显示版本号
@@ -2204,6 +2208,7 @@ mount -o remount,rw,relatime /path/to/mount
 
 [loginctl](#loginctl)
 查看所有登录用户，一个终端为一个登录
+tty 是虚拟终端，pts 是伪终端
 
 ```sh
 who

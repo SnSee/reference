@@ -274,11 +274,18 @@ n             查找后按 n 查找下一个
 N             查找后按 N 查找上一个
 ```
 
-查看历史记录
+### 查看历史记录
 
 ```vim
 ; jk浏览即可
 :history /
+```
+
+### regex
+
+```vim
+/\v(pre_pat)@<=match_pat        " 正向先行断言(pre_pat 满足才能匹配上)
+/\v(pre_pat)@<!match_pat        " 负向先行断言(pre_pat 不满足才能匹配上)
 ```
 
 ### 高亮

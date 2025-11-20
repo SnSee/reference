@@ -80,6 +80,7 @@ git tag -a v1.0.0 $commid_id -m "Release version 1.0.0"
     # -m: 标签注释
 
 git tag                                 # 查看所有标签
+git tag -n                              # 查看所有标签及描述
 git show $tag_name                      # 查看标签详情
 git checkout $tag_name                  # 检出标签
 git checkout -b new_branch $tag_name    # 检出标签并创建新分支
@@ -370,6 +371,8 @@ git config --global core.autocrlf false
 ```
 
 ## .gitignore
+
+[templates](https://github.com/github/gitignore)
 
 ```text
 # 忽略.idea文件夹及文件夹下文件
