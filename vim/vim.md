@@ -98,7 +98,7 @@ set guicursor+=r:hor20-blinkon650-blinkoff650
 通过 [showkey](../命令/linux.md#showkey) 命令查看组合键实际对应的 ascii 字符串
 
 |模式 |描述
-|- |- |
+|- |-
 |i |insert
 |n |normal
 |v |visual
@@ -288,7 +288,7 @@ N             查找后按 N 查找上一个
 /\v(pre_pat)@<!match_pat        " 负向先行断言(pre_pat 不满足才能匹配上)
 ```
 
-### 高亮
+### 高亮搜索
 
 ```vim
 :set hlsearch         " 高亮显示搜索结果, nolhsearch
@@ -355,7 +355,7 @@ L        跳转到屏幕内靠下方的行
 M        跳转到屏幕最中间的行
 ```
 
-**复制(y)和删除(d)等操作可以和跳转符号连用**
+复制(y)和删除(d)等操作可以和跳转符号连用
 
 ```sh
 dG        删除当前行及之后所有行
@@ -499,7 +499,7 @@ linux vim 捕获时的括号需要转义 \( \), vscode下不需要转义
 特殊字符使用 \ 转义为普通字符
 普通字符使用 \ 转义为特殊字符
 
-|匹配前缀 | 特殊字符 | 普通字符|
+|匹配前缀 | 特殊字符 | 普通字符
 | -  | -      | -
 | \m | ^$.*[] | others
 | \M | ^$     | others
@@ -740,22 +740,7 @@ curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.c
 4. 在github上下载nerdtree zip包，解压到 plugged，改名和 .vimrc 中名称一致
 5. 将如下的插件配置添加到 ~/.vimrc, 需要安装的插件通过 Plug 添加
 6. 重新啊打开vim执行 :PlugInstall 安装
-```
-
-```vim
-call plug#begin('~/.vim/plugged')
-
-" 目录树
-Plug 'preservim/nerdtree'
-
-" 显示最近打开的文件/目录
-Plug 'mhinz/vim-startify'
-
-" 自动补全
-Plug 'valloric/youcompleteme'
-Plug 'ervandew/supertab'
-
-call plug#end()
+7. 注释插件名后执行 :PlugClean 卸载插件
 ```
 
 ### nerdtree

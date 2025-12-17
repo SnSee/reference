@@ -46,10 +46,9 @@ make -j8 && make install
 target_dir=/install/dir
 ./configure --prefix=${target_dir} --with-gmp-include=${target_dir}/include --with-gmp-lib=${target_dir}/lib
 make -j8 && make install
-
-# for gcc
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${target_dir}/lib
 ```
+
+[动态库路径](#33-设置动态库路径)
 
 [切换gcc版本](https://blog.csdn.net/u014421520/article/details/119445020)
 
@@ -138,6 +137,8 @@ readelf -d app_name
 ```bash
 # 方式一
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/your/lib/path
+# 使用 sudo 时由于切换了用户，需要再次设置
+sudo LD_LIBRARY_PATH=/your/lib/path command
 
 # 方式二
 在 /etc/ld.so.conf 增加一行 /your/lib/path

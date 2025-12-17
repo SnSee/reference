@@ -28,7 +28,7 @@ help command_name
 
 ```yml
 -help/-h        : help
--args           : 被调试程序命令行参数
+-args           : 被调试程序命令行参数，gdb [options...] --args cmd -arg1 v1
 -cd             : 运行目录
 -command/-x     : 命令文件，启动后执行
 -ex             : 单条命令，可多次

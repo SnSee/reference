@@ -1064,6 +1064,17 @@ sudo rmmod amdgpu
 # 卸载后无法重新安装，待解决
 ```
 
+### modinfo
+
+```sh
+# 查看 module 信息
+modinfo amdgpu
+modinfo amdgpu.ko
+
+# 查看 module 对应的内核版本
+modinfo amdgpu | grep vermagic
+```
+
 ### drm
 
 [drm-gem](https://www.systutorials.com/docs/linux/man/7-drm-gem)

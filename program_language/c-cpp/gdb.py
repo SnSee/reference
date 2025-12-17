@@ -9,6 +9,7 @@ functions:
 py_eval     : Get output of any gdb commands (output is string)
 """
 import gdb
+import re
 import struct
 import subprocess
 
@@ -65,6 +66,50 @@ class PyPipeCommand(gdb.Command):
         print(stdout.rstrip())
 
 
+class PrintVector(gdb.Command):
+    def __init__(self):
+        super().__init__("pvector", gdb.COMMAND_DATA, gdb.COMPLETE_SYMBOL)
+
+    def usage(self):
+        print("usage:\n"
+              "pvecotr vec_name [index] [OPTIONS]\n"
+              "\n"
+              "OPTIONS:\n"
+              "    base: 2,10,16 etc. default: 10\n\n"
+              "    mem: member names of element\n"
+              "DEMO:\n"
+              "    pvector students 2 base=16 mem=name\n"
+              )
+
+    def invoke(self, args: str, from_tty):
+        if not args:
+            return self.usage()
+        argv = args.split()
+        vec_name = argv[0]
+        index = int(argv[1]) if len(argv) >= 2 else None
+        options = {pair[0]: pair[1] for pair in re.findall(r'(\w+)=(\w+)', args)}
+        self.print_vector(vec_name, index=index, base=options.get('base', 10))
+
+    def print_vector(self, vec_name: str, index: int = None, base: int = 10):
+        vec = gdb.parse_and_eval(vec_name)
+        start = vec['_M_impl']['_M_start']
+        finish = vec['_M_impl']['_M_finish']
+        size = int(finish - start)
+        if index is None:
+            _s = 0
+            _e = size
+        else:
+            if index >= size:
+                print(f'index({index}) >= size({size})')
+                return
+            _s = index
+            _e = index + 1
+
+        for i in range(_s, _e):
+            elem = (start + i).dereference()
+            gdb.write(f"  {i:3d}({start + i}): {elem}\n")
+
+
 class PyEval(gdb.Function):
     def __init__(self):
         super().__init__("py_eval")
@@ -77,6 +122,7 @@ class PyEval(gdb.Function):
             return str(gdb.parse_and_eval(c))
 
 
+########## DEMO ##########
 # commands
 Int2Binary()                # i2b val
 Int2Hex()                   # i2h val
@@ -85,6 +131,7 @@ try:
     gdb.execute('help pipe', to_string=True)
 except gdb.error:
     PyPipeCommand()         # pipe info | grep break | awk '{print $2}'
+PrintVector()
 
 # functions
 PyEval()                    # p $py_eval("gdb command")

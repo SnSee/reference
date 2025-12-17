@@ -201,6 +201,79 @@ ctrl + shift + p: QtConfigure: New Project 根据提示配置项目后就会在�
 }
 ```
 
+## 插件开发
+
+[samples](https://github.com/microsoft/vscode-extension-samples)
+[Get Started](https://code.visualstudio.com/api/get-started/your-first-extension)
+
+### Activation Events
+
+[activation-events](https://code.visualstudio.com/api/references/activation-events)
+
+### contributes
+
+contributes 是 package.json 中一个核心的配置节点，用于注册插件功能
+
+[contribution-points](https://code.visualstudio.com/api/references/contribution-points)
+
+```yml
+commands     : 注册可执行的命令(Command Pelette 中执行)
+menus        : 注册右键菜单
+keybindings  : 为命令绑定快捷键
+views        : 在侧边栏等位置添加自定义视图
+configuration: 添加可设置的配置
+```
+
+示例
+
+```json
+{
+  "contributes": {
+    "commands": [
+      {
+        "command": "extension.sayHello",
+        "title": "Hello World",
+        "category": "Hello"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "when": "resourceLangId == markdown",
+          "command": "markdown.showPreview",
+          "alt": "markdown.showPreviewToSide",
+          "group": "navigation"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "extension.sayHello",
+        "key": "ctrl+f1",
+        "mac": "cmd+f1",
+        "when": "editorTextFocus"
+      }
+    ],
+    "configuration": {
+      "title": "Settings Editor Test Extension",
+      "type": "object",
+      "properties": {
+        "settingsEditorTestExtension.booleanExample": {
+          "type": "boolean",
+          "default": true,
+          "description": "Boolean Example"
+        },
+        "settingsEditorTestExtension.stringExample": {
+          "type": "string",
+          "default": "Hello World",
+          "description": "String Example"
+        }
+      }
+    }
+  }
+}
+```
+
 ## Debug
 
 ### C/C++

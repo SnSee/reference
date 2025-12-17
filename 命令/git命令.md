@@ -87,6 +87,7 @@ git checkout -b new_branch $tag_name    # 检出标签并创建新分支
 
 git push origin --tags                  # 推送到远程
 git push origin $tag_name               # 推送指定标签
+git fetch --tags                        # 从远程更新标签
 
 git tag -d $tag_name                    # 删除本地标签
 git push origin :refs/tags/v1.0.0       # 删除远程标签
