@@ -1,61 +1,74 @@
-" Alt 组合键 <M-key> 需要检查是否需要通过 Ctrl-V Alt-<key> 的方式设置
-
 if has("gui_running")
-	set guifont=Monospace\ 14	" gvim 设置字体
-    colorscheme monokai
+    set guifont=Monospace\ 14
     set guicursor=n-v-c:block-blinkon650-blinkoff650
     set guicursor+=i:ver25-blinkon650-blinkoff650
     set guicursor+=r:hor20-blinkon650-blinkoff650
 else
-	set mouse-=a 				" vim下鼠标左键不进入visual模式,gvim下进入
+	set mouse-=a
 endif
 
+syntax on
 set encoding=UTF-8
 set fileencoding=UTF-8
 set number
 set autoindent
 set smartindent
+set tabstop=4
+set expandtab
+set shiftwidth=4
+set softtabstop=4
 " set cindent
-set scrolloff=5             " 移动光标时上下至少有 5 行
+set scrolloff=5
 set backspace=2
+"set cursorline		 	" highlight current row
+"set cursorcolumn		" highlight current column
 
-let loaded_matchparen = 1  "设置不高亮显示配对的括号
+" no highlight matching parentheses
+let loaded_matchparen=1
 
 set showcmd
 
-"set fdm=indent 			" 设置按 shiftwidth 缩进折叠
+"set fdm=indent 		" fold according to shiftwidth
 set foldmethod=marker
-set foldmarker={,}		" 设置根据大括号折叠
-set foldlevelstart=99 	" 设置打开文件时默认不折叠代码
+set foldmarker={,}		" fold according to {}
+set foldlevelstart=99 	" no folding when open file
 
 " have Vim jump to the last position when reopening a file
 if has("autocmd")
 	au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
 endif
 
-"colorscheme sublimemonokai
-hi comment ctermfg=2	"设置注释颜色为绿色
-syntax on
-set tabstop=4
-set expandtab
-set shiftwidth=4
-set softtabstop=4
-"highlight CursorLine ctermbg=black guibg=black		" 设置背景色颜色
-"set cursorline		 	"高亮显示当前行背景色
-"set cursorcolumn		"高亮显示当前列背景色
 
-"set hlsearch			"高亮显示搜索结果	set nolhsearch
-set incsearch 			"显示查找匹配过程
+"set hlsearch			" highlight searched result
+"set nolhsearch
+set incsearch 			" show searching process
 
-" 快速按 Alt-j 进入normal模式
-cnoremap <M-j> <Esc>
-inoremap <M-j> <Esc>
+set wildmenu
+set completeopt-=preview
+set laststatus=2
+set statusline=\ %<%F[%1*%M%*%n%R%H]%=\ %y\ %0(%{&fileformat}\ %{&fileencoding}\ %c:%l/%L%)\ [%p%%]
 
-" 当光标一段时间保持不动了，就禁用高亮
-" autocmd cursorhold * set nohlsearch
 
-" 当打开文件时仍高亮之前的搜索结果时使用下面的方式
-" 默认关闭高亮，当输入查找命令时，再启用高亮
+"""""""""""""""""""" SHORTCUT BEG """"""""""""""""""""
+let mapleader="," 
+
+" Alt Key Combination
+if has("gui_running")
+    cnoremap <M-j> <Esc>
+    inoremap <M-j> <Esc>
+    nnoremap <M-o> <C-o>
+    nnoremap <M-i> <C-i>
+    nnoremap <M-]> <C-]>
+else
+    " insert mode: press <ctrl-v>, then <Alt-key>
+    cnoremap <Esc>j <Esc>
+    inoremap <Esc>j <Esc>
+    nnoremap <Esc>o <C-o>
+    nnoremap <Esc>i <C-i>
+    " Alt-] is not allowed
+endif
+
+" nohlsearch when open file, highlight when search
 set nohlsearch
 nnoremap n :set hlsearch<cr>n
 nnoremap N :set hlsearch<cr>N
@@ -63,88 +76,37 @@ nnoremap / :set hlsearch<cr>/
 nnoremap ? :set hlsearch<cr>?
 nnoremap * :set hlsearch<cr>*
 
-" vim 不支持系统粘贴板时借助 xsel 获取系统粘贴板并插入
+" paste system clipboard with xsel
 nnoremap <C-P> :set paste<CR>:read !xsel --output --clipboard<CR>:set nopaste<CR>
 
-" 互换visual快捷键
 nnoremap <C-v> v
 nnoremap v <C-v>
 
-" shortcut begin
-
-let mapleader = "," 
-
-" 组合键改为Alt
-" 如果不行，在insert模式下先按 Ctrl+V, 再按 Alt + key
-nnoremap <M-o> <C-o>
-nnoremap <M-i> <C-i>
-" 不能设置 ]
-" nnoremap <M-]> <C-]>
-
-" 切换分屏
+" switch window
 nnoremap <C-h> <C-w>h
 nnoremap <C-j> <C-w>j
 nnoremap <C-k> <C-w>k
 nnoremap <C-l> <C-w>l
 
-" 切换tab页
+" switch tab
 nnoremap <leader>l :tabn<CR>
 nnoremap <leader>h :tabp<CR>
 
-" 窗口跳转
-noremap <C-h> <C-w>h
-noremap <C-j> <C-w>j
-noremap <C-k> <C-w>k
-noremap <C-l> <C-w>l
-
-" 运行当前文件
-nnoremap <S-F10> :w<CR>:!./%<CR>
-inoremap <S-F10> <C-\><C-n>:w<CR>:!./%<CR>
-
-" 设置自动补全括号
-" inoremap { {<Enter>}<Esc>O
-" inoremap { {}<Esc>i
-" inoremap ( ()<Esc>i
-" inoremap [ []<Esc>i
-" 
-" inoremap } <c-r>=ClosePair('}')<CR>
-" inoremap ) <c-r>=ClosePair(')')<CR>
-" inoremap ] <c-r>=ClosePair(']')<CR>
-" inoremap <c-r>=ClosePair
-
-" 复制光标所在位置单词到系统粘贴板
+" copy word to system clipboard
 nnoremap <C-c> "+yiw
 inoremap <C-c> <C-\><C-n>"+yiw
-" insert/command/search 使用系统粘贴板
-" normal 使用 "+p 即可
-cnoremap <C-S-v> <C-R>+
-inoremap <C-S-v> <C-R>+
-"cnoremap <C-v> <C-R>+
-"inoremap <C-v> <C-R>+
-"nnoremap * "+yiw*
-"nnoremap # "+yiw#
+" insert/command/search: paste system clipboard
+cnoremap <silent> <C-S-v> <C-R>+
+inoremap <silent> <C-S-v> <Esc>:set paste<CR>i<C-r>+<Esc>:set nopaste<CR>gi
 
-" 设置 Ctrl + Backspace 键来删除前方的一个单词
+" Ctrl + Backspace: delete previous word
 inoremap <C-BS> <C-W>
 cnoremap <C-BS> <C-W>
+"""""""""""""""""""" SHORTCUT END """"""""""""""""""""
 
-" shortcut end
 
-" 设置快捷显示当前文件路径函数
-command! Pwd echo expand('%:p')
-
-set wildmenu
-set completeopt-=preview
-
-" 设置状态栏
-set laststatus=2
-set statusline=\ %<%F[%1*%M%*%n%R%H]%=\ %y\ %0(%{&fileformat}\ %{&fileencoding}\ %c:%l/%L%)\ [%p%%]
-
-""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" FUNCTION START
-""""""""""""""""""""""""""""""""""""""""""""""""""""""
-
-""" <leader>f 跳转到光标处文件
+"""""""""""""""""""" FUNCTION BEG """"""""""""""""""""
+""" <leader>f: jump to file
 nnoremap <leader>f :call Strict_gf()<CR>
 function! Strict_gf()
     let cur_line = getline('.')
@@ -171,25 +133,67 @@ function! Strict_gf()
         echo "File not found: " . file_name
     endif
 endfunction
+"""""""""""""""""""" FUNCTION END """"""""""""""""""""
 
-""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" FUNCTION END
-""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-augroup Format-Options
-    autocmd!
-    autocmd BufEnter * setlocal formatoptions-=c formatoptions-=r formatoptions-=o
+"""""""""""""""""""" PLUGIN BEG """"""""""""""""""""
+call plug#begin('~/.vim/plugged')
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'junegunn/fzf.vim'
+Plug 'preservim/nerdtree'
+Plug 'joshdick/onedark.vim'
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+Plug 'Yggdroot/LeaderF', { 'do': ':LeaderfInstallCExtension' }
+Plug 'preservim/nerdcommenter'
+Plug 'tpope/vim-fugitive'
+call plug#end()
 
-    " This can be done as well instead of the previous line, for setting formatoptions as you choose:
-    autocmd BufEnter * setlocal formatoptions=crqn2l1j
-augroup END
+" color theme(onedark, airline)
+colorscheme onedark
+let g:airline#extensions#tabline#enabled=1
+let g:airline_theme='onedark'
 
-" 插件
-"call plug#begin('~/.vim/plugged')
-"
-"Plug 'preservim/nerdtree'
-"
-"call plug#end()
+" search file(fzf)
+" nnoremap <silent> <C-p> :Files<CR>
+" inoremap <silent> <C-p> <ESC>:Files<CR>
 
-" 打开关闭nerdtree
-" nnoremap <silent> <leader>n :NERDTreeToggle<CR>
+" search file(Leaderf)
+nnoremap <silent> <C-p> :Leaderf file<CR>
+inoremap <silent> <C-p> <ESC>:Leaderf file<CR>
+
+" complete with tab(coc)
+inoremap <silent><expr> <TAB> coc#pum#visible() ? coc#pum#confirm() : "\<Tab>"
+" code navigation(coc)
+if has("gui_running")
+    nmap <silent> <M-]> <Plug>(coc-definition)
+else
+    nmap <silent> gd <Plug>(coc-definition)
+endif
+" nmap <silent> gr <Plug>(coc-references)
+" nmap <silent> gi <Plug>(coc-implementation)
+" nmap <silent> gt <Plug>(coc-type-definition)
+
+" toogle nerdtree
+nnoremap <silent> <leader>n :NERDTreeToggle<CR>
+
+" toogle comment(nerdcommenter)
+nnoremap <C-_> <Plug>NERDCommenterToggle
+inoremap <C-_> <Esc><Plug>NERDCommenterTogglei
+vnoremap <C-_> <Plug>NERDCommenterTogglegv
+let g:NERDSpaceDelims=1
+let g:NERDCommentEmptyLines=1
+let g:NERDDefaultAlign='left'
+"let g:NERDTrimTrailingWhitespace=1
+let g:NERDCustomDelimiters = {
+    \ 'c': { 'left': '//' },
+    \ 'cpp': { 'left': '//' },
+    \ }
+"""""""""""""""""""" PLUGIN END """"""""""""""""""""
+
+
+"""""""""""""""""""" COMMAND BEG """"""""""""""""""""
+" show current file absolute path
+command! Pwd echo expand('%:p')
+"""""""""""""""""""" COMMAND END """"""""""""""""""""

@@ -5,9 +5,13 @@
 
 查看帮助文档: vim内 :h <关键字>
 
+[中文文档](https://github.com/yianwillis/vimcdoc)
+
 [关键字配置项简介](http://runxinzhi.com/fengchi-p-6902965.html)
 
 ![vim键盘图](./pics/vim-cheat-sheet-sch1.gif)
+
+<!-- markdownlint-disable table-column-style -->
 
 ## 发行版
 
@@ -63,6 +67,7 @@ colorscheme default
 
 [sublimemonokai](./colors/sublimemonokai.vim)
 [monokai](https://github.com/ku1ik/vim-monokai/blob/master/colors/monokai.vim)
+[onedark](#onedark)
 
 ### 高亮
 
@@ -82,6 +87,15 @@ colorscheme default
 set guicursor=n-v-c:block-blinkon650-blinkoff650-blinkwait600
 set guicursor+=i:ver25-blinkon650-blinkoff650
 set guicursor+=r:hor20-blinkon650-blinkoff650
+```
+
+### Font
+
+支持中文字体
+
+```sh
+sudo apt install -y fonts-wqy-zenhei    # 安装文泉驿正黑字体
+fc-list :lang=zh                        # 查看已安装字体
 ```
 
 ## 模式
@@ -748,6 +762,8 @@ curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.c
 [github](https://github.com/preservim/nerdtree)
 
 ```vim
+Plug 'preservim/nerdtree'
+
 " 打开/关闭nerdtree
 " 打开目录时会自动进入nerdtree
 nnoremap <silent> <leader>n :NERDTreeToggle<CR>
@@ -803,7 +819,12 @@ Plug 'neoclide/coc.nvim', {'branch': 'release'}
 :CocInfo                        " 安装后查看是否有异常
 :CocConfig                      " 打开配置文件
 :CocInstall coc-clangd          " 安装 C/C++/Objective-C 扩展
-:CocInstall coc-explorer        " 文件浏览器
+:CocInstall coc-explorer        " 安装文件浏览器
+:CocInstall coc-pairs           " 括号
+:CocUnInstall coc-explorer      " 卸载
+:CocList extensions             " 查看已安装插件
+
+:CocCommand explorer            " 打开文件浏览器
 ```
 
 C/C++ 配置
@@ -824,11 +845,20 @@ vimrc 配置
 ```vim
 " 使用 tab 确认补全
 inoremap <silent><expr> <TAB> coc#pum#visible() ? coc#pum#confirm() : "\<Tab>"
+
+nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gr <Plug>(coc-references)
+nmap <silent> gi <Plug>(coc-implementation)
+nmap <silent> gt <Plug>(coc-type-definition)
 ```
 
 ### fzf
 
-快速查找文件
+快速查找文件和字符串
+
+```sh
+sudo apt-get install ripgrep
+```
 
 ```vim
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
@@ -838,6 +868,62 @@ Plug 'junegunn/fzf.vim'
 nnoremap <silent> <C-p> :Files<CR>
 inoremap <silent> <C-p> <ESC>:Files<CR>
 ```
+
+### LeaderF
+
+```vim
+Plug 'Yggdroot/LeaderF', { 'do': ':LeaderfInstallCExtension' }
+
+nnoremap <silent> <C-p> :Leaderf file<CR>
+inoremap <silent> <C-p> <ESC>:Leaderf file<CR>
+
+:Leaderf rg pattern -g **/target_dir/*
+```
+
+### onedark
+
+```vim
+Plug 'joshdick/onedark.vim'
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+
+colorscheme onedark
+let g:airline#extensions#tabline#enabled = 1
+let g:airline_theme = 'onedark'
+```
+
+### nerdcommenter
+
+自动注释
+
+```vim
+Plug 'preservim/nerdcommenter'
+```
+
+### vim-fugitive
+
+git 插件
+
+```vim
+:G blame
+```
+
+### termdebug
+
+vim 自带调试插件
+
+```vim
+:packadd termdebug              " 启用插件
+
+:Termdebug app_name             " 调试指定程序
+:TermdebugCommand app_name args " 为被调试程序指定命令行参数
+```
+
+### Vimspector
+
+[doc](https://puremourning.github.io/vimspector-web/)
+
+调试插件
 
 ## vscode
 

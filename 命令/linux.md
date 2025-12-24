@@ -262,37 +262,6 @@ sudo gpasswd -a <user_name> <group_name>
 sudo -s
 ```
 
-## 文件
-
-```bash
-# 查看文件
-inode: ls -i 或 stat file_name
-
-# 查看文件个数
-ll | wc -l
-find ./ -name "*.cpp" | wc -l
-```
-
-时间戳([stat](#stat-文件元数据))
-
-```sh
-ls -l           # 查看最后修改时间
-```
-
-### tar
-
-```bash
-# 基础用法
-# 注意: 要打包的目录放到命令行选项之后
-tar czvf test.tar.gz [--exclude ..] ./*
-
-# 可选参数
---exclude 过滤指定文件或目录，可指定多次，只要打包时相对路径中包含指定内容即会过滤，可使用通配符
-    --exclude build
-    --exclude src/python/.idea
-    --exclude test/*.txt
-```
-
 ## 系统
 
 ```sh
@@ -528,6 +497,35 @@ done
 ```
 
 ## 文件
+
+```bash
+# 查看文件
+inode: ls -i 或 stat file_name
+
+# 查看文件个数
+ll | wc -l
+find ./ -name "*.cpp" | wc -l
+```
+
+时间戳([stat](#stat-文件元数据))
+
+```sh
+ls -l           # 查看最后修改时间
+```
+
+### tar
+
+```bash
+# 基础用法
+# 注意: 要打包的目录放到命令行选项之后
+tar czvf test.tar.gz [--exclude ..] ./*
+
+# 可选参数
+--exclude 过滤指定文件或目录，可指定多次，只要打包时相对路径中包含指定内容即会过滤，可使用通配符
+    --exclude build
+    --exclude src/python/.idea
+    --exclude test/*.txt
+```
 
 ### locate
 
