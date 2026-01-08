@@ -2322,6 +2322,39 @@ xdotool key ctrl+l                      # 相当于按下快捷键 ctrl + shift 
     # 特殊字符需要用单词表示: plus(+), Return(回车)
 ```
 
+### fzf
+
+[github](https://github.com/junegunn/fzf)
+
+```sh
+# Ctrl-R: 搜索历史命令
+# Ctrl-T: 搜索文件
+eval "$(fzf --bash)"        # 绑定快捷键
+```
+
+### objcopy
+
+copy the content of an object file to another
+
+```sh
+objcopy [options...] input_file [output_file]
+    -g|--strip-debug: do not copy debugging symbols or sections(symbol table is copied)
+    --only-keep-debug: removing contents of any sections that would NOT be stripped by --strip-debug
+    --add-gnu-debuglink: add .gnu_debuglink section stored in specified file
+
+objcopy --only-keep-debug foo foo.dbg
+objcopy -g foo foo_clear
+objcopy --add-gnu-debuglink=foo.dbg foo
+```
+
+### strip
+
+discard all symbols from object file
+
+```sh
+strip [options...] objfile
+```
+
 ## tips
 
 ```bash

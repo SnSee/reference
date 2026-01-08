@@ -66,6 +66,8 @@ git branch
 git branch -a
 # 从当前分支创建新分支
 git checkout -b <new_branch_name>
+# rename 重命名分支
+git branch -m <new_branch_name>
 
 # 检出单个文件的历史版本(版本不变，仅仅是文件内容变成检出版本)
 git checkout <commit_id> test.txt

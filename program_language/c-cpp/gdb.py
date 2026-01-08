@@ -4,6 +4,8 @@ i2b         : int to binary
 i2h         : int to hex
 h2f         : hex to float
 pipe        : Simulate pipe in an environment without the pipe command
+pvecotr     : print vector
+pmatrix     : print a two-dimensional vector
 
 functions:
 py_eval     : Get output of any gdb commands (output is string)
@@ -75,7 +77,7 @@ class PrintVector(gdb.Command):
               "pvecotr vec_name [index] [OPTIONS]\n"
               "\n"
               "OPTIONS:\n"
-              "    base: 2,10,16 etc. default: 10\n\n"
+              "    base: 2,10,16 etc. default: 10\n"
               "    mem: member names of element\n"
               "DEMO:\n"
               "    pvector students 2 base=16 mem=name\n"
@@ -110,6 +112,65 @@ class PrintVector(gdb.Command):
             gdb.write(f"  {i:3d}({start + i}): {elem}\n")
 
 
+class PrintMatrix(gdb.Command):
+    def __init__(self):
+        super().__init__("pmatrix", gdb.COMMAND_DATA, gdb.COMPLETE_SYMBOL)
+
+    def usage(self):
+        print("usage:\n"
+              "pmatrix vec_name [OPTIONS]\n"
+              "\n"
+              "OPTIONS:\n"
+              "    srow: start row index\n"
+              "    erow: end row index(not included)\n"
+              "    scol: start column index\n"
+              "    ecol: end column index(not included)\n"
+              "    width: column width\n"
+              "DEMO:\n"
+              "    pmatrix vec2d srow=1 erow=2 scol=1 ecol=2"
+              )
+
+    def invoke(self, args: str, from_tty):
+        if not args:
+            return self.usage()
+        argv = args.split()
+        vec_name = argv[0]
+        options = {pair[0]: pair[1] for pair in re.findall(r'(\w+)=(\w+)', args)}
+
+        vec = gdb.parse_and_eval(vec_name)
+        start = vec['_M_impl']['_M_start']
+        finish = vec['_M_impl']['_M_finish']
+        rows = int(finish - start)
+        if rows == 0:
+            gdb.write("Empty vector")
+            return
+
+        row_s = int(options.get('srow', 0))
+        row_e = int(options.get('erow', rows))
+        col_s = int(options.get('scol', 0))
+        width = options.get('width', 0)
+
+        outputs = []
+        for i in range(row_s, row_e):
+            row_out = []
+            sub_vec = (start + i).dereference()
+            sub_start = sub_vec['_M_impl']['_M_start']
+            sub_finish = sub_vec['_M_impl']['_M_finish']
+            cols = int(sub_finish - sub_start)
+            col_e = int(options.get('ecol', cols))
+            for j in range(col_s, col_e):
+                sv = (sub_start + j).dereference() if str(sub_start.type).endswith('pointer') else sub_start + j
+                row_out.append(str(sv))
+            outputs.append(row_out)
+        max_col = max([len(row_out) for row_out in outputs])
+        widthes = [width if width else max([len(row_out[j]) for row_out in outputs]) for j in range(max_col)]
+        for row_out in outputs:
+            row_out.extend(['NULL'] * (max_col - len(row_out)))
+            for i, val in enumerate(row_out):
+                gdb.write(f'{val:{widthes[i]}} ')
+            gdb.write('\n')
+
+
 class PyEval(gdb.Function):
     def __init__(self):
         super().__init__("py_eval")
@@ -132,6 +193,7 @@ try:
 except gdb.error:
     PyPipeCommand()         # pipe info | grep break | awk '{print $2}'
 PrintVector()
+PrintMatrix()
 
 # functions
 PyEval()                    # p $py_eval("gdb command")

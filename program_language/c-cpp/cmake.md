@@ -80,6 +80,7 @@ cmake -DCMAKE_BUILD_TYPE:STRING=Debug -DCMAKE_C_COMPILER:FILEPATH=/bin/gcc -DCMA
 |- |-
 |CMAKE_PREFIX_PATH      |包、库等搜索路径
 |CMAKE_BUILD_TYPE       |编译类型，Debug/Release
+|CMAKE_EXPORT_COMPILE_COMMANDS  |导出编译命令到 compile_commands.json
 
 ## 语法
 

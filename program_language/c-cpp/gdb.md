@@ -41,6 +41,7 @@ help command_name
 -quiet/-q       : No version number on startup
 -tui            : 建议搭配 -quiet 
 -tty            : 指定被调试程序的 IO 终端，默认为当前，通过 tty 命令可以查看
+-s              : 指定 debug symbol 文件
 ```
 
 ## 命令
@@ -66,6 +67,18 @@ help command_name
 (gdb) pipe info breaks | grep func_name
 ```
 
+### symbol-file
+
+Load symbol table from executable file FILE
+
+```gdb
+symbol-file foo.dbg
+```
+
+```sh
+gdb -s foo.dbg foo
+```
+
 ## set options
 
 ```sh
@@ -80,6 +93,10 @@ set pagination off                      # 输出有多页时全部显示
 
 set output-radix 16                     # 打印数字时默认使用 16 进制
 ```
+
+### debug-file-directory
+
+Set the directories where separate debug symbols are searched for
 
 ## break
 
@@ -242,7 +259,7 @@ x/[nfu] <指针或地址>
     n: 数字，表示查看内存单元个数，如查看数组时可输入数组长度
     f: 显示格式，s 表示字符串，x,o,t,d 含义同print
     u: 要查看的数据类型占内存单元字节数，默认为4，可取值: b(1), h(2), w(4), g(8)
-list <行号/函数名>: 显示以行号/函数为中心的10行源码，按Enter滚动，如果不输入行号，默认显示以当前断点为中心的10行代码
+list <行号/函数名>: 显示以行号/函数为中心的10行源码，按Enter滚动，如果不输入行号，默认显示以当前断点为中心的10行代码；list *$pc 始终显示断点处代码
 show
     show args:查看命令行参数
     show values: 查看历史输出记录
@@ -572,6 +589,10 @@ info sharedlibrary      # 查看动态库内存地址范围
 # 判断 addr 内存地址是否连续 8 字节都是 0
 $_memeq(addr, "\0\0\0\0\0\0\0\0", 8)
 ```
+
+## 调试系统命令
+
+[drgn](https://drgn.readthedocs.io/en/latest/getting_debugging_symbols.html#ubuntu)
 
 ## vscode
 

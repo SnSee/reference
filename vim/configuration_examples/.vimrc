@@ -56,6 +56,7 @@ let mapleader=","
 if has("gui_running")
     cnoremap <M-j> <Esc>
     inoremap <M-j> <Esc>
+    snoremap <M-j> <Esc>
     nnoremap <M-o> <C-o>
     nnoremap <M-i> <C-i>
     nnoremap <M-]> <C-]>
@@ -63,6 +64,7 @@ else
     " insert mode: press <ctrl-v>, then <Alt-key>
     cnoremap <Esc>j <Esc>
     inoremap <Esc>j <Esc>
+    snoremap <Esc>j <Esc>
     nnoremap <Esc>o <C-o>
     nnoremap <Esc>i <C-i>
     " Alt-] is not allowed
@@ -133,6 +135,26 @@ function! Strict_gf()
         echo "File not found: " . file_name
     endif
 endfunction
+
+""" toogle terminal window
+function! s:ToggleTerminal()
+  let term_win = -1
+  for win in range(1, winnr('$'))
+    if getwinvar(win, '&buftype') == 'terminal'
+      let term_win = win
+      break
+    endif
+  endfor
+
+  if term_win != -1
+    bdelete!
+  else
+    belowright terminal
+  endif
+endfunction
+
+nnoremap <silent> <C-t> :call <SID>ToggleTerminal()<CR>
+tnoremap <silent> <C-t> <C-\><C-n>:call <SID>ToggleTerminal()<CR>
 """""""""""""""""""" FUNCTION END """"""""""""""""""""
 
 

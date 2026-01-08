@@ -95,6 +95,10 @@ set guicursor+=r:hor20-blinkon650-blinkoff650
 
 ```sh
 sudo apt install -y fonts-wqy-zenhei    # 安装文泉驿正黑字体
+
+# 使用 windows 下字体库
+# 从 C:\Windows\Fonts 复制字体文件到目录
+sudo mkdir /usr/share/fonts/my_fonts
 fc-list :lang=zh                        # 查看已安装字体
 ```
 
@@ -175,6 +179,14 @@ inoremap <S-F10> <C-\><C-n>:w<CR>:!./%<CR>
 ```sh
 zt          # 将当前行置于屏幕顶部，受 scrolloff 影响
 zb          # 将当前行置于屏幕底部
+```
+
+### visual mode
+
+```sh
+U           # 将选中的文本全部转换为大写
+u           # 转换为小写
+~           # 大写转小写，小写转大写
 ```
 
 ## vim 编程
@@ -260,6 +272,14 @@ ctrl+w [n]-: 减小高度
 ctrl+w [n]>: 增大宽度
 ctrl+w [n]<: 减小宽度
 ctrl+w =   : 子窗口均分主窗口
+```
+
+## 内置终端
+
+```vim
+:echo has('terminal')       " 检查是否支持内置终端
+:terminal                   " 打开终端
+:below term                  " 垂直分割打开终端
 ```
 
 ## tab页
@@ -736,7 +756,7 @@ g<        查看上一条命令的输出
 :r! command
 ```
 
-## 插件
+## Plugin
 
 [插件查找网站](https://vimawesome.com/)
 
@@ -813,6 +833,8 @@ git submodule update --init --recursive
 
 ### coc
 
+[wiki](https://github.com/neoclide/coc.nvim/wiki)
+
 ```vim
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
@@ -827,15 +849,17 @@ Plug 'neoclide/coc.nvim', {'branch': 'release'}
 :CocCommand explorer            " 打开文件浏览器
 ```
 
-C/C++ 配置
+C/C++ 配置(如何安装了 coc-clangd 就不需要配置 clangd 了)
 [language-server](https://github.com/neoclide/coc.nvim/wiki/Language-servers)
 
 ```json
-"languageserver": {
-  "clangd": {
-    "command": "clangd",
-    "rootPatterns": ["compile_flags.txt", "compile_commands.json"],
-    "filetypes": ["c", "cc", "cpp", "c++", "objc", "objcpp"]
+{
+  "languageserver": {
+    "clangd": {
+      "command": "clangd",
+      "rootPatterns": ["compile_flags.txt", "compile_commands.json"],
+      "filetypes": ["c", "cc", "cpp", "c++", "objc", "objcpp"]
+    }
   }
 }
 ```
